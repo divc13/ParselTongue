@@ -13,8 +13,6 @@
 %}
 
 IDENTIFIER						[a-zA-Z_][a-zA-Z0-9_]*
-DATATYPE						int|float|bool|str
-LIST							list
 KEYWORD							False|await|else|import|None|break|except|in|raise|True|class|finally|is|return|continue|for|lambda|tryas|def|from|nonlocal|while|assert|del|global|with|async|elif|if|yield
 
 STRING_LITERAL					{STRINGPREFIX}?({SHORTSTRING}|{LONGSTRING})
@@ -165,38 +163,25 @@ NEWLINE							\n
 	return symbol_to_name[token_str];
 }
 
-{DATATYPE} {
-	yylval.str = strdup(yytext);
-	string token_str = yytext;
-	return symbol_to_name[token_str];
-}
-
-{LIST} {
-	return LIST;
-}
-
 {IDENTIFIER} {
 	yylval.aType.name = strdup(yytext);
 	yylval.aType.lineno = yylineno;
-	return IDENTIFIER;
+	return NAME;
 }
 
 {FLOATNUMBER} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("FLOAT");
-	return LITERAL;
+	yylval.str = strdup(yytext);
+	return FLOAT_LITERAL;
 }
 
 {INTEGER} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("INTEGER");
-	return LITERAL;
+	yylval.str = strdup(yytext);
+	return INT_LITERAL;
 }
 
 {STRING_LITERAL} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("STRING");
-	return LITERAL;
+	yylval.str = strdup(yytext);
+	return STRING_LITERAL;
 }
 
 {ARITHMETIC_OPERATOR} {

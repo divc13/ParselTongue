@@ -3,3 +3,4 @@ parser
 *.output
 *.tab.c
 *.tab.h
+Grammar_modifier/
