@@ -17,9 +17,6 @@ extern int yylineno;
 // 1 if file is indented using tabs, 0 if indented using spaces, -1 initially
 int is_indent_tabs = -1;
 stack <int> indent_stack;
-
-
-
 %}
 
 %code requires {
@@ -101,13 +98,6 @@ compound_stmt: function_def
     | for_stmt
     | while_stmt
 
-assignment: single_target DLM_COLON expression  
-    | single_target DLM_COLON expression OP_ASN_ASN star_expressions 
-    | nterm_star_targets_assgn star_expressions  
-    | single_target augassign star_expressions 
-
-nterm_star_targets_assgn: star_targets OP_ASN_ASN
-    | nterm_star_targets_assgn star_targets OP_ASN_ASN
 
 augassign: OP_ASN_ASN
     | OP_ASN_ADD
@@ -356,6 +346,14 @@ kwargs: kwarg
 
 kwarg: NAME OP_ASN_ASN expression  
 
+assignment: single_target DLM_COLON expression  
+    | single_target DLM_COLON expression OP_ASN_ASN star_expressions 
+    | nterm_star_targets_assgn star_expressions  
+    | single_target augassign star_expressions 
+
+nterm_star_targets_assgn: star_targets OP_ASN_ASN
+    | nterm_star_targets_assgn star_targets OP_ASN_ASN
+
 star_targets: nterm_star_targets DLM_COMMA 
     | nterm_star_targets
 
@@ -368,17 +366,13 @@ star_targets_list_seq: nterm_star_targets DLM_COMMA
 star_target: OP_ATH_MUL target_with_star_atom
     | target_with_star_atom
 
-target_with_star_atom: t_primary_dot NAME 
-    | t_primary_SQ slices DLM_RGT_SQ 
+target_with_star_atom: single_target 
     | star_atom
 
-star_atom: NAME 
-    | DLM_LFT_PRN target_with_star_atom DLM_RGT_PRN 
-    | DLM_LFT_SQ DLM_RGT_SQ 
-    | DLM_LFT_SQ star_targets_list_seq DLM_RGT_SQ 
+star_atom: DLM_LFT_SQ star_targets_list_seq DLM_RGT_SQ 
 
-single_target: single_subscript_attribute_target
-    | NAME 
+single_target: NAME
+    | single_subscript_attribute_target 
     | DLM_LFT_PRN single_target DLM_RGT_PRN 
 
 single_subscript_attribute_target: t_primary_dot NAME 
