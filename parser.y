@@ -1,5 +1,9 @@
 %{
 
+    // grammar to be modified yet
+    // problem of NAME in atom
+    // NAME is assgnable but other parts of atom are not
+
 #include <bits/stdc++.h>
 #include "token_map.h"
 using namespace std;
@@ -59,7 +63,6 @@ stack <int> indent_stack;
 %token <str> INT_LITERAL FLOAT_LITERAL STRING_LITERAL
 %token <bType> OP_ATH_ADD OP_ATH_SUB OP_ATH_MUL OP_ATH_DIV OP_ATH_FDIV OP_ATH_MOD OP_ATH_POW OP_REL_EQ OP_REL_NEQ OP_REL_GT OP_REL_LT OP_REL_GTE OP_REL_LTE OP_LOG_AND OP_LOG_OR OP_LOG_NOT OP_BIT_AND OP_BIT_OR OP_BIT_XOR OP_BIT_NEG OP_BIT_LS OP_BIT_RS OP_ASN_ASN OP_ASN_ADD OP_ASN_SUB OP_ASN_MUL OP_ASN_DIV OP_ASN_FDIV OP_ASN_MOD OP_ASN_POW OP_ASN_AND OP_ASN_OR OP_ASN_XOR OP_ASN_LS OP_ASN_RS
 %token <str> DLM_LFT_PRN DLM_RGT_PRN DLM_LFT_SQ DLM_RGT_SQ DLM_LFT_CRLY DLM_RGT_CRLY DLM_COMMA DLM_COLON DLM_DOT DLM_SM_COL DLM_AT DLM_TO
-
 %start file
 
 %define parse.error verbose
@@ -74,16 +77,16 @@ statements: statements statement
 
 statement: compound_stmt | simple_stmts
 
-simple_stmts: nterm_simple1 nterm_simple2 NEWLINE
+simple_stmts: simple1 simple2 NEWLINE
 
-nterm_simple1: simple_stmt
-    | nterm_simple1 DLM_SM_COL simple_stmt
+simple1: simple_stmt
+    | simple1 DLM_SM_COL simple_stmt
 
-nterm_simple2: 
+simple2: 
     | DLM_SM_COL
 
 simple_stmt: assignment
-    | star_expressions 
+    | expressions 
     | return_stmt
     | raise_stmt
     | assert_stmt
@@ -98,9 +101,15 @@ compound_stmt: function_def
     | for_stmt
     | while_stmt
 
+assignment: single_target_col  
+    | single_target_col OP_ASN_ASN expressions 
+    | single_target_augasn expressions 
+    | multi_targets_assgn expressions  
 
-augassign: OP_ASN_ASN
-    | OP_ASN_ADD
+multi_targets_assgn: multi_target
+    | multi_targets_assgn multi_target
+
+augassign: OP_ASN_ADD
     | OP_ASN_SUB
     | OP_ASN_MUL
     | OP_ASN_DIV
@@ -113,19 +122,19 @@ augassign: OP_ASN_ASN
     | OP_ASN_LS 
     | OP_ASN_RS
 
-return_stmt: KW_return star_expressions
+return_stmt: KW_return expressions
 	| KW_return 
 
 raise_stmt: KW_raise expression
 	| KW_raise expression KW_from expression
     | KW_raise 
 
-global_stmt: KW_global NAME nterm_names
+global_stmt: KW_global NAME names
 
-nonlocal_stmt: KW_nonlocal nterm_names
+nonlocal_stmt: KW_nonlocal names
 
-nterm_names: NAME
-	| nterm_names DLM_COMMA NAME
+names: NAME
+	| names DLM_COMMA NAME
 
 assert_stmt: KW_assert expression
 	| KW_assert expression DLM_COMMA expression
@@ -133,17 +142,18 @@ assert_stmt: KW_assert expression
 block: NEWLINE INDENT statements DEDENT 
     | simple_stmts
 
-class_def: KW_class NAME nterm_arguments DLM_COLON block
+class_def: KW_class NAME is_arguments DLM_COLON block
 
-function_def: KW_def NAME DLM_LFT_PRN nterm_params nterm_fn_expression DLM_COLON block
+function_def: KW_def NAME DLM_LFT_PRN is_params is_fn_expression DLM_COLON block
 
-nterm_params: DLM_RGT_PRN
+is_params: DLM_RGT_PRN
 	| params
 
-nterm_arguments:
+is_arguments:
+	| DLM_LFT_PRN DLM_RGT_PRN
 	| DLM_LFT_PRN arguments DLM_RGT_PRN
 
-nterm_fn_expression:
+is_fn_expression:
 	| DLM_TO expression
 
 params: param_nd_star param_no_default OP_ATH_DIV DLM_RGT_PRN
@@ -177,7 +187,8 @@ param_maybe_default: param DLM_COMMA
 	| param default DLM_COMMA
 param_mb_star: 
 	| param_mb_star param_maybe_default
-param: NAME annotation
+param: NAME 
+    | NAME annotation
 annotation: DLM_COLON expression 
 default: OP_ASN_ASN expression
 
@@ -194,33 +205,18 @@ else_block: KW_else DLM_COLON block
 while_stmt: KW_while expression DLM_COLON block 
     | KW_while expression DLM_COLON block else_block
 
-for_stmt: KW_for star_targets KW_in star_expressions DLM_COLON block 
-    | KW_for star_targets KW_in star_expressions DLM_COLON block else_block 
+for_stmt: KW_for multi_targets KW_in expressions DLM_COLON block 
+    | KW_for multi_targets KW_in expressions DLM_COLON block else_block 
  
 
-nterm_expressions: expression
-    | nterm_expressions DLM_COMMA expression 
+expressions: expressions_comma
+    | expressions_comma DLM_COMMA  
+
+expressions_comma: expression
+    | expressions_comma DLM_COMMA expression
 
 expression: disjunction KW_if disjunction KW_else expression 
     | disjunction
-
-star_expressions: nterm_star_expressions DLM_COMMA
-    | nterm_star_expressions
-
-nterm_star_expressions: star_expression
-    | nterm_star_expressions DLM_COMMA star_expression
-
-star_expression: OP_ATH_MUL bitwise_or 
-    | expression
-
-star_named_expressions:  nterm_star_named_expressions DLM_COMMA
-    | nterm_star_named_expressions
-
-nterm_star_named_expressions: star_named_expression
-    | nterm_star_named_expressions DLM_COMMA star_named_expression
-
-star_named_expression: OP_ATH_MUL bitwise_or 
-    | expression
 
 disjunction: conjunction
     | disjunction OP_LOG_OR conjunction
@@ -231,11 +227,11 @@ conjunction: inversion
 inversion: OP_LOG_NOT inversion 
     | comparison
 
-comparison: bitwise_or nterm_compare_op_bitwise_or_pairs 
+comparison: bitwise_or many_compare_op_bitwise_or_pairs 
     | bitwise_or
 
-nterm_compare_op_bitwise_or_pairs: compare_op_bitwise_or_pair
-    | nterm_compare_op_bitwise_or_pairs compare_op_bitwise_or_pair
+many_compare_op_bitwise_or_pairs: compare_op_bitwise_or_pair
+    | many_compare_op_bitwise_or_pairs compare_op_bitwise_or_pair
 
 compare_op_bitwise_or_pair: eq_bitwise_or
     | noteq_bitwise_or
@@ -299,18 +295,30 @@ factor: OP_ATH_ADD factor
 power: primary OP_ATH_POW factor 
     | primary
 
-primary: primary DLM_DOT NAME 
-    | primary DLM_LFT_PRN DLM_RGT_PRN
-    | primary DLM_LFT_PRN arguments DLM_RGT_PRN
-    | primary DLM_LFT_SQ slices DLM_RGT_SQ
+primary: prim1
+    | prim2
     | atom
 
-slices: slice 
-    | nterm_slices
-    | nterm_slices DLM_COMMA
+prim1: prim1 DLM_DOT NAME 
+    | prim2 DLM_DOT NAME 
+    | atom DLM_DOT NAME 
+    | prim1 DLM_LFT_SQ slices DLM_RGT_SQ
+    | prim2 DLM_LFT_SQ slices DLM_RGT_SQ
+    | atom DLM_LFT_SQ slices DLM_RGT_SQ
 
-nterm_slices: slice DLM_COMMA slice
-    | nterm_slices DLM_COMMA slice
+prim2: prim1 DLM_LFT_PRN DLM_RGT_PRN 
+    | prim2 DLM_LFT_PRN DLM_RGT_PRN
+    | atom DLM_LFT_PRN DLM_RGT_PRN 
+    | prim1 DLM_LFT_PRN arguments DLM_RGT_PRN 
+    | prim2 DLM_LFT_PRN arguments DLM_RGT_PRN
+    | atom DLM_LFT_PRN arguments DLM_RGT_PRN
+
+slices: slice 
+    | slices_comma
+    | slices_comma DLM_COMMA
+
+slices_comma: slice DLM_COMMA slice
+    | slices_comma DLM_COMMA slice
 
 slice: expression 
 
@@ -331,14 +339,13 @@ strings: strings string
     | string
 
 list: DLM_LFT_SQ DLM_RGT_SQ 
-    | DLM_LFT_SQ star_named_expressions DLM_RGT_SQ 
+    | DLM_LFT_SQ expressions DLM_RGT_SQ 
 
-arguments:
-    | args DLM_COMMA
+arguments: args DLM_COMMA
     | args 
 
-args: nterm_expressions DLM_COMMA kwargs 
-    | nterm_expressions 
+args: expressions_comma DLM_COMMA kwargs 
+    | expressions_comma 
     | kwargs 
 
 kwargs: kwarg
@@ -346,55 +353,42 @@ kwargs: kwarg
 
 kwarg: NAME OP_ASN_ASN expression  
 
-assignment: single_target DLM_COLON expression  
-    | single_target DLM_COLON expression OP_ASN_ASN star_expressions 
-    | nterm_star_targets_assgn star_expressions  
-    | single_target augassign star_expressions 
+multi_targets: multi_target_comma DLM_COMMA 
+    | multi_target_comma
 
-nterm_star_targets_assgn: star_targets OP_ASN_ASN
-    | nterm_star_targets_assgn star_targets OP_ASN_ASN
+multi_target_comma: multi_target
+    | multi_target_comma DLM_COMMA multi_target
 
-star_targets: nterm_star_targets DLM_COMMA 
-    | nterm_star_targets
+multi_target: single_target_assign 
+    | target_list
 
-nterm_star_targets: star_target
-    | nterm_star_targets DLM_COMMA star_target
+target_list: DLM_LFT_SQ single_target_list OP_ASN_ASN
 
-star_targets_list_seq: nterm_star_targets DLM_COMMA 
-    | nterm_star_targets
+single_target_list: single_target_comma single_target_list 
+    | single_target_RSQ
 
-star_target: OP_ATH_MUL target_with_star_atom
-    | target_with_star_atom
+single_target_comma: parenthesized_name DLM_COMMA
+    | NAME DLM_COMMA
+    | prim1 DLM_COMMA
 
-target_with_star_atom: single_target 
-    | star_atom
+single_target_RSQ: parenthesized_name DLM_RGT_SQ
+    | NAME DLM_RGT_SQ
+    | prim1 DLM_RGT_SQ
 
-star_atom: DLM_LFT_SQ star_targets_list_seq DLM_RGT_SQ 
+single_target_col: parenthesized_name DLM_COLON expression
+    | NAME DLM_COLON expression
+    | prim1 DLM_COLON expression
 
-single_target: NAME
-    | single_subscript_attribute_target 
-    | DLM_LFT_PRN single_target DLM_RGT_PRN 
+single_target_augasn: parenthesized_name augassign
+    | NAME augassign
+    | prim1 augassign
 
-single_subscript_attribute_target: t_primary_dot NAME 
-    | t_primary_SQ slices DLM_RGT_SQ 
+single_target_assign: parenthesized_name OP_ASN_ASN
+    | NAME OP_ASN_ASN
+    | prim1 OP_ASN_ASN
 
-t_primary_dot: t_primary_dot NAME DLM_DOT
-    | t_primary_SQ slices DLM_RGT_SQ DLM_DOT
-    | t_primary_PRN DLM_RGT_PRN DLM_DOT
-    | t_primary_PRN arguments DLM_RGT_PRN DLM_DOT
-    | atom DLM_DOT
-
-t_primary_SQ: t_primary_dot NAME DLM_LFT_SQ
-    | t_primary_SQ slices DLM_RGT_SQ DLM_LFT_SQ
-    | t_primary_PRN DLM_RGT_PRN DLM_LFT_SQ
-    | t_primary_PRN arguments DLM_RGT_PRN DLM_LFT_SQ
-    | atom DLM_LFT_SQ
-
-t_primary_PRN: t_primary_dot NAME DLM_LFT_PRN
-    | t_primary_SQ slices DLM_RGT_SQ DLM_LFT_PRN
-    | t_primary_PRN DLM_RGT_PRN DLM_LFT_PRN
-    | t_primary_PRN arguments DLM_RGT_PRN DLM_LFT_PRN
-    | atom DLM_LFT_PRN
+parenthesized_name: DLM_LFT_PRN NAME DLM_RGT_PRN
+    | DLM_LFT_PRN parenthesized_name DLM_RGT_PRN
 
 %%					
 
