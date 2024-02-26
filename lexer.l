@@ -9,6 +9,36 @@
     extern stack<int> indent_stack;
 	extern void yyerror (string s);
     extern map<string, int> symbol_to_name;
+	int num_pops = 0;
+	static int next_column = 1;
+    int column = 1;
+
+    #define YY_USER_ACTION column = next_column; next_column += strlen(yytext);
+
+    char *lineptr = NULL;
+    size_t n = 0;
+    size_t consumed = 0;
+    size_t available = 0;
+
+    size_t min(size_t a, size_t b);
+    #define YY_INPUT(buf,result,max_size) {\
+        if(available <= 0) {\
+            consumed = 0;\
+            if (lineptr) available = getline(&lineptr, &n, yyin);\
+            if (available < 0) {\
+                if (ferror(yyin)) { perror("read error:"); }\
+                    available = 0;\
+                }\
+        }\
+        result = min(available, max_size);\
+        strncpy(buf, lineptr + consumed, result);\
+        consumed += result;\
+        available -= result;\
+    }
+
+	size_t min(size_t a, size_t b) {
+		return b < a ? b : a;
+	}
 		
 %}
 
@@ -59,21 +89,22 @@ EXPLICIT_LINE_JOIN				\\\n
 COMMENT							\#[.*]
 NEWLINE							\n
 
+%x IDT
+%x DDT
 %%
 
 {COMMENT} {;}
 
 {EXPLICIT_LINE_JOIN} {;}
 
-{BLANKLINE} {;}
+<*>{BLANKLINE} {;}
 
 {NEWLINE} {
-
+	BEGIN IDT;
 	return NEWLINE;
-
 }
 
-{INDENT_TAB} {
+<IDT>{INDENT_TAB} {
 
 	if (is_indent_tabs == -1) is_indent_tabs = 1;
 
@@ -85,29 +116,50 @@ NEWLINE							\n
 
 	string indent_string = yytext;
 	int tabs = count(indent_string.begin(), indent_string.end(), '\t');
+	
 
 	if (tabs > indent_stack.top())
 	{
 		indent_stack.push(tabs);
+		BEGIN INITIAL;
 		return INDENT;
 	}
 
-	if (indent_stack.top() != tabs)
+	while (indent_stack.top() != 0 && indent_stack.top() > tabs)
 	{
-		while (indent_stack.top() != 0 && indent_stack.top() > tabs) indent_stack.pop();
+		indent_stack.pop();
+		num_pops++;
+	} 
 
-		if (indent_stack.top() != tabs) 
-		{
-			yyerror("Unexpected indent found.");
-			return 0;
-		}
-
-		return DEDENT;
+	if (indent_stack.top() != tabs) 
+	{
+		yyerror("Unexpected indent found.");
+		return 0;
 	}
 
+	BEGIN DDT;
 }
 
-{INDENT_SPACE} {
+<IDT>. {
+	unput(yytext[0]);
+	if (indent_stack.top() > 0) {
+		indent_stack.pop();
+		return DEDENT;
+	}
+	num_pops = 0;
+	BEGIN INITIAL;
+}
+
+<DDT>. {
+	unput(yytext[0]);
+	if (num_pops > 0) {
+		num_pops--;
+		return DEDENT;
+	}
+	BEGIN INITIAL;
+}
+
+<IDT>{INDENT_SPACE} {
 
 	if (is_indent_tabs == -1) is_indent_tabs = 0;
 
@@ -122,21 +174,23 @@ NEWLINE							\n
 	if (spaces > indent_stack.top())
 	{
 		indent_stack.push(spaces);
+		BEGIN INITIAL;
 		return INDENT;
 	}
 
-	if (indent_stack.top() != spaces)
+	while (indent_stack.top() != 0 && indent_stack.top() > spaces)
 	{
-		while (indent_stack.top() != 0 && indent_stack.top() > spaces) indent_stack.pop();
+		indent_stack.pop();
+		num_pops++;
+	} 
 
-		if (indent_stack.top() != spaces) 
-		{
-			yyerror("Unexpected indent found.");
-			return 0;
-		}
-
-		return DEDENT;
+	if (indent_stack.top() != spaces) 
+	{
+		yyerror("Unexpected indent found.");
+		return 0;
 	}
+
+	BEGIN DDT;
 
 }
 
@@ -169,14 +223,14 @@ NEWLINE							\n
 	return NAME;
 }
 
-{FLOATNUMBER} {
-	yylval.str = strdup(yytext);
-	return FLOAT_LITERAL;
-}
-
 {INTEGER} {
 	yylval.str = strdup(yytext);
 	return INT_LITERAL;
+}
+
+{FLOATNUMBER} {
+	yylval.str = strdup(yytext);
+	return FLOAT_LITERAL;
 }
 
 {STRING_LITERAL} {
@@ -219,9 +273,6 @@ NEWLINE							\n
 	return symbol_to_name[token_str];
 }
 
-. {
-	yyerror("Unexpected token found.");
-    return 0;
-}
+. {;}
 
 %%
