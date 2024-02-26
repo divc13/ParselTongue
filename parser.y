@@ -1,9 +1,4 @@
 %{
-
-    // grammar to be modified yet
-    // problem of NAME in atom
-    // NAME is assgnable but other parts of atom are not
-
 #include <bits/stdc++.h>
 #include "token_map.h"
 using namespace std;
@@ -11,12 +6,18 @@ using namespace std;
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
 #define YELLOW "\033[1;33m"
+#define BLUE "\033[1;34m"
+#define MAGENTA "\033[1;35m"
+#define CYAN "\033[1;36m"
+// #define YYLOCATION_PRINT
 
 void yyerror (string s);
 int yylex();
 extern char* yytext;
 extern FILE* yyin;
 extern int yylineno;
+extern int consumed;
+extern char* lineptr;
 
 // 1 if file is indented using tabs, 0 if indented using spaces, -1 initially
 int is_indent_tabs = -1;
@@ -63,24 +64,26 @@ stack <int> indent_stack;
 %token <str> INT_LITERAL FLOAT_LITERAL STRING_LITERAL
 %token <bType> OP_ATH_ADD OP_ATH_SUB OP_ATH_MUL OP_ATH_DIV OP_ATH_FDIV OP_ATH_MOD OP_ATH_POW OP_REL_EQ OP_REL_NEQ OP_REL_GT OP_REL_LT OP_REL_GTE OP_REL_LTE OP_LOG_AND OP_LOG_OR OP_LOG_NOT OP_BIT_AND OP_BIT_OR OP_BIT_XOR OP_BIT_NEG OP_BIT_LS OP_BIT_RS OP_ASN_ASN OP_ASN_ADD OP_ASN_SUB OP_ASN_MUL OP_ASN_DIV OP_ASN_FDIV OP_ASN_MOD OP_ASN_POW OP_ASN_AND OP_ASN_OR OP_ASN_XOR OP_ASN_LS OP_ASN_RS
 %token <str> DLM_LFT_PRN DLM_RGT_PRN DLM_LFT_SQ DLM_RGT_SQ DLM_LFT_CRLY DLM_RGT_CRLY DLM_COMMA DLM_COLON DLM_DOT DLM_SM_COL DLM_AT DLM_TO
-%start file
 
-%define parse.error verbose
+%define parse.error custom
+%locations
+%define parse.lac full
+%debug
 
 %%
 
 file: 
-    | statements
+	| statements
 
 statements: statements statement
-    | statement
+	| statement
 
 statement: compound_stmt | simple_stmts
 
 simple_stmts: simple1 simple2 NEWLINE
 
 simple1: simple_stmt
-    | simple1 DLM_SM_COL simple_stmt
+	| simple1 DLM_SM_COL simple_stmt
 
 simple2: 
     | DLM_SM_COL
@@ -101,13 +104,13 @@ compound_stmt: function_def
     | for_stmt
     | while_stmt
 
-assignment: single_target_col  
-    | single_target_col OP_ASN_ASN expressions 
-    | single_target_augasn expressions 
+assignment: primary DLM_COLON expression  
+    | primary DLM_COLON expression OP_ASN_ASN expressions 
+    | primary augassign expressions 
     | multi_targets_assgn expressions  
 
-multi_targets_assgn: multi_target
-    | multi_targets_assgn multi_target
+multi_targets_assgn: primary OP_ASN_ASN
+    | multi_targets_assgn primary OP_ASN_ASN
 
 augassign: OP_ASN_ADD
     | OP_ASN_SUB
@@ -144,9 +147,9 @@ block: NEWLINE INDENT statements DEDENT
 
 class_def: KW_class NAME is_arguments DLM_COLON block
 
-function_def: KW_def NAME DLM_LFT_PRN is_params is_fn_expression DLM_COLON block
+function_def: KW_def NAME DLM_LFT_PRN is_params DLM_RGT_PRN is_fn_expression DLM_COLON block
 
-is_params: DLM_RGT_PRN
+is_params:
 	| params
 
 is_arguments:
@@ -156,33 +159,39 @@ is_arguments:
 is_fn_expression:
 	| DLM_TO expression
 
-params: param_nd_star param_no_default OP_ATH_DIV DLM_RGT_PRN
-	| param_nd_star param_no_default OP_ATH_DIV DLM_COMMA param_nd_star sparam_no_default DLM_RGT_PRN
-	| param_nd_star param_no_default OP_ATH_DIV DLM_COMMA param_nd_star param_wd_star sparam_with_default DLM_RGT_PRN
-	| param_nd_star param_wd_star param_with_default OP_ATH_DIV DLM_RGT_PRN
-	| param_nd_star param_wd_star param_with_default OP_ATH_DIV DLM_COMMA param_wd_star sparam_with_default DLM_RGT_PRN
-	| param_nd_star sparam_no_default DLM_RGT_PRN
-	| param_nd_star param_wd_star sparam_with_default DLM_RGT_PRN
-	| param_nd_star param_no_default OP_ATH_DIV DLM_COMMA star_etc
-	| param_nd_star param_no_default OP_ATH_DIV DLM_COMMA param_nd_star param_no_default star_etc
-	| param_nd_star param_no_default OP_ATH_DIV DLM_COMMA param_nd_star param_wd_star param_with_default star_etc
-	| param_nd_star param_wd_star param_with_default OP_ATH_DIV DLM_COMMA star_etc
-	| param_nd_star param_wd_star param_with_default OP_ATH_DIV DLM_COMMA param_wd_star param_with_default star_etc
-	| param_nd_star star_etc
-	| param_nd_star param_wd_star param_with_default star_etc
+params: param param_nd
+    | param default param_wd
+    | star_etc
 
-star_etc: OP_ATH_MUL DLM_COMMA param_mb_star sparam_maybe_default DLM_RGT_PRN
+param_nd: 
+	| param_no_default param_nd
+    | param_with_default param_wd
+    | DLM_COMMA OP_ATH_DIV slashed_param_nd
+    | DLM_COMMA star_etc
 
-sparam_no_default: param
-sparam_with_default: param default
+param_wd: 
+	| param_with_default param_wd
+    | DLM_COMMA OP_ATH_DIV slashed_param_wd
+    | DLM_COMMA star_etc
+
+slashed_param_nd: 
+	| param_no_default slashed_param_nd
+    | param_with_default param_wd
+    | DLM_COMMA star_etc
+
+slashed_param_wd: 
+	| param_with_default slashed_param_wd
+    | DLM_COMMA star_etc
+
+star_etc: OP_ATH_MUL DLM_COMMA param_mb_star sparam_maybe_default
+
 sparam_maybe_default: param 
 	| param default
-param_no_default: param DLM_COMMA 
-param_nd_star: 
-	| param_nd_star param_no_default
-param_with_default: sparam_with_default DLM_COMMA 
-param_wd_star: 
-	| param_wd_star param_with_default
+
+param_no_default: DLM_COMMA param 
+
+param_with_default: DLM_COMMA param default  
+
 param_maybe_default: param DLM_COMMA
 	| param default DLM_COMMA
 param_mb_star: 
@@ -205,8 +214,8 @@ else_block: KW_else DLM_COLON block
 while_stmt: KW_while expression DLM_COLON block 
     | KW_while expression DLM_COLON block else_block
 
-for_stmt: KW_for multi_targets KW_in expressions DLM_COLON block 
-    | KW_for multi_targets KW_in expressions DLM_COLON block else_block 
+for_stmt: KW_for primary KW_in expression DLM_COLON block 
+    | KW_for primary KW_in expression DLM_COLON block else_block 
  
 
 expressions: expressions_comma
@@ -295,23 +304,11 @@ factor: OP_ATH_ADD factor
 power: primary OP_ATH_POW factor 
     | primary
 
-primary: prim1
-    | prim2
+primary: primary DLM_DOT NAME 
+    | primary DLM_LFT_PRN DLM_RGT_PRN  
+    | primary DLM_LFT_PRN arguments DLM_RGT_PRN  
+    | primary DLM_LFT_SQ slices DLM_RGT_SQ 
     | atom
-
-prim1: prim1 DLM_DOT NAME 
-    | prim2 DLM_DOT NAME 
-    | atom DLM_DOT NAME 
-    | prim1 DLM_LFT_SQ slices DLM_RGT_SQ
-    | prim2 DLM_LFT_SQ slices DLM_RGT_SQ
-    | atom DLM_LFT_SQ slices DLM_RGT_SQ
-
-prim2: prim1 DLM_LFT_PRN DLM_RGT_PRN 
-    | prim2 DLM_LFT_PRN DLM_RGT_PRN
-    | atom DLM_LFT_PRN DLM_RGT_PRN 
-    | prim1 DLM_LFT_PRN arguments DLM_RGT_PRN 
-    | prim2 DLM_LFT_PRN arguments DLM_RGT_PRN
-    | atom DLM_LFT_PRN arguments DLM_RGT_PRN
 
 slices: slice 
     | slices_comma
@@ -341,59 +338,24 @@ strings: strings string
 list: DLM_LFT_SQ DLM_RGT_SQ 
     | DLM_LFT_SQ expressions DLM_RGT_SQ 
 
-arguments: args DLM_COMMA
-    | args 
-
-args: expressions_comma DLM_COMMA kwargs 
+arguments: expressions_comma DLM_COMMA kwargs DLM_COMMA
+    | expressions_comma DLM_COMMA
+    | kwargs DLM_COMMA
+    | expressions_comma DLM_COMMA kwargs 
     | expressions_comma 
     | kwargs 
 
 kwargs: kwarg
-    | kwargs kwarg
+    | kwargs DLM_COMMA kwarg
 
 kwarg: NAME OP_ASN_ASN expression  
 
-multi_targets: multi_target_comma DLM_COMMA 
-    | multi_target_comma
-
-multi_target_comma: multi_target
-    | multi_target_comma DLM_COMMA multi_target
-
-multi_target: single_target_assign 
-    | target_list
-
-target_list: DLM_LFT_SQ single_target_list OP_ASN_ASN
-
-single_target_list: single_target_comma single_target_list 
-    | single_target_RSQ
-
-single_target_comma: parenthesized_name DLM_COMMA
-    | NAME DLM_COMMA
-    | prim1 DLM_COMMA
-
-single_target_RSQ: parenthesized_name DLM_RGT_SQ
-    | NAME DLM_RGT_SQ
-    | prim1 DLM_RGT_SQ
-
-single_target_col: parenthesized_name DLM_COLON expression
-    | NAME DLM_COLON expression
-    | prim1 DLM_COLON expression
-
-single_target_augasn: parenthesized_name augassign
-    | NAME augassign
-    | prim1 augassign
-
-single_target_assign: parenthesized_name OP_ASN_ASN
-    | NAME OP_ASN_ASN
-    | prim1 OP_ASN_ASN
-
-parenthesized_name: DLM_LFT_PRN NAME DLM_RGT_PRN
-    | DLM_LFT_PRN parenthesized_name DLM_RGT_PRN
 
 %%					
 
 int main(int argc, char** argv)
 {
+	// yydebug = 1;
 	++argv, --argc;
 	if ( argc > 0 ){
 		yyin = fopen( argv[0], "r" );
@@ -411,7 +373,81 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+static const char * error_format_string (int argc)
+{
+  	switch (argc)
+    {
+		default: // Avoid compiler warnings.
+		case 0: return ("syntax error");
+		case 1: return ("syntax error: unexpected %u");
+		case 2: return ("syntax error: expected %0e before %u");
+		case 3: return ("syntax error: expected %0e or %1e before %u");
+		case 4: return ("syntax error: expected %0e or %1e or %2e before %u");
+		case 5: return ("syntax error: expected %0e or %1e or %2e or %3e before %u");
+		case 6: return ("syntax error: expected %0e or %1e or %2e or %3e or %4e before %u");
+		case 7: return ("syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e before %u");
+		case 8: return ("syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e etc., before %u");
+    }
+}
+
+int yyreport_syntax_error (const yypcontext_t *ctx)
+{
+	
+	yyerror("");
+    enum { ARGS_MAX = 6 };
+    yysymbol_kind_t arg[ARGS_MAX];
+    int argsize = yypcontext_expected_tokens (ctx, arg, ARGS_MAX);
+
+    if (argsize < 0) return argsize;
+    const int too_many_expected_tokens = argsize == 0 && arg[0] != YYSYMBOL_YYEMPTY;
+    if (too_many_expected_tokens) argsize = ARGS_MAX;
+    const char *format = error_format_string (1 + argsize + too_many_expected_tokens);
+
+    const YYLTYPE *loc = yypcontext_location (ctx);
+	cerr << RED ;
+    while (*format)
+	{
+
+	  	if (format[0] == '%' && format[1] == 'u')
+		{
+
+            string token = (yysymbol_name(yypcontext_token(ctx)));
+            cerr << BLUE <<name_to_symbol[token] << RESET;
+			format += 2;
+		}
+
+	  	else if (format[0] == '%' && isdigit ((unsigned char) format[1]) && format[2] == 'e' && (format[1] - '0') < argsize)
+		{
+			int i = format[1] - '0';
+            string token = yysymbol_name(arg[i]);
+			cerr <<BLUE << name_to_symbol[token] <<RESET;
+			format += 3;
+		}
+
+	  	else
+		{
+            cerr << RED;
+			fputc (*format, stderr);
+			++format;
+		}
+
+	}
+	cerr << endl << RESET;
+
+	return 1;
+
+}
 void yyerror (string s) {
-	cout << RED << "Found Error at line " << yylineno <<" : " << RESET << yytext << endl;
-	cout << RED << s << RESET << endl;
+
+	cerr << RED << "in line " << yylineno << ", column " << consumed << RESET << endl;
+	if (s.length())
+	{
+		cerr << RED << s << RESET << endl;
+		return;
+	}
+    if (lineptr) cerr << setw(15) << CYAN << lineptr << RESET << endl;
+	cerr << setw(15) << MAGENTA;
+    for (int i = 0; i < consumed - 1; i++)
+        cerr << "~";
+    cerr << "^" << endl << RESET;
 } 
