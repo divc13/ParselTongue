@@ -75,10 +75,10 @@ stack <int> indent_stack;
 file: 
 	| statements
 
-statements: statements NEWLINE statement
+statements: statements statement
 	| statement
 
-statement: compound_stmt | simple_stmts
+statement: compound_stmt NEWLINE | simple_stmts
 
 simple_stmts: simple1 simple2 NEWLINE
 
