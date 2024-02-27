@@ -24,7 +24,7 @@
     #define YY_INPUT(buf,result,max_size) {\
         if(available <= 0) {\
             consumed = 0;\
-            if (lineptr) available = getline(&lineptr, &n, yyin);\
+            available = getline(&lineptr, &n, yyin);\
             if (available < 0) {\
                 if (ferror(yyin)) { perror("read error:"); }\
                     available = 0;\
@@ -140,25 +140,6 @@ NEWLINE							\n
 	BEGIN DDT;
 }
 
-<IDT>. {
-	unput(yytext[0]);
-	if (indent_stack.top() > 0) {
-		indent_stack.pop();
-		return DEDENT;
-	}
-	num_pops = 0;
-	BEGIN INITIAL;
-}
-
-<DDT>. {
-	unput(yytext[0]);
-	if (num_pops > 0) {
-		num_pops--;
-		return DEDENT;
-	}
-	BEGIN INITIAL;
-}
-
 <IDT>{INDENT_SPACE} {
 
 	if (is_indent_tabs == -1) is_indent_tabs = 0;
@@ -193,6 +174,26 @@ NEWLINE							\n
 	BEGIN DDT;
 
 }
+
+<IDT>. {
+	unput(yytext[0]);
+	if (indent_stack.top() > 0) {
+		indent_stack.pop();
+		return DEDENT;
+	}
+	num_pops = 0;
+	BEGIN INITIAL;
+}
+
+<DDT>. {
+	unput(yytext[0]);
+	if (num_pops > 0) {
+		num_pops--;
+		return DEDENT;
+	}
+	BEGIN INITIAL;
+}
+
 
 {INDENT_MIX_ERROR} {
 

@@ -1,6 +1,6 @@
 %{
 #include <bits/stdc++.h>
-#include "token_map.h"
+#include "token_map.hpp"
 using namespace std;
 
 #define RED "\033[1;31m"
@@ -75,7 +75,7 @@ stack <int> indent_stack;
 file: 
 	| statements
 
-statements: statements statement
+statements: statements NEWLINE statement
 	| statement
 
 statement: compound_stmt | simple_stmts
@@ -355,7 +355,7 @@ kwarg: NAME OP_ASN_ASN expression
 
 int main(int argc, char** argv)
 {
-	// yydebug = 1;
+	yydebug = 1;
 	++argv, --argc;
 	if ( argc > 0 ){
 		yyin = fopen( argv[0], "r" );
@@ -378,15 +378,15 @@ static const char * error_format_string (int argc)
   	switch (argc)
     {
 		default: // Avoid compiler warnings.
-		case 0: return ("syntax error");
-		case 1: return ("syntax error: unexpected %u");
-		case 2: return ("syntax error: expected %0e before %u");
-		case 3: return ("syntax error: expected %0e or %1e before %u");
-		case 4: return ("syntax error: expected %0e or %1e or %2e before %u");
-		case 5: return ("syntax error: expected %0e or %1e or %2e or %3e before %u");
-		case 6: return ("syntax error: expected %0e or %1e or %2e or %3e or %4e before %u");
-		case 7: return ("syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e before %u");
-		case 8: return ("syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e etc., before %u");
+		case 0: return ("%@: syntax error");
+		case 1: return ("%@: syntax error: unexpected %u");
+		case 2: return ("%@: syntax error: expected %0e before %u");
+		case 3: return ("%@: syntax error: expected %0e or %1e before %u");
+		case 4: return ("%@: syntax error: expected %0e or %1e or %2e before %u");
+		case 5: return ("%@: syntax error: expected %0e or %1e or %2e or %3e before %u");
+		case 6: return ("%@: syntax error: expected %0e or %1e or %2e or %3e or %4e before %u");
+		case 7: return ("%@: syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e before %u");
+		case 8: return ("%@: syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e etc., before %u");
     }
 }
 
@@ -407,6 +407,11 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
 	cerr << RED ;
     while (*format)
 	{
+        if (format[0] == '%' && format[1] == '@')
+        {
+            YY_LOCATION_PRINT (stderr, *loc);
+            format += 2;
+        }
 
 	  	if (format[0] == '%' && format[1] == 'u')
 		{
@@ -445,8 +450,8 @@ void yyerror (string s) {
 		cerr << RED << s << RESET << endl;
 		return;
 	}
-    if (lineptr) cerr << setw(15) << CYAN << lineptr << RESET << endl;
-	cerr << setw(15) << MAGENTA;
+    if (lineptr) cerr << setw(15) << CYAN <<"| " <<lineptr << RESET << endl;
+	cerr << setw(15) << MAGENTA << "| ";
     for (int i = 0; i < consumed - 1; i++)
         cerr << "~";
     cerr << "^" << endl << RESET;
