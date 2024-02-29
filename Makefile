@@ -7,6 +7,7 @@ CC=g++
 TARGET=parser
 
 # Source files
+MAIN=main.cpp
 LEX_SRC=lexer.l
 YACC_SRC=parser.y
 
@@ -18,8 +19,8 @@ PARSE_OUT=parser.output
 
 all: $(TARGET)
 
-$(TARGET): $(LEX_OUT) $(YACC_OUT)
-	$(CC) $(LEX_OUT) $(YACC_OUT) -o $(TARGET)
+$(TARGET): $(LEX_OUT) $(YACC_OUT) $(MAIN)
+	$(CC) $(MAIN) $(LEX_OUT) $(YACC_OUT) -o $(TARGET)
 
 $(LEX_OUT): $(LEX_SRC)
 	flex $(LEX_SRC)

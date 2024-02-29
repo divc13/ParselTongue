@@ -10,36 +10,36 @@
 	extern void yyerror (string s);
 	extern map<string, int> symbol_to_name;
 	int num_pops = 0;
-	static int next_column = 1;
-	int column = 1;
 
-	#define YY_USER_ACTION column = next_column; next_column += strlen(yytext);
+	string text = "";
 
-	char *lineptr = NULL;
-	size_t n = 0;
-	size_t consumed = 0;
-	size_t available = 0;
+	static int curr_line = 1;
+	static int curr_col  = 1;
+	static void update_loc(){
 
-	size_t min(size_t a, size_t b);
-	#define YY_INPUT(buf,result,max_size) {\
-		if(available <= 0) {\
-			consumed = 0;\
-			available = getline(&lineptr, &n, yyin);\
-			if (available < 0) {\
-				if (ferror(yyin)) { perror("read error:"); }\
-					available = 0;\
-				}\
-		}\
-		result = min(available, max_size);\
-		strncpy(buf, lineptr + consumed, result);\
-		consumed += result;\
-		available -= result;\
-	}
+		yylloc.first_line   = curr_line;
+		yylloc.first_column = curr_col;
 
-	size_t min(size_t a, size_t b) {
-		return b < a ? b : a;
-	}
 		
+		char * s;
+		for(s = yytext; *s != '\0'; s++){
+			if(*s == '\n'){
+				curr_line++;
+				curr_col = 1;
+				text = "";
+			}
+			else{
+				curr_col++;
+				text += *s;
+			}
+		}
+		
+		yylloc.last_line   = curr_line;
+		yylloc.last_column = curr_col-1;
+	}
+
+	#define YY_USER_ACTION update_loc();
+
 %}
 
 IDENTIFIER						[a-zA-Z_][a-zA-Z0-9_]*
@@ -95,7 +95,11 @@ NEWLINE							\n
 %x DDT
 %%
 
-<*><<EOF>> {
+<IDT><<EOF>> {
+	if (indent_stack.top() > 0) {
+		indent_stack.pop();
+		return DEDENT;
+	}
 	return ENDMARK;
 }
 
@@ -131,6 +135,7 @@ NEWLINE							\n
 		BEGIN INITIAL;
 		return INDENT;
 	}
+	BEGIN INITIAL;
 	if (tabs != indent_stack.top())
 	{
 
@@ -148,7 +153,6 @@ NEWLINE							\n
 
 		BEGIN DDT;
 	}
-	BEGIN INITIAL;
 }
 
 <IDT>{INDENT_SPACE} {
@@ -163,7 +167,7 @@ NEWLINE							\n
 
 	string indent_string = yytext;
 	int spaces = count(indent_string.begin(), indent_string.end(), ' ');
-	cout << spaces << ' ' << indent_stack.top() << endl;
+
 	if (spaces > indent_stack.top())
 	{
 		indent_stack.push(spaces);
@@ -191,6 +195,8 @@ NEWLINE							\n
 
 <IDT>. {
 	unput(yytext[0]);
+	text.pop_back();
+	curr_col--;
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
 		return DEDENT;
@@ -201,6 +207,8 @@ NEWLINE							\n
 
 <DDT>. {
 	unput(yytext[0]);
+	text.pop_back();
+	curr_col--;
 	if (num_pops > 0) {
 		num_pops--;
 		return DEDENT;
@@ -288,10 +296,6 @@ NEWLINE							\n
 	return symbol_to_name[token_str];
 }
 
-. {
-	int i = yytext[0];
-	cout << i << endl;
-	return ENDMARK;
-}
+. {;}
 
 %%

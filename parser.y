@@ -1,6 +1,7 @@
 %{
 #include <bits/stdc++.h>
-#include "token_map.hpp"
+// #include "token_map.hpp"
+
 using namespace std;
 
 #define RED "\033[1;31m"
@@ -9,19 +10,22 @@ using namespace std;
 #define BLUE "\033[1;34m"
 #define MAGENTA "\033[1;35m"
 #define CYAN "\033[1;36m"
-// #define YYLOCATION_PRINT
 
 void yyerror (string s);
 int yylex();
 extern char* yytext;
 extern FILE* yyin;
 extern int yylineno;
-extern int consumed;
-extern char* lineptr;
+extern string text;
+
+
+extern map<string, int> symbol_to_name;
+extern map<string, string> name_to_symbol;
+
 
 // 1 if file is indented using tabs, 0 if indented using spaces, -1 initially
 int is_indent_tabs = -1;
-stack <int> indent_stack;
+extern stack <int> indent_stack;
 %}
 
 %code requires {
@@ -54,7 +58,7 @@ stack <int> indent_stack;
 }
 
 %token NEWLINE
-%token ENDMARKER
+%token ENDMARK 0
 %token INDENT
 %token DEDENT
 %token LIST
@@ -69,16 +73,16 @@ stack <int> indent_stack;
 %locations
 %define parse.lac full
 %debug
-
+%start file
 %%
 
-file: 
-	| statements
+file: ENDMARK
+	| statements ENDMARK
 
 statements: statements statement
 	| statement
 
-statement: compound_stmt NEWLINE | simple_stmts
+statement: compound_stmt | simple_stmts
 
 simple_stmts: simple1 simple2 NEWLINE
 
@@ -352,107 +356,4 @@ kwarg: NAME OP_ASN_ASN expression
 
 
 %%					
-
-int main(int argc, char** argv)
-{
-	yydebug = 1;
-	++argv, --argc;
-	if ( argc > 0 ){
-		yyin = fopen( argv[0], "r" );
-	}
-	else{
-		cout << YELLOW << "No input file provided, Taking input from stdin.....\n" << RESET;
-		yyin = stdin;
-	}
-	indent_stack.push(0);
-	init_symbol_name_tables();
-	yyparse ( );
-		
-	fclose(yyin);
-
-	return 0;
-}
-
-static const char * error_format_string (int argc)
-{
-  	switch (argc)
-    {
-		default: // Avoid compiler warnings.
-		case 0: return ("%@: syntax error");
-		case 1: return ("%@: syntax error: unexpected %u");
-		case 2: return ("%@: syntax error: expected %0e before %u");
-		case 3: return ("%@: syntax error: expected %0e or %1e before %u");
-		case 4: return ("%@: syntax error: expected %0e or %1e or %2e before %u");
-		case 5: return ("%@: syntax error: expected %0e or %1e or %2e or %3e before %u");
-		case 6: return ("%@: syntax error: expected %0e or %1e or %2e or %3e or %4e before %u");
-		case 7: return ("%@: syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e before %u");
-		case 8: return ("%@: syntax error: expected %0e or %1e or %2e or %3e or %4e or %5e etc., before %u");
-    }
-}
-
-int yyreport_syntax_error (const yypcontext_t *ctx)
-{
-	
-	yyerror("");
-    enum { ARGS_MAX = 6 };
-    yysymbol_kind_t arg[ARGS_MAX];
-    int argsize = yypcontext_expected_tokens (ctx, arg, ARGS_MAX);
-
-    if (argsize < 0) return argsize;
-    const int too_many_expected_tokens = argsize == 0 && arg[0] != YYSYMBOL_YYEMPTY;
-    if (too_many_expected_tokens) argsize = ARGS_MAX;
-    const char *format = error_format_string (1 + argsize + too_many_expected_tokens);
-
-    const YYLTYPE *loc = yypcontext_location (ctx);
-	cerr << RED ;
-    while (*format)
-	{
-        if (format[0] == '%' && format[1] == '@')
-        {
-            YY_LOCATION_PRINT (stderr, *loc);
-            format += 2;
-        }
-
-	  	if (format[0] == '%' && format[1] == 'u')
-		{
-
-            string token = (yysymbol_name(yypcontext_token(ctx)));
-            cerr << BLUE <<name_to_symbol[token] << RESET;
-			format += 2;
-		}
-
-	  	else if (format[0] == '%' && isdigit ((unsigned char) format[1]) && format[2] == 'e' && (format[1] - '0') < argsize)
-		{
-			int i = format[1] - '0';
-            string token = yysymbol_name(arg[i]);
-			cerr <<BLUE << name_to_symbol[token] <<RESET;
-			format += 3;
-		}
-
-	  	else
-		{
-            cerr << RED;
-			fputc (*format, stderr);
-			++format;
-		}
-
-	}
-	cerr << endl << RESET;
-
-	return 1;
-
-}
-void yyerror (string s) {
-
-	cerr << RED << "in line " << yylineno << ", column " << consumed << RESET << endl;
-	if (s.length())
-	{
-		cerr << RED << s << RESET << endl;
-		return;
-	}
-    if (lineptr) cerr << setw(15) << CYAN <<"| " <<lineptr << RESET << endl;
-	cerr << setw(15) << MAGENTA << "| ";
-    for (int i = 0; i < consumed - 1; i++)
-        cerr << "~";
-    cerr << "^" << endl << RESET;
-} 
+#include "error.hpp"
