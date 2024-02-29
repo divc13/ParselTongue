@@ -1,3 +1,6 @@
+#include <bits/stdc++.h>
+using namespace std;
+
 #include "parser.tab.h"
 #include "token_map.hpp"
 

@@ -4,17 +4,21 @@
 %{
 
 	#include "parser.tab.h"
+	#include <bits/stdc++.h>
+	using namespace std;
 
 	extern int is_indent_tabs;
 	extern stack<int> indent_stack;
 	extern void yyerror (string s);
-	extern map<string, int> symbol_to_name;
+	extern map<string, int> StringToToken;
 	int num_pops = 0;
 
 	string text = "";
 
 	static int curr_line = 1;
 	static int curr_col  = 1;
+
+	// to maintain locations at error pt
 	static void update_loc(){
 
 		yylloc.first_line   = curr_line;
@@ -73,11 +77,7 @@ DIGITPART						{DIGIT}([_]?{DIGIT})*
 FRACTION						"."{DIGITPART}
 EXPONENT						[eE][+-]?{DIGITPART}
 
-ARITHMETIC_OPERATOR		 		"+"|"-"|"*"|"/"|"//"|"%"|"**"
-RELATIONAL_OPERATOR 			"=="|"!="|">"|"<"|">="|"<="
-LOGICAL_OPERATOR 				and|or|not
-BITWISE_OPERATOR 				"&"|"|"|"^"|"~"|"<<"|">>"
-ASSIGNMENT_OPERATOR 			"="|"+="|"-="|"*="|"/="|"//="|"%="|"**="|"&="|"|="|"^="|"<<="|">>="
+OPERATOR		 				"+"|"-"|"*"|"/"|"//"|"%"|"**"|"=="|"!="|">"|"<"|">="|"<="|and|or|not|"&"|"|"|"^"|"~"|"<<"|">>"|"="|"+="|"-="|"*="|"/="|"//="|"%="|"**="|"&="|"|="|"^="|"<<="|">>="
 DELIMITER 						"("|")"|"["|"]"|"{"|"}"|","|":"|"."|";"|"@"|"->"
 
 WHITESPACE						[ \t\f\r]
@@ -112,6 +112,8 @@ NEWLINE							\n
 
 {NEWLINE} {
 	BEGIN IDT;
+	yylval.info.name = strdup("Newline");
+	yylval.info.type = __NEWLINE;
 	return NEWLINE;
 }
 
@@ -133,6 +135,8 @@ NEWLINE							\n
 	{
 		indent_stack.push(tabs);
 		BEGIN INITIAL;
+		yylval.info.name = strdup("Indent");
+		yylval.info.type = __INDENT;
 		return INDENT;
 	}
 	BEGIN INITIAL;
@@ -172,6 +176,8 @@ NEWLINE							\n
 	{
 		indent_stack.push(spaces);
 		BEGIN INITIAL;
+		yylval.info.name = strdup("Indent");
+		yylval.info.type = __INDENT;
 		return INDENT;
 	}
 	BEGIN INITIAL;
@@ -199,6 +205,8 @@ NEWLINE							\n
 	curr_col--;
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
+		yylval.info.name = strdup("Dedent");
+		yylval.info.type = __DEDENT;
 		return DEDENT;
 	}
 	num_pops = 0;
@@ -211,6 +219,8 @@ NEWLINE							\n
 	curr_col--;
 	if (num_pops > 0) {
 		num_pops--;
+		yylval.info.name = strdup("Dedent");
+		yylval.info.type = __DEDENT;
 		return DEDENT;
 	}
 	BEGIN INITIAL;
@@ -227,73 +237,49 @@ NEWLINE							\n
 {WHITESPACE} {;}
 
 {KEYWORD} {
-	yylval.str = strdup(yytext);
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __KEYWORD;
 	string token_str = yytext;
-	return symbol_to_name[token_str];
+	return StringToToken[token_str];
 }
 
 
-{LOGICAL_OPERATOR} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("LOGICAL");
+{OPERATOR} {
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __OPERATOR;
 	string token_str = yytext;
-	return symbol_to_name[token_str];
+	return StringToToken[token_str];
 }
 
 {IDENTIFIER} {
-	yylval.aType.name = strdup(yytext);
-	yylval.aType.lineno = yylineno;
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __IDENTIFIER;
 	return NAME;
 }
 
 {INTEGER} {
-	yylval.str = strdup(yytext);
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __INT_LITERAL;
 	return INT_LITERAL;
 }
 
 {FLOATNUMBER} {
-	yylval.str = strdup(yytext);
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __FLOAT_LITERAL;
 	return FLOAT_LITERAL;
 }
 
 {STRING_LITERAL} {
-	yylval.str = strdup(yytext);
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __STRING_LITERAL;
 	return STRING_LITERAL;
 }
 
-{ARITHMETIC_OPERATOR} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("ARITHMETIC");
-	string token_str = yytext;
-	return symbol_to_name[token_str];
-}
-
-{RELATIONAL_OPERATOR} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("RELATIONAL");
-	string token_str = yytext;
-	return symbol_to_name[token_str];
-}
-
-
-{BITWISE_OPERATOR} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("BITWISE");
-	string token_str = yytext;
-	return symbol_to_name[token_str];
-}
-
-{ASSIGNMENT_OPERATOR} {
-	yylval.bType.name = strdup(yytext);
-	yylval.bType.type = strdup("ASSIGNMENT");
-	string token_str = yytext;
-	return symbol_to_name[token_str];
-}
-
 {DELIMITER} {
-	yylval.str = strdup(yytext);
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = __DELIMITER;
 	string token_str = yytext;
-	return symbol_to_name[token_str];
+	return StringToToken[token_str];
 }
 
 . {;}

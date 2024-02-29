@@ -1,3 +1,9 @@
+#define RED "\033[1;31m"
+#define RESET "\033[0m"
+#define YELLOW "\033[1;33m"
+#define BLUE "\033[1;34m"
+#define MAGENTA "\033[1;35m"
+#define CYAN "\033[1;36m"
 
 static const char * error_format_string (int argc)
 {
@@ -43,7 +49,7 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
 		{
 
             string token = (yysymbol_name(yypcontext_token(ctx)));
-            cerr << BLUE <<name_to_symbol[token] << RESET;
+            cerr << BLUE << TokenNameToString[token] << RESET;
 			format += 2;
 		}
 
@@ -51,7 +57,7 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
 		{
 			int i = format[1] - '0';
             string token = yysymbol_name(arg[i]);
-			cerr <<BLUE << name_to_symbol[token] <<RESET;
+			cerr << BLUE << TokenNameToString[token] <<RESET;
 			format += 3;
 		}
 
@@ -68,6 +74,7 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
 	return 1;
 
 }
+
 void yyerror (string s) {
 
     int column = yylloc.first_column;

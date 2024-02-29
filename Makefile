@@ -1,34 +1,18 @@
-# Makefile for compiling lexer.l and parser.y
+all: parser
 
-# Compiler
-CC=g++
+parser: lex.yy.c parser.tab.c main.cpp parser.tab.h error.hpp token_map.hpp
+	g++ main.cpp lex.yy.c parser.tab.c -o parser
 
-# Target executable
-TARGET=parser
+lex.yy.c: lexer.l
+	flex lexer.l
 
-# Source files
-MAIN=main.cpp
-LEX_SRC=lexer.l
-YACC_SRC=parser.y
+parser.tab.c: parser.y
+	bison -d parser.y
 
-# Generated files
-LEX_OUT=lex.yy.c
-YACC_OUT=parser.tab.c
-YACC_HEADER=parser.tab.h
-PARSE_OUT=parser.output
-
-all: $(TARGET)
-
-$(TARGET): $(LEX_OUT) $(YACC_OUT) $(MAIN)
-	$(CC) $(MAIN) $(LEX_OUT) $(YACC_OUT) -o $(TARGET)
-
-$(LEX_OUT): $(LEX_SRC)
-	flex $(LEX_SRC)
-
-$(YACC_OUT): $(YACC_SRC)
-	bison -d $(YACC_SRC)
+parser.tab.h: parser.y
+	bison -d parser.y
 
 clean:
-	rm -f $(TARGET) $(LEX_OUT) $(YACC_OUT) $(YACC_HEADER) $(PARSE_OUT)
+	rm -f parser lex.yy.c parser.tab.c parser.tab.h 
 
 .PHONY: clean
