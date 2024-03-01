@@ -9,11 +9,17 @@ TreeNode::node(string __name, string __type)
 	type = __type;
 }
 
-ofstream DOT("dot.dot");
 
-void TreeNode::make_dot()
+void TreeNode::make_dot(string out)
 {
-	DOT << "digraph Tree {\nnode [style = filled]";
+	ofstream DOT(out);
+
+	if (!DOT.is_open()) {
+		cerr << "Error: Unable to open file " << out << endl;
+		return;
+	}
+
+	DOT << "digraph Tree {\nnode [style = filled]\n";
 	
 	queue<pair<int, TreeNode*>> NodeQueue;
 	NodeQueue.push({0, root});
@@ -44,37 +50,41 @@ void TreeNode::make_dot()
 		else
 			tmp = node->type + "(" + node->name + ")";
 
+		DOT << current_index << " [ label = \"";
+
 		if (node->type == "DEDENT") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = chocolate";
+			DOT << tmp << "\", shape = rectangle, color = bisque2";
 		else if (node->type == "EOF") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = white";
+			DOT << tmp << "\", shape = rectangle, color = bisque2";
 		else if (node->type == "NEWLINE") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = bisque2";
+			DOT << tmp << "\", shape = rectangle, color = bisque2";
 		else if (node->type == "INDENT") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = white";
+			DOT << tmp << "\", shape = rectangle, color = bisque2";
 		else if (node->type == "KEYWORD") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = lightsteelblue1";
+			DOT << tmp << "\", shape = rectangle, color = lightsteelblue1";
 		else if (node->type == "OPERATOR") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = white";
+			DOT << tmp << "\", shape = rectangle, color = \"105, 138, 128\"";
 		else if (node->type == "IDENTIFIER") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = cadetblue1";
+			DOT << tmp << "\", shape = rectangle, color = cadetblue1";
 		else if (node->type == "INT_LITERAL") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = darkolivegreen3";
+			DOT << tmp << "\", shape = rectangle, color = darkolivegreen3";
 		else if (node->type == "FLOAT_LITERAL") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = darkolivegreen3";
+			DOT << tmp << "\", shape = rectangle, color = darkolivegreen3";
 		else if (node->type == "STRING_LITERAL") {
-			DOT << current_index << " [ label = \"";
-			DOT.write((node->name).c_str(), node->name.size());
-			DOT << "(" << node->name << ")" << "\", shape = rectangle, color = darkolivegreen3";
+			DOT << node->type + "(";
+			for (char c : node->name) {
+				if (c == '"') {
+					DOT << '\\' << '\"';
+				} else {
+					DOT << c;
+				}
+			}
+			DOT << ")\", shape = rectangle, color = darkolivegreen3";
 		}
-		// else if (node->type == "STRING_LITERAL" && (node->name)[0] == '\"') 
-		// 	DOT << current_index << " [ label = \"" << node->type << "(\\" << '\"' << node->name.substr(1, node->name.size() - 2) << "\\" << '\"' << ")" << "\", shape = rectangle, color = white";
-		// else if (node->type == "STRING_LITERAL" && (node->name)[0] == '\'') 
-		// 	DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = white";
 		else if (node->type == "DELIMITER") 
-			DOT << current_index << " [ label = \"" << tmp << "\", shape = rectangle, color = \"0.000 1.000 1.000\"";
+			DOT << tmp << "\", shape = rectangle, color = chocolate";
 		else if (node->type == "NON_TERMINAL") 
-			DOT << current_index << " [ label = \"" << tmp << "\", color = lemonchiffon2";
+			DOT << tmp << "\", color = lemonchiffon2";
 		DOT << " ];\n";
 
 		for(int i = 0; i < (node->children).size(); i++, index++) {
@@ -120,3 +130,4 @@ void AST_Maker(TreeNode* root)
 {
 	
 }
+

@@ -6,7 +6,7 @@ typedef struct node{
 	string type;
 	vector <struct node*> children;
 	node(string __name, string __type = "NON_TERMINAL");
-	static void make_dot();
+	static void make_dot(string out);
 } TreeNode;
 
 // nchild is 0 indexed
