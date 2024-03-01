@@ -6,3 +6,4 @@ parser
 Grammar_modifier/
 Faltu/
 *.gv
+parser.y

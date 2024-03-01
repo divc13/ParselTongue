@@ -93,13 +93,18 @@ NEWLINE							\n
 
 %x IDT
 %x DDT
+
 %%
 
 <IDT><<EOF>> {
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
+		yylval.info.name = strdup("Dedent");
+		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}
+	yylval.info.name = strdup("EndOfFile");
+	yylval.info.type = strdup("EOF");
 	return ENDMARK;
 }
 
@@ -113,7 +118,7 @@ NEWLINE							\n
 {NEWLINE} {
 	BEGIN IDT;
 	yylval.info.name = strdup("Newline");
-	yylval.info.type = __NEWLINE;
+	yylval.info.type = strdup("NEWLINE");
 	return NEWLINE;
 }
 
@@ -136,7 +141,7 @@ NEWLINE							\n
 		indent_stack.push(tabs);
 		BEGIN INITIAL;
 		yylval.info.name = strdup("Indent");
-		yylval.info.type = __INDENT;
+		yylval.info.type = strdup("INDENT");
 		return INDENT;
 	}
 	BEGIN INITIAL;
@@ -177,7 +182,7 @@ NEWLINE							\n
 		indent_stack.push(spaces);
 		BEGIN INITIAL;
 		yylval.info.name = strdup("Indent");
-		yylval.info.type = __INDENT;
+		yylval.info.type = strdup("INDENT");
 		return INDENT;
 	}
 	BEGIN INITIAL;
@@ -206,7 +211,7 @@ NEWLINE							\n
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
 		yylval.info.name = strdup("Dedent");
-		yylval.info.type = __DEDENT;
+		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}
 	num_pops = 0;
@@ -220,7 +225,7 @@ NEWLINE							\n
 	if (num_pops > 0) {
 		num_pops--;
 		yylval.info.name = strdup("Dedent");
-		yylval.info.type = __DEDENT;
+		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}
 	BEGIN INITIAL;
@@ -238,7 +243,7 @@ NEWLINE							\n
 
 {KEYWORD} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __KEYWORD;
+	yylval.info.type = strdup("KEYWORD");
 	string token_str = yytext;
 	return StringToToken[token_str];
 }
@@ -246,38 +251,38 @@ NEWLINE							\n
 
 {OPERATOR} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __OPERATOR;
+	yylval.info.type = strdup("OPERATOR");
 	string token_str = yytext;
 	return StringToToken[token_str];
 }
 
 {IDENTIFIER} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __IDENTIFIER;
+	yylval.info.type = strdup("IDENTIFIER");
 	return NAME;
 }
 
 {INTEGER} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __INT_LITERAL;
+	yylval.info.type = strdup("INT_LITERAL");
 	return INT_LITERAL;
 }
 
 {FLOATNUMBER} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __FLOAT_LITERAL;
+	yylval.info.type = strdup("FLOAT_LITERAL");
 	return FLOAT_LITERAL;
 }
 
 {STRING_LITERAL} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __STRING_LITERAL;
+	yylval.info.type = strdup("STRING_LITERAL");
 	return STRING_LITERAL;
 }
 
 {DELIMITER} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = __DELIMITER;
+	yylval.info.type = strdup("DELIMITER");
 	string token_str = yytext;
 	return StringToToken[token_str];
 }
