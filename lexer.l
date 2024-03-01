@@ -105,7 +105,7 @@ NEWLINE							\n
 		return DEDENT;
 	}
 	
-	yylval.info.name = strdup("EndOfFile");
+	yylval.info.name = strdup("EOF");
 	yylval.info.type = strdup("EOF");
 	return ENDMARK;
 }
@@ -119,7 +119,7 @@ NEWLINE							\n
 
 {NEWLINE} {
 	BEGIN IDT;
-	yylval.info.name = strdup("Newline");
+	yylval.info.name = strdup("NEWLINE");
 	yylval.info.type = strdup("NEWLINE");
 	return NEWLINE;
 }
@@ -142,7 +142,7 @@ NEWLINE							\n
 	{
 		indent_stack.push(tabs);
 		BEGIN INITIAL;
-		yylval.info.name = strdup("Indent");
+		yylval.info.name = strdup("INDENT");
 		yylval.info.type = strdup("INDENT");
 		return INDENT;
 	}
@@ -183,7 +183,7 @@ NEWLINE							\n
 	{
 		indent_stack.push(spaces);
 		BEGIN INITIAL;
-		yylval.info.name = strdup("Indent");
+		yylval.info.name = strdup("INDENT");
 		yylval.info.type = strdup("INDENT");
 		return INDENT;
 	}
@@ -212,7 +212,7 @@ NEWLINE							\n
 	curr_col--;
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
-		yylval.info.name = strdup("Dedent");
+		yylval.info.name = strdup("DEDENT");
 		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}
@@ -226,7 +226,7 @@ NEWLINE							\n
 	curr_col--;
 	if (num_pops > 0) {
 		num_pops--;
-		yylval.info.name = strdup("Dedent");
+		yylval.info.name = strdup("DEDENT");
 		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}

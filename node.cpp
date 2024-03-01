@@ -1,14 +1,123 @@
 #include "node.hpp"
+// #include "token_map.hpp"
+
+extern map<string, string> TokenNameToString;
 
 // root of the parse tree
 TreeNode* root;
+
+// Terminals to remove from parse tree to form AST
+set<string> UselessTerminals({
+
+						
+
+});
+
+// Non-Terminals to remove from parse tree to form AST
+set<string> SkipToken({
+
+	",", 	
+	";", 	
+	"->",		
+	":",		
+	"NEWLINE",		
+	"EOF",		
+	"INDENT",		
+	"DEDENT",		
+	"return",		
+	"global", 	
+	"nonlocal",
+	"assert", 	
+	"class",		
+	"def",
+	// "file",
+	"statements",
+	"statement",
+	"simple_stmts",
+	"simple_stmt",
+	"compound_stmt",
+	"simple1",
+	"simple2",
+	// "assignment",
+	// "return_stmt",
+	// "raise_stmt",
+	// "assert_stmt",
+	// "global_stmt",
+	// "nonlocal_stmt",
+	// "multi_targets_assgn",
+	"augassign",
+	"names",
+	"block",
+	// "class_def",
+	// "function_def",
+	"is_params",
+	"is_arguments",
+	"is_fn_expression",
+	"params",
+	"param_nd",
+	"param_wd",
+	"slashed_param_nd",
+	"slashed_param_wd",
+	"star_etc",
+	"sparam_maybe_default",
+	"param_no_default",
+	"param_with_default",
+	"param_maybe_default",
+	"param_mb_star",
+	"param",
+	"annotation",
+	"default",
+	// "if_stmt",
+	// "elif_stmt",
+	// "else_block",
+	// "while_stmt",
+	// "for_stmt",
+	"expressions",
+	"expressions_comma",
+	"expression",
+	"disjunction",
+	"conjunction",
+	"inversion",
+	"comparison",
+	"many_compare_op_bitwise_or_pairs",
+	"compare_op_bitwise_or_pair",
+	"eq_bitwise_or",
+	"noteq_bitwise_or",
+	"lte_bitwise_or",
+	"lt_bitwise_or",
+	"gte_bitwise_or",
+	"gt_bitwise_or",
+	"notin_bitwise_or",
+	"in_bitwise_or",
+	"isnot_bitwise_or",
+	"is_bitwise_or",
+	"bitwise_xor",
+	"bitwise_or",
+	"bitwise_and",
+	"shift_expr",
+	"sum",
+	"term",
+	"factor",
+	"power",
+	"primary",
+	"slices",
+	"slices_comma",
+	"slice",
+	"atom",
+	"group",
+	"string",
+	"strings",
+	"list",
+	"arguments",
+	"kwargs",
+	"kwarg"
+});
 
 TreeNode::node(string __name, string __type)
 {
 	name = __name;
 	type = __type;
 }
-
 
 void TreeNode::make_dot(string out)
 {
@@ -96,38 +205,76 @@ void TreeNode::make_dot(string out)
 	DOT << "}";
 }
 
-void SwitchChildToParent(TreeNode* parent, int nchild)
-// child must be a terminal symbol, nchild is 0-indexed
+void ExchangeWithChild(TreeNode* root, int nchild)
 {
-	vector<TreeNode*> &children = parent->children;
+	vector<TreeNode*> children = root->children;
 	TreeNode* child = children[nchild];
-	int itr = 0;
-	for(auto &i : children)
-	{
-		if(i != child)
-		{
-			
-		}
-	}
+	*root = *child;
+	children.erase(children.begin() + nchild);
+	root -> children = children;
+	delete child;
+	return;
 }
 
-void SkipChild(TreeNode* parent, int nchild)
-// n-child is zero-indexed
+void SkipNode(TreeNode* root, int nchild)
 {
-	vector<TreeNode*> &children = parent->children;
+	vector<TreeNode*> &children = root->children;
 	TreeNode* child = children[nchild];
+
 	int itr = 0;
-	for(auto i:(child->children))
+	for(auto i: (child->children))
 	{
 		itr++;
+		cout << "-------------------\n";
+		cout << i->name << "\n";
+		cout << "-------------------\n";
 		children.insert(children.begin() + nchild + itr, i);
 	}
 	children.erase(children.begin() + nchild);
+	delete child;
+
 	return;
+}
+
+void generateAST(map<TreeNode*, bool> &visited, TreeNode* root)
+{
+	vector<TreeNode*> children = root -> children;
+	for(int nchild = 0; nchild < children.size();)
+	{
+		TreeNode* child = children[nchild];
+		if(visited[child] == true)
+		{
+			nchild++;
+			continue;
+		}
+
+		visited[child] = true;
+		generateAST(visited, child);
+
+
+		if(SkipToken.find(root->name) != SkipToken.end())
+		{
+			cout << "skip me " << endl;
+			// SkipNode(root, nchild);
+
+			continue;
+		}
+		
+		if((child->type).compare("OPERATOR") == 0 && SkipToken.find(root->name) != SkipToken.end())
+		{
+			cout << "exchange me " << endl;
+			ExchangeWithChild(root, nchild);
+			continue;
+		}
+
+		nchild++;
+	}
 }
 
 void AST_Maker(TreeNode* root)
 {
-	
+	map<TreeNode*, bool> visited;
+	visited[root] = true;
+	generateAST(visited, root);
+	return;
 }
-

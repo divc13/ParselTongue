@@ -81,10 +81,10 @@ compound_stmt: function_def
 assignment: primary DLM_COLON expression  
     | primary DLM_COLON expression OP_ASN_ASN expressions 
     | primary augassign expressions 
-    | multi_targets_assgn expressions  
+    | multi_targets_assgn   
 
-multi_targets_assgn: primary OP_ASN_ASN
-    | multi_targets_assgn primary OP_ASN_ASN
+multi_targets_assgn: primary OP_ASN_ASN expressions
+    | multi_targets_assgn OP_ASN_ASN expressions
 
 augassign: OP_ASN_ADD
     | OP_ASN_SUB
@@ -106,7 +106,7 @@ raise_stmt: KW_raise expression
 	| KW_raise expression KW_from expression
     | KW_raise 
 
-global_stmt: KW_global NAME names
+global_stmt: KW_global names
 
 nonlocal_stmt: KW_nonlocal names
 
@@ -304,6 +304,7 @@ atom: NAME
     | list
 
 group: DLM_LFT_PRN expression DLM_RGT_PRN 
+    | DLM_LFT_PRN DLM_RGT_PRN
 
 string: STRING_LITERAL 
 strings: strings string
