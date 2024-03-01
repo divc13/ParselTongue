@@ -1,5 +1,4 @@
 %option noyywrap
-/* works for one rule on one line */
 
 %{
 
@@ -7,67 +6,54 @@
 using namespace std;
 ofstream OUT("parser.y");
 string builder = "";
-vector<string>nonterminals;
+string header = "";
 
 // #define YY_USER_ACTION cout << builder << endl;
 
 void action_printer(string builder)
 {
-    int itr = 0;
-    int child = 1;
-    int ntrml = 0;
+	int itr = 0;
+	int child = 1;
 
-    OUT << "\n\n\t\t{\n";
+	OUT << "\n\n\t\t{\n";
 
-    if (builder.length() == 0)
-    {
-        OUT << "\t\t\t$$ = NULL;\n";
-        OUT << "\t\t}\n\n";
+	OUT << "\t\t\tTreeNode* temp = new TreeNode(\"" << header << "\");\n";
+	OUT << "\t\t\t$$ = temp;\n";
 
-        return;
-    }
+	if (header.compare("file") == 0)
+	{
+		OUT << "\t\t\troot = temp;\n";
+	}
 
-    if (builder[0] == 'f')
-    {
-        OUT << "\t\t\troot = new TreeNode(\"File\");\n";
-        OUT << "\t\t\t$$ = root;\n";
-        itr++;
-    }
+	while(itr < builder.length())
+	{
+		//terminal
+		if (builder[itr] == 't')
+		{
+			OUT << "\t\t\ttemp = new TreeNode(($" << child << ").name, ($" << child << ").type);\n";
+			OUT << "\t\t\t(($$) -> children).push_back(temp); \n";
+		}
 
-    OUT << "\t\t\tTreeNode* temp;\n";
+		//non terminal
+		else if (builder[itr] == 'n')
+		{
+			OUT << "\t\t\t(($$) -> children).push_back($" << child << ");\n";
+		}
 
-    while(itr < builder.length())
-    {
-        //terminal
-        if (builder[itr] == 't')
-        {
-            OUT << "\t\t\ttemp = new TreeNode(($" << child << ").name, ($" << child << ").type);\n";
-            OUT << "\t\t\t(($$) -> children).push_back(temp); \n";
-        }
-
-        //non terminal
-        else if (builder[itr] == 'n')
-        {
-            OUT << "\t\t\ttemp = new TreeNode(\"" << nonterminals[ntrml] << "\");\n"; 
-            OUT << "\t\t\t(($$) -> children).push_back(temp);\n";
-            ntrml++;
-        }
-
-        child++;
-        itr++;
-    }
-    OUT << "\t\t}\n\n";
+		child++;
+		itr++;
+	}
+	OUT << "\t\t}\n\n";
 
 }
 
 
 %}
 
-KEYWORD				KW_[a-z_]*
+KEYWORD				KW_[A-Za-z_]*
 OPERATOR            OP_[A-Za-z_]*
 DELIMITER           DLM_[A-Za-z_]*
 CAPITAL             [A-Z_]*
-file                "file"
 NONTERMINAL         [a-z0-9_]*
 TERMINAL            {KEYWORD}|{OPERATOR}|{DELIMITER}|{CAPITAL}
 WHITESPACE          [\t\r\n ]
@@ -80,79 +66,67 @@ WS                  [\t\f ]*
 
 
 "%%" {
-    OUT << yytext;
-    BEGIN RL_START;
+	OUT << yytext;
+	BEGIN RL_START;
 }
 
 <RL_START>"%%" {
-    OUT << yytext;
-    BEGIN INITIAL;
+	OUT << yytext;
+	BEGIN INITIAL;
 }
 
 <RL_START>":" {
-    OUT << yytext;
-    BEGIN BODY;
-}
-
-<RL_START>{file} {
-    OUT << yytext;
-    builder += 'f';
-}
-
-<RL_START>{NONTERMINAL} {;
-    OUT << yytext;
-}
-
-<BODY>{NONTERMINAL} {
-    OUT << yytext;
-    builder += 'n';
-    string tmp = yytext;
-    nonterminals.push_back(tmp);
+	OUT << yytext;
+	BEGIN BODY;
 }
 
 <BODY>{TERMINAL} {
-    builder += 't';
-    OUT << yytext;
+	builder += 't';
+	OUT << yytext;
+}
+
+<RL_START>{NONTERMINAL} {
+	header = yytext;
+	OUT << yytext;
+}
+
+<BODY>{NONTERMINAL} {
+	OUT << yytext;
+	builder += 'n';
+	string tmp = yytext;
 }
 
 <BODY>{WS}*[\n\t]{WHITESPACE}*"|" {
-    action_printer(builder);
-    int flag = 0;
-    if (builder[0] == 'f') flag = 1;
-    builder.clear();
-    if (flag) builder += 'f';
-    nonterminals.clear();
-    OUT << yytext;
+	action_printer(builder);
+	int flag = 0;
+	builder.clear();
+	OUT << yytext;
 }
 
 <BODY>{WS}*[\n\t]{WHITESPACE}* {
-    action_printer(builder);
-    builder.clear();
-    nonterminals.clear();
-    OUT << yytext;
-    BEGIN RL_START;
+	action_printer(builder);
+	builder.clear();
+	OUT << yytext;
+	BEGIN RL_START;
 }
 
 <BODY>{WS}*"|" {
-    action_printer(builder);
-    int flag = 0;
-    if (builder[0] == 'f') flag = 1;
-    builder.clear();
-    if (flag) builder += 'f';
-    nonterminals.clear();
-    OUT << yytext;
+	action_printer(builder);
+	int flag = 0;
+	builder.clear();
+	OUT << yytext;
 }
 
 <BODY>{WS}* {
-    OUT << yytext;
+	OUT << yytext;
 }
 
 <*>{WHITESPACE} {
-    OUT << yytext;
+	OUT << yytext;
 }
 
 . {
-    OUT << yytext;
+	OUT << yytext;
 }
 
 %%

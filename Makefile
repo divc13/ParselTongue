@@ -1,6 +1,6 @@
 all: parser
 
-parser: lex.yy.c parser.tab.c main.cpp parser.tab.h error.hpp token_map.hpp node.hpp
+parser: lex.yy.c parser.tab.c main.cpp parser.tab.h error.hpp token_map.hpp node.hpp node.cpp
 	g++ main.cpp lex.yy.c parser.tab.c node.cpp -o parser
 
 lex.yy.c: lexer.l

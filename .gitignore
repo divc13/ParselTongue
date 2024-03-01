@@ -7,3 +7,5 @@ Grammar_modifier/
 Faltu/
 *.gv
 parser.y
+*.lex.c
+action_adder

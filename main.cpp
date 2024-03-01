@@ -3,6 +3,7 @@ using namespace std;
 
 #include "parser.tab.h"
 #include "token_map.hpp"
+#include "node.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -18,6 +19,7 @@ extern FILE* yyin;
 extern int yylineno;
 extern string text;
 stack <int> indent_stack;
+extern TreeNode* root;
 
 
 int main(int argc, char** argv)
@@ -36,6 +38,6 @@ int main(int argc, char** argv)
 	yyparse( );
 		
 	fclose(yyin);
-
+	root->make_dot();
 	return 0;
 }

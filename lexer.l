@@ -96,13 +96,15 @@ NEWLINE							\n
 
 %%
 
-<IDT><<EOF>> {
+<*><<EOF>> {
+
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
 		yylval.info.name = strdup("Dedent");
 		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}
+	
 	yylval.info.name = strdup("EndOfFile");
 	yylval.info.type = strdup("EOF");
 	return ENDMARK;
