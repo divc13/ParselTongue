@@ -9,3 +9,6 @@ Faltu/
 parser.y
 *.lex.c
 action_adder
+*.dot
+*.pdf
+.vscode

@@ -24,7 +24,7 @@ extern TreeNode* root;
 
 int main(int argc, char** argv)
 {
-	yydebug = 1;
+	// yydebug = 1;
 	++argv, --argc;
 	if ( argc > 0 ){
 		yyin = fopen( argv[0], "r" );

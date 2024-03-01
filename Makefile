@@ -22,6 +22,6 @@ action_adder.lex.c: action_adder.l
 	flex -o action_adder.lex.c action_adder.l 
 
 clean:
-	rm -f parser lex.yy.c parser.tab.c parser.tab.h action_adder.lex.c action_adder parser.y
+	rm -f parser lex.yy.c parser.tab.c parser.tab.h action_adder.lex.c action_adder parser.y dot.dot dot.pdf
 
 .PHONY: clean
