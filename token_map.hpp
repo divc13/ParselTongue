@@ -181,4 +181,9 @@ void init_symbol_name_tables()
     TokenNameToString["INDENT"] = "INDENT";
     TokenNameToString["DEDENT"] = "DEDENT";
     TokenNameToString["NEWLINE"] = "NEWLINE";
+    
+    TokenNameToString["NAME"] = "IDENTIFIER";
+    TokenNameToString["INT_LITERAL"] = "INTEGER";
+    TokenNameToString["FLOAT_LITERAL"] = "FLOATNUMBER";
+    TokenNameToString["STRING_LITERAL"] = "STRING_LITERAL";
 }
