@@ -181,7 +181,7 @@ void TreeNode::make_dot(string out)
 					DOT << c;
 				}
 			}
-			DOT << ")\", shape = rectangle, fillcolor=\"white:darkseagreen";
+			DOT << ")\", shape = rectangle, fillcolor=\"white:lightgreen";
 		}
 		else {
 			DOT << tmp << "\", shape = rectangle, fillcolor=\"white:";
@@ -191,11 +191,11 @@ void TreeNode::make_dot(string out)
 			else if (node->type == "EOF") 					DOT << "pink";
 			else if (node->type == "NEWLINE") 				DOT << "pink";
 			else if (node->type == "INDENT") 				DOT << "pink";
-			else if (node->type == "KEYWORD") 				DOT << "darkorchid2";
+			else if (node->type == "KEYWORD") 				DOT << "orchid1";
 			else if (node->type == "OPERATOR") 				DOT << "lightblue";
 			else if (node->type == "IDENTIFIER") 			DOT << "slategray1";
-			else if (node->type == "INT_LITERAL") 			DOT << "darkseagreen";
-			else if (node->type == "FLOAT_LITERAL") 		DOT << "darkseagreen";
+			else if (node->type == "INT_LITERAL") 			DOT << "lightgreen";
+			else if (node->type == "FLOAT_LITERAL") 		DOT << "lightgreen";
 			else if (node->type == "DELIMITER") 			DOT << "pink";
 
 		}
