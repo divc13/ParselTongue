@@ -162,7 +162,4 @@ wait
 for ((i = 0; i < ${#input_files[@]}; i++)); do
 	dot_output_file="${output_dot_files[$i]}"
 
-	rm "${dot_output_file}"
 done
-
-wait

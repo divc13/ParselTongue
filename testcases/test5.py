@@ -2,6 +2,10 @@ var: float = 4.4
 var2: bool = True
 var3: str = "hello"
 var4: list[float] = [4.4, 1.2]
+a =3;b =4
+
+def a():
+	return
 
 def change_global() -> None:
 	global var

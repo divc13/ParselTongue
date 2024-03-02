@@ -3,20 +3,22 @@
 
 extern map<string, string> TokenNameToString;
 
-// root of the parse tree
+// root of the parse tree / AST
 TreeNode* root;
 
-// Terminals to remove from parse tree to form AST
-set<string> UselessTerminals({
-
-						
-
+set<string> SkipToken2({
+	"arguments",	// what to do in function
+	"statement",
+	"block",
+	"slices",
+	"bitwise_operator",
+	// "expressions",
 });
 
 // Non-Terminals to remove from parse tree to form AST
-set<string> SkipToken({
+set<string> SkipToken1({
 
-	// ",", 	
+	",", 	
 	";", 	
 	// "->",		
 	// ":",		
@@ -36,7 +38,7 @@ set<string> SkipToken({
 	"if",
 	// "file",
 	"statements",
-	"statement",
+	// "statement",
 	"simple_stmts",
 	"simple_stmt",
 	"compound_stmt",
@@ -83,18 +85,7 @@ set<string> SkipToken({
 	"conjunction",
 	"inversion",
 	"comparison",
-	"many_compare_op_bitwise_or_pairs",
-	"compare_op_bitwise_or_pair",
-	"eq_bitwise_or",
-	"noteq_bitwise_or",
-	"lte_bitwise_or",
-	"lt_bitwise_or",
-	"gte_bitwise_or",
-	"gt_bitwise_or",
-	"notin_bitwise_or",
-	"in_bitwise_or",
-	"isnot_bitwise_or",
-	"is_bitwise_or",
+	// "bitwise_operator",
 	"bitwise_xor",
 	"bitwise_or",
 	"bitwise_and",
@@ -104,7 +95,7 @@ set<string> SkipToken({
 	"factor",
 	"power",
 	"primary",
-	"slices",
+	// "slices",
 	"slices_comma",
 	"slice",
 	"atom",
@@ -118,6 +109,7 @@ set<string> SkipToken({
 	"typedecl",
 	"else",
 	"elif",
+	// "if_expression",
 	// "operand",
 });
 
@@ -246,42 +238,56 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 			continue;
 		}
 
-		if((child->children).size() == 1 && flag == 0)
+		// first iteration
+
+		// remove all non terminals with one child
+		if((child->children).size() == 1 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 0)
 		{
 			SkipNode(root, nchild);
 			continue;
 		}
 
-		if(((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) && flag == 0 && (child->name).compare(":") == 0)
+		// handle colon in different cases, if used for expression, bring up, otherwise skip
+		if((child->name).compare(":") == 0 && flag == 0)
+		{
+			if ((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) ExchangeWithChild(root, nchild);
+			else SkipNode(root, nchild);
+			continue;
+		}
+
+		// second iteration
+
+		// bring operators, dot and to symbol one level up
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end())
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
-		if((root->name).compare("typedecl") != 0 && (root->name).compare("annotation") != 0 && flag == 0 && (child->name).compare(":") == 0)
-		{
-			SkipNode(root, nchild);
-			continue;
-		}
-
-		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1)
+		// handle function call and array access
+		if((root->name).compare("operand") == 0 && (nchild == 0) && (child->type).compare("IDENTIFIER") == 0 && flag == 1)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
-		if(child->type.compare("IDENTIFIER") == 1 && SkipToken.find(child->name) != SkipToken.end() && flag == 2)
+		// third iteration
+
+		// skip all unnecessary nonterminal symbols
+		if((child->type).compare("IDENTIFIER") != 0 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 2)
 		{
 			SkipNode(root, nchild);
 			continue;
 		}
 
-		if((root->type).compare("OPERATOR") != 0 && (child->name).compare("operand") == 0 && flag == 2)
+		// fourth iteration
+
+		// skip statements block and args with only one child 
+		if((child->type).compare("IDENTIFIER") != 0 && SkipToken2.find(child->name) != SkipToken2.end() && (child->children).size() == 1 && flag == 3)
 		{
 			SkipNode(root, nchild);
 			continue;
 		}
-
 
 		visited[child] = true;
 		generateAST(visited, child, flag);
@@ -301,5 +307,8 @@ void AST_Maker(TreeNode* root)
 	visited.clear();
 	visited[root] = true;
 	generateAST(visited, root, 2);
+	visited.clear();
+	visited[root] = true;
+	generateAST(visited, root, 3);
 	return;
 }
