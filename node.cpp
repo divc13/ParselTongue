@@ -16,10 +16,10 @@ set<string> UselessTerminals({
 // Non-Terminals to remove from parse tree to form AST
 set<string> SkipToken({
 
-	",", 	
+	// ",", 	
 	";", 	
-	"->",		
-	":",		
+	// "->",		
+	// ":",		
 	"NEWLINE",		
 	"EOF",		
 	"INDENT",		
@@ -33,6 +33,7 @@ set<string> SkipToken({
 	"def",
 	"for",
 	"while",
+	"if",
 	// "file",
 	"statements",
 	"statement",
@@ -50,13 +51,13 @@ set<string> SkipToken({
 	"multi_targets_assgn",
 	"augassign",
 	"names",
-	"block",
+	// "block",
 	// "class_def",
 	// "function_def",
 	"is_params",
 	"is_arguments",
 	"is_fn_expression",
-	"params",
+	// "params",
 	"param_nd",
 	"param_wd",
 	"slashed_param_nd",
@@ -111,9 +112,12 @@ set<string> SkipToken({
 	"string",
 	"strings",
 	// "list",
-	"arguments",
-	"kwargs",
-	"kwarg"
+	// "arguments",
+	// "kwargs",
+	"kwarg",
+	"typedecl",
+	"else",
+	"elif",
 });
 
 TreeNode::node(string __name, string __type)
@@ -161,14 +165,14 @@ void TreeNode::make_dot(string out)
 		else if (node->type == "DEDENT" || node->type == "EOF" || node->type == "NEWLINE" || node->type == "INDENT")
 			tmp = node->type;
 		else
-			tmp = node->type + "(" + node->name + ")";
+			tmp = node->type + "\n(" + node->name + ")";
 
 		DOT << current_index << " [ label = \"";
 
 		if (node->type == "NON_TERMINAL")
 			DOT << tmp << "\"";
 		else if (node->type == "STRING_LITERAL") {
-			DOT << node->type + "(";
+			DOT << node->type + "\n(";
 			for (char c : node->name) {
 				if (c == '"') {
 					DOT << '\\' << '\"';
@@ -179,7 +183,7 @@ void TreeNode::make_dot(string out)
 			DOT << ")\", shape = rectangle";
 		}
 		else {
-			DOT << tmp << "\"";
+			DOT << tmp << "\", shape = rectangle";
 		}
 		
 		DOT << " ];\n";
@@ -188,9 +192,9 @@ void TreeNode::make_dot(string out)
 			NodeQueue.push({index, (node->children)[i]});
 		}
 	}
-
 	
 	DOT << "}";
+	DOT.close();
 }
 
 void ExchangeWithChild(TreeNode* root, int nchild)
@@ -234,7 +238,19 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 			continue;
 		}
 
-		if((child->type).compare("OPERATOR") == 0 && flag == 1)
+		if(((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) && flag == 0 && (child->name).compare(":") == 0)
+		{
+			ExchangeWithChild(root, nchild);
+			continue;
+		}
+
+		if((root->name).compare("typedecl") != 0 && (root->name).compare("annotation") != 0 && flag == 0 && (child->name).compare(":") == 0)
+		{
+			SkipNode(root, nchild);
+			continue;
+		}
+
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;

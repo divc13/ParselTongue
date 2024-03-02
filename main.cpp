@@ -31,7 +31,7 @@ bool fileExists(const string &filename)
 
 int main(int argc, char **argv)
 {
-	// yydebug = 1;
+	yydebug = 1;
 	int verbose = 0;
 	argv++, argc--;
 	indent_stack.push(0);
@@ -43,17 +43,26 @@ int main(int argc, char **argv)
 	for (int i = 0; i < argc; i++)
 	{
 		string arg = argv[i];
-		if (arg == "--input" || arg == "-input" || arg == "-i")
+		if (arg == "--help" || arg == "-help" || arg == "-h") {
+            cout << "Usage: " << argv[0] << " [options]" << endl;
+            cout << "Options:" << endl;
+            cout << "  --input, -input, -i <file1> <file2> ... : Specify input files" << endl;
+            cout << "  --output, -output, -o <file1> <file2> ... : Specify output files" << endl;
+            cout << "  --verbose, -verbose, -v To get the Parse Tree instead of the AST at the output files" << endl;
+            cout << "  --help, -help, -h : Display the help message" << endl;
+            exit(0);
+        }
+		else if (arg == "--input" || arg == "-input" || arg == "-i")
 		{
 			i++;
 			while (i < argc && argv[i][0] != '-')
 			{
-				inputFiles.push_back(argv[i]);
 				if (!fileExists(argv[i]))
 				{
 					cerr << "Error: File '" << argv[i] << "' not found" << endl;
 					return 1;
 				}
+				inputFiles.push_back(argv[i]);
 				i++;
 			}
 			i--;
@@ -70,7 +79,7 @@ int main(int argc, char **argv)
 		}
 		else if (arg == "--verbose" || arg == "-verbose" || arg == "-v")
 		{
-			cout << "You can find the parse tree at parser.ParseTree" << endl;
+			cout << "You will find the parse tree at output files instead of AST" << endl;
 			verbose = 1;
 		}
 		else if (arg[0] == '-')
@@ -79,22 +88,36 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			inputFiles.push_back(argv[i]);
 			if (!fileExists(argv[i]))
 			{
 				cerr << "Error: File '" << argv[i] << "' not found" << endl;
 				return 1;
 			}
+			inputFiles.push_back(argv[i]);
 		}
 	}
 
 	if (inputFiles.size() == 0)
 	{
-		cout << YELLOW << "No input file provided, Taking input from stdin.....\n"
-			 << RESET;
+		cout << YELLOW << "No input file provided, Taking input from stdin\n" << RESET;
+		if(outputFiles.size() > 0)
+			cout << YELLOW << "Output will be given to " << outputFiles[0] << " \n" << RESET;
+		else {
+			cout << YELLOW << "Output will be given to " << "output_PT_0.dot" << " \n" << RESET;
+			char in;
+			cout << "Do you agree to this? [y/n] ";
+			cin >> in;
+			if (in != 'y' && in != 'Y') {
+				return 0; 
+			}
+		}
+
 		yyin = stdin;
-		yyparse();
+		int rtnval = yyparse();
 		fclose(yyin);
+		if(rtnval < 0) return 0;
+		if(!verbose)
+			AST_Maker(root);
 		if (outputFiles.size() == 0)
 			root->make_dot("output_PT_0.dot");
 		else
@@ -135,7 +158,8 @@ int main(int argc, char **argv)
 		yyin = fopen(inputFiles[file].c_str(), "r");
 		int rtnval = yyparse();
 		if(rtnval < 0) continue;
-		AST_Maker(root);
+		if(!verbose)
+			AST_Maker(root);
 		root->make_dot(outputFiles[file]);
 		fclose(yyin);
 	}

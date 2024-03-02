@@ -101,7 +101,7 @@ NEWLINE							\n
 
 	if (indent_stack.top() > 0) {
 		indent_stack.pop();
-		yylval.info.name = strdup("Dedent");
+		yylval.info.name = strdup("DEDENT");
 		yylval.info.type = strdup("DEDENT");
 		return DEDENT;
 	}
