@@ -133,7 +133,7 @@ is_arguments:
 is_fn_expression:
 	| DLM_TO expression
 
-params: param param_nd
+params: param param_nd 
     | param default param_wd
     | star_etc
 
@@ -142,25 +142,31 @@ param_nd:
     | param_with_default param_wd
     | DLM_COMMA OP_ATH_DIV slashed_param_nd
     | DLM_COMMA star_etc
+    | DLM_COMMA
 
 param_wd: 
 	| param_with_default param_wd
     | DLM_COMMA OP_ATH_DIV slashed_param_wd
     | DLM_COMMA star_etc
+    | DLM_COMMA
 
 slashed_param_nd: 
 	| param_no_default slashed_param_nd
     | param_with_default param_wd
     | DLM_COMMA star_etc
+    | DLM_COMMA 
 
 slashed_param_wd: 
 	| param_with_default slashed_param_wd
-    | DLM_COMMA star_etc
+    | DLM_COMMA star_etc 
+    | DLM_COMMA 
 
 star_etc: OP_ATH_MUL DLM_COMMA param_mb_star sparam_maybe_default
 
 sparam_maybe_default: param 
 	| param default
+	| param default DLM_COMMA
+	| param DLM_COMMA
 
 param_no_default: DLM_COMMA param 
 

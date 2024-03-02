@@ -125,9 +125,8 @@ int main(int argc, char **argv)
 		cout << "Do you agree to this? [y/n] ";
 		char in;
 		cin >> in;
-		if (in != 'y' && in != 'Y')
-		{
-			return 0;
+		if (in != 'y' && in != 'Y') {
+			return 0; 
 		}
 	}
 

@@ -12,6 +12,7 @@
 	extern void yyerror (string s);
 	extern map<string, int> StringToToken;
 	int num_pops = 0;
+	int insideBrackets = 0;
 
 	string text = "";
 
@@ -57,7 +58,7 @@ SHORTSTRING_ITEM				{SHORTSTRING_CHAR}|{STRING_ESCAPE_SEQ}
 LONGSTRING_ITEM					{LONGSTRING_CHAR}|{STRING_ESCAPE_SEQ}
 SHORTSTRING_CHAR				[^\\\n\"\']
 LONGSTRING_CHAR					[^\\]
-STRING_ESCAPE_SEQ				\\[.\n]
+STRING_ESCAPE_SEQ				\\[.\n]|\\\r\n|\\n
 
 INTEGER							{DECINTEGER}|{BININTEGER}|{OCTINTEGER}|{HEXINTEGER}
 DECINTEGER	 					{NONZERODIGIT}([_]?{DIGIT})*|"0"+([_]?"0")*
@@ -86,9 +87,9 @@ INDENT_TAB						^[\f]*[\t]*
 INDENT_MIX_ERROR				^[\t \f]*
 BLANKLINE1						([ \t\f\r]*\n)*
 BLANKLINE2						^([ \t\f\r]*\n)*
-EXPLICIT_LINE_JOIN				\\\n
-COMMENT							\#[.*]
-LINE_COMMENT					^{WHITESPACE}*\#[.*]\n
+EXPLICIT_LINE_JOIN				{WHITESPACE}*(\\\r\n|\\\n)
+COMMENT							"#".*
+LINE_COMMENT					^{WHITESPACE}*"#".*\n
 NEWLINE							\n
 
 %x IDT
@@ -110,18 +111,22 @@ NEWLINE							\n
 	return ENDMARK;
 }
 
-[{COMMENT}{LINE_COMMENT}] {;}
+<*>{LINE_COMMENT} {;}
 
-{EXPLICIT_LINE_JOIN} {;}
+<*>{COMMENT} {;}
+
+{EXPLICIT_LINE_JOIN}+{WHITESPACE}* {;}
 
 <IDT>{BLANKLINE1} {;}
 {BLANKLINE2} {;}
 
 {NEWLINE} {
-	BEGIN IDT;
-	yylval.info.name = strdup("NEWLINE");
-	yylval.info.type = strdup("NEWLINE");
-	return NEWLINE;
+	if (!insideBrackets) {
+		BEGIN IDT;
+		yylval.info.name = strdup("NEWLINE");
+		yylval.info.type = strdup("NEWLINE");
+		return NEWLINE;
+	}
 }
 
 <IDT>{INDENT_TAB} {
@@ -234,7 +239,7 @@ NEWLINE							\n
 }
 
 
-{INDENT_MIX_ERROR} {
+<IDT>{INDENT_MIX_ERROR} {
 
 	yyerror("Indentation cannot be a mixture of spaces and tabs.");
 	return 0;
@@ -283,6 +288,11 @@ NEWLINE							\n
 }
 
 {DELIMITER} {
+	if(yytext[0] == '(' || yytext[0] == '[' || yytext[0] == '{')
+		insideBrackets++;
+	if(yytext[0] == ')' || yytext[0] == ']' || yytext[0] == '}')
+		insideBrackets--;
+
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("DELIMITER");
 	string token_str = yytext;

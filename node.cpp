@@ -128,7 +128,8 @@ void TreeNode::make_dot(string out)
 		return;
 	}
 
-	DOT << "digraph Tree {\nnode [style = filled]\n";
+	DOT << "digraph Tree {\nnode [style = filled]\nnodesep=2;\nranksep=5;\n";
+	DOT << "digraph Tree {\n";
 	
 	queue<pair<int, TreeNode*>> NodeQueue;
 	NodeQueue.push({0, root});
@@ -161,24 +162,8 @@ void TreeNode::make_dot(string out)
 
 		DOT << current_index << " [ label = \"";
 
-		if (node->type == "DEDENT") 
-			DOT << tmp << "\", shape = rectangle, color = bisque2";
-		else if (node->type == "EOF") 
-			DOT << tmp << "\", shape = rectangle, color = bisque2";
-		else if (node->type == "NEWLINE") 
-			DOT << tmp << "\", shape = rectangle, color = bisque2";
-		else if (node->type == "INDENT") 
-			DOT << tmp << "\", shape = rectangle, color = bisque2";
-		else if (node->type == "KEYWORD") 
-			DOT << tmp << "\", shape = rectangle, color = lightsteelblue1";
-		else if (node->type == "OPERATOR") 
-			DOT << tmp << "\", shape = rectangle, color = \"105, 138, 128\"";
-		else if (node->type == "IDENTIFIER") 
-			DOT << tmp << "\", shape = rectangle, color = cadetblue1";
-		else if (node->type == "INT_LITERAL") 
-			DOT << tmp << "\", shape = rectangle, color = darkolivegreen3";
-		else if (node->type == "FLOAT_LITERAL") 
-			DOT << tmp << "\", shape = rectangle, color = darkolivegreen3";
+		if (node->type == "NON_TERMINAL")
+			DOT << tmp << "\"";
 		else if (node->type == "STRING_LITERAL") {
 			DOT << node->type + "(";
 			for (char c : node->name) {
@@ -188,12 +173,12 @@ void TreeNode::make_dot(string out)
 					DOT << c;
 				}
 			}
-			DOT << ")\", shape = rectangle, color = darkolivegreen3";
+			DOT << ")\", shape = rectangle";
 		}
-		else if (node->type == "DELIMITER") 
-			DOT << tmp << "\", shape = rectangle, color = chocolate";
-		else if (node->type == "NON_TERMINAL") 
-			DOT << tmp << "\", color = lemonchiffon2";
+		else {
+			DOT << tmp << "\"";
+		}
+		
 		DOT << " ];\n";
 
 		for(int i = 0; i < (node->children).size(); i++, index++) {

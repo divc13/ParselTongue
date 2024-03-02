@@ -19,7 +19,7 @@ def main():
     hexa:str = "\u89AB"
     print(hexa)
 
-    hexa_8:str = "\U3892AB2F"
+    hexa_8:str = "\U0003892F"
     print(hexa_8)
 
     # redeclaring same variable but should parse
