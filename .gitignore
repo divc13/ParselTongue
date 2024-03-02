@@ -12,3 +12,4 @@ action_adder
 *.dot
 *.pdf
 .vscode
+output/
