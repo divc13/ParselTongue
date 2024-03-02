@@ -5,6 +5,7 @@ class TreeNode:
     self.val: int = val
     self.left: TreeNode = None
     self.right: TreeNode = None
+    return
 
 def height(node: TreeNode) -> int:
   if node is None:

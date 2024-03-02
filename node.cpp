@@ -136,7 +136,7 @@ void TreeNode::make_dot(string out)
 		return;
 	}
 
-	DOT << "digraph Tree {\nnode [style = filled]\nnodesep=2;\nranksep=5;\n";
+	DOT << "digraph Tree {\nnode [style = radial]\nedge [arrowhead=onormal]\nnodesep=2;\nranksep=5;\n";
 	// DOT << "digraph Tree {\n";
 	
 	queue<pair<int, TreeNode*>> NodeQueue;
@@ -171,7 +171,7 @@ void TreeNode::make_dot(string out)
 		DOT << current_index << " [ label = \"";
 
 		if (node->type == "NON_TERMINAL")
-			DOT << tmp << "\"";
+			DOT << tmp << "\", fillcolor=\"white:bisque";
 		else if (node->type == "STRING_LITERAL") {
 			DOT << node->type + "\n(";
 			for (char c : node->name) {
@@ -181,13 +181,26 @@ void TreeNode::make_dot(string out)
 					DOT << c;
 				}
 			}
-			DOT << ")\", shape = rectangle";
+			DOT << ")\", shape = rectangle, fillcolor=\"white:darkseagreen";
 		}
 		else {
-			DOT << tmp << "\", shape = rectangle";
+			DOT << tmp << "\", shape = rectangle, fillcolor=\"white:";
+
+
+			if (node->type == "DEDENT") 					DOT << "pink";
+			else if (node->type == "EOF") 					DOT << "pink";
+			else if (node->type == "NEWLINE") 				DOT << "pink";
+			else if (node->type == "INDENT") 				DOT << "pink";
+			else if (node->type == "KEYWORD") 				DOT << "darkorchid2";
+			else if (node->type == "OPERATOR") 				DOT << "lightblue";
+			else if (node->type == "IDENTIFIER") 			DOT << "slategray1";
+			else if (node->type == "INT_LITERAL") 			DOT << "darkseagreen";
+			else if (node->type == "FLOAT_LITERAL") 		DOT << "darkseagreen";
+			else if (node->type == "DELIMITER") 			DOT << "pink";
+
 		}
 		
-		DOT << " ];\n";
+		DOT << "\" ];\n";
 
 		for(int i = 0; i < (node->children).size(); i++, index++) {
 			NodeQueue.push({index, (node->children)[i]});
@@ -257,7 +270,7 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 			continue;
 		}
 
-		if(SkipToken.find(child->name) != SkipToken.end() && flag == 2)
+		if(child->type.compare("IDENTIFIER") == 1 && SkipToken.find(child->name) != SkipToken.end() && flag == 2)
 		{
 			SkipNode(root, nchild);
 			continue;
