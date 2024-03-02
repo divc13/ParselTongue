@@ -29,7 +29,10 @@ set<string> SkipToken({
 	"nonlocal",
 	"assert", 	
 	"class",		
+	"in",		
 	"def",
+	"for",
+	"while",
 	// "file",
 	"statements",
 	"statement",
@@ -38,13 +41,13 @@ set<string> SkipToken({
 	"compound_stmt",
 	"simple1",
 	"simple2",
-	// "assignment",
+	"assignment",
 	// "return_stmt",
 	// "raise_stmt",
 	// "assert_stmt",
 	// "global_stmt",
 	// "nonlocal_stmt",
-	// "multi_targets_assgn",
+	"multi_targets_assgn",
 	"augassign",
 	"names",
 	"block",
@@ -104,10 +107,10 @@ set<string> SkipToken({
 	"slices_comma",
 	"slice",
 	"atom",
-	"group",
+	// "group",
 	"string",
 	"strings",
-	"list",
+	// "list",
 	"arguments",
 	"kwargs",
 	"kwarg"
@@ -129,7 +132,7 @@ void TreeNode::make_dot(string out)
 	}
 
 	DOT << "digraph Tree {\nnode [style = filled]\nnodesep=2;\nranksep=5;\n";
-	DOT << "digraph Tree {\n";
+	// DOT << "digraph Tree {\n";
 	
 	queue<pair<int, TreeNode*>> NodeQueue;
 	NodeQueue.push({0, root});
@@ -203,28 +206,20 @@ void ExchangeWithChild(TreeNode* root, int nchild)
 
 void SkipNode(TreeNode* root, int nchild)
 {
-	vector<TreeNode*> &children = root->children;
+	vector<TreeNode*> children = root->children;
 	TreeNode* child = children[nchild];
-
-	int itr = 0;
-	for(auto i: (child->children))
-	{
-		itr++;
-		cout << "-------------------\n";
-		cout << i->name << "\n";
-		cout << "-------------------\n";
-		children.insert(children.begin() + nchild + itr, i);
-	}
-	children.erase(children.begin() + nchild);
+	vector<TreeNode*> newChildren = child->children;
+	children.insert(children.begin() + nchild, newChildren.begin(), newChildren.end());
+	children.erase(children.begin() + nchild + newChildren.size());
+	root -> children = children;
 	delete child;
-
 	return;
 }
 
-void generateAST(map<TreeNode*, bool> &visited, TreeNode* root)
+void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 {
-	vector<TreeNode*> children = root -> children;
-	for(int nchild = 0; nchild < children.size();)
+	vector<TreeNode*> &children = root -> children;
+	for(int nchild = 0; nchild < (root -> children).size();)
 	{
 		TreeNode* child = children[nchild];
 		if(visited[child] == true)
@@ -233,25 +228,28 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root)
 			continue;
 		}
 
-		visited[child] = true;
-		generateAST(visited, child);
-
-
-		if(SkipToken.find(root->name) != SkipToken.end())
+		if((child->children).size() == 1 && flag == 0)
 		{
-			cout << "skip me " << endl;
-			// SkipNode(root, nchild);
-
+			SkipNode(root, nchild);
 			continue;
 		}
-		
-		if((child->type).compare("OPERATOR") == 0 && SkipToken.find(root->name) != SkipToken.end())
+
+		if((child->type).compare("OPERATOR") == 0 && flag == 1)
 		{
-			cout << "exchange me " << endl;
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
+		if(SkipToken.find(child->name) != SkipToken.end() && flag == 2)
+		{
+			SkipNode(root, nchild);
+			continue;
+		}
+
+
+		visited[child] = true;
+		generateAST(visited, child, flag);
+		
 		nchild++;
 	}
 }
@@ -260,6 +258,12 @@ void AST_Maker(TreeNode* root)
 {
 	map<TreeNode*, bool> visited;
 	visited[root] = true;
-	generateAST(visited, root);
+	generateAST(visited, root, 0);
+	visited.clear();
+	visited[root] = true;
+	generateAST(visited, root, 1);
+	visited.clear();
+	visited[root] = true;
+	generateAST(visited, root, 2);
 	return;
 }
