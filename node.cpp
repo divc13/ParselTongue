@@ -118,6 +118,7 @@ set<string> SkipToken({
 	"typedecl",
 	"else",
 	"elif",
+	// "operand",
 });
 
 TreeNode::node(string __name, string __type)
@@ -257,6 +258,12 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 		}
 
 		if(SkipToken.find(child->name) != SkipToken.end() && flag == 2)
+		{
+			SkipNode(root, nchild);
+			continue;
+		}
+
+		if((root->type).compare("OPERATOR") != 0 && (child->name).compare("operand") == 0 && flag == 2)
 		{
 			SkipNode(root, nchild);
 			continue;
