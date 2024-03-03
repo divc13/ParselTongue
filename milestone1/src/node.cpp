@@ -283,6 +283,7 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 			continue;
 		}
 
+		// perform constrained exchang, if the root nonterminal cannot be replaced
 		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
 		{
 			cout << child->name<< " , "<< root->name << " , " << (root->children).size() << endl;
