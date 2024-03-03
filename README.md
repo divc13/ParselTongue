@@ -1,93 +1,65 @@
-# Python-Compiler
+# ParselTongue: Translating to a Python's Language
+
+## Introduction: Speaking to a Serpent
+
+In the magical world of Harry Potter, snakes possess the ability to communicate using ParselTongue, a language characterized by its hissing sounds. This skill is considered rare and is typically passed down through generations, known as a hereditary trait. Harry Potter, the famous wizard, had the unique ability to understand and speak ParselTongue. 
+
+But only very few of us have this ability to understand a serpent's language. Do we all need to learn ParselTongue to talk to serpents? The answer to this question cannot be a yes. While some of us could learn ParselTongue, others could be helped by these ParselTongue learners, in translating their message. But who would make the first move to learn ParselTongue? 
+
+Here we come to help you, and provide you with the magical powers to talk to serpents, atleast Python, if not all. On gaining this magical power, you would feel that you are speaking your everyday language, and on your behalf, we would translate your daily language to the ParselTongue, the language of serpents.
+
+The analogy becomes clearer if you consider your daily language to be Python and ParselTongue, the languages of serpents, to be the x86-64 assembly code. It is much easier for us to program in a high level language like Python, but it would be tremendous amount of work to program directly in assembly. Hence our objective and motivation for this project is to create a compiler to translate specifically Python 3.12 to x86-64 assembly code.  
+
+## Roadmap: Building the superpower for you
+
+We aim to build the translator in three phases as below:
+
+- [x] [Milestone 1: From Python to Abstract Syntax Tree](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/tree/main/milestone1)
+In this milestone, we constructed a scanner and a parser for a statically typed subset of the Python language. The output of the compiler is a graphical representation of the abstract syntax tree of the input program. 
+
+- [ ] [Milestone 2: From Abstract Syntax Tree to 3AC IR]()
+ In this milestone, we plan to generate 3AC IR for the input source program and add runtime support for making function calls. We would also need to 
+(i) implement support for the symbol table
+(ii) perform semantic analysis to do limited error checking on types and function signatures. 
+
+- [ ] [Milestone 3: From 3AC IR to x86-64]()
+In this milestone, we plan to generate the correct x86_64 assembly from the 3AC which can be run via GAS on Linux.
+
+## Language Features Supported:
+
+1. Primitive data types (e.g., int, float, str, and bool)
+2. 1D list (ignore dictionaries, tuples, and sets)
+3. Basic operators:
+    * Arithmetic operators: +, -, *, /, //, %, **
+    * Relational operators: ==, !=, >, <, >=, <=
+    * Logical operators: and, or, not
+    * Bitwise operators: &, |, ˆ, ˜, <<, >>
+    * Assignment operators: =, +=, -=, *=, /=, //=, %=, **=, &=, |=, ˆ=, «=, »=
+4. Control flow via if-elif-else, for, while, break and continue (ignore pass, do-while and
+switch)
+    * Support iterating over ranges specified using the range() function.
+5. Support for recursion
+6. Support the library function print() for only printing the primitive Python types, one at a time
+7. Support for classes and objects, including multilevel inheritance and constructors. Ignore multiple inheritance (i.e., a class can have only one parent class).
+8. Methods and method calls, including both static and non-static methods
+9. Static polymorphism via method overloading
 
 
+## Installation and Prerequisites: How do you acquire the superpower
 
-## Getting started
+To acquire the superpower for speaking to serpents, you must have the following pre-requisites installed:
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+1. Bison: Install using the following command 
+     ```sudo apt-get install bison```
+2. Flex: Install using the following command
+    ```sudo apt-get install flex```
+3. Graphviz: Install using the following command
+   ```sudo apt-get install graphviz```
+4. ParselTongue: Get the superpower by cloning the repository
+```git clone https://git.cse.iitk.ac.in/divyanshc/python-compiler```
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
-## Add your files
+## Usage: Using the superpower
+While the development is in progress, you can refer to [milestone 1](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/tree/main/milestone1) documentation for building the abstract syntax tree.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.cse.iitk.ac.in/divyanshc/python-compiler.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+<!-- ## Authors and acknowledgment -->
