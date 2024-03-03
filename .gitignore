@@ -10,6 +10,5 @@ parser.y
 *.lex.c
 action_adder
 *.dot
-*.pdf
 .vscode
 output/
