@@ -1,5 +1,5 @@
 def main():
-    # implicit line joining should be supported in list
+    # implicit line joining should be supported within list
     list1: list[int] = [1
                            # this comment should be ignored\
 , 
@@ -68,3 +68,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

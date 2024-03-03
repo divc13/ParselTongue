@@ -7,7 +7,7 @@ def _func1_(var1: int) -> None:
 def _() -> str:
 	return "_ is function"
 
-class abc(): pass;
+class abc(): "single line class";
 
 class __abc(): 
 	def __init__(self):
@@ -25,15 +25,16 @@ def main() -> None:
 	__: str
 	__ = "is string"
 
-	
-	
-	
 	print(__)
 
 	x:list[int] = [9, 0, 0, "abcdef", ]		# this should still parse
 	i: int = 0
 	for i in range(len(x)):
 		print(x[i])
+
+	j: int 
+	for j in range(2, 11, 2): # print even numbers
+		print(j)
 
 	obj1: __abc = __abc()
 	print(obj1.get_intval())
@@ -42,3 +43,5 @@ def main() -> None:
 
 if __name__ == "__main__":
 	main()
+
+	

@@ -12,10 +12,9 @@ assert (-
 assert ("fije"), ()
 assert 2, -1
 assert -0.00001
+assert (True or False and True)
 
 def func1(a:list[float] = [0, 0], b:int = 10):
-
-	
 	i:int = 0;
 
 	for i in range(len(a)):
@@ -34,8 +33,16 @@ def main() -> None:
 	func1([1])
 	print(func2("hello", 5, 6))
 	print(func2(b=4, a=3.3, void="hello"))
-	print(func2("hello", "hello")) # passing different type of argument than expected, this should pass in parser
+	print( 
+		# explicit line joining
+		\
+		func2(
+"hello",
+# implicit line joining
+			 "hello")) # passing different type of argument than expected, this should pass in parser
 
 
 if __name__ == "__main__":
 	main()
+	
+

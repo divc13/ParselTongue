@@ -11,12 +11,12 @@ def func1() -> str:
 class abc():
     static_variable: int = 10
 
-    def __init__(self, attr3: bool = True, ):        self.attr1: int = 1;        self.attr2: bool = attr3;
+    def __init__(self, attr2: bool = True, ):        self.attr1: int = 1;        self.attr2: bool = attr2;
 
-    def static_method():
+    def static_method(cls):
         print("static method")
         print(abc.static_variable)
-        # cant print(self.attr1)
+        # cant print(self.attr2)
 
     def instance_method(self):
         print("instance method")
@@ -37,11 +37,12 @@ def main():
     __abc2.static_method()
     __abc2.instance_method()
 
-    __abc_copy: abc = __abc2
+    __abc_copy: abc = __abc2    # assigning classes
     __abc_copy.static_method()
     __abc_copy.instance_method()
 
 
 if __name__ == '__main__':
     main()
+
 

@@ -16,15 +16,13 @@ def main():
         a -= 1;
         break
     else:
-        pass
+        49203
     
     i: int = 1000
     for i in range(3, 5):
         continue
-        pass
     else:
         print(i)
-
     
     b: list[int] = [(9489-4893<<5 and 2 )]
     print(b)
@@ -35,14 +33,17 @@ def main():
     value: float = (0 << 0) ^ (8 + 4 // 2) - (1 % 2)
     print(value)
 
-    value2: int = 0 // 0
+    value2: int = 1_00 >> 2 
+    value2 <<= 2
     print(value2)
 
+    val3: int = 0XC >> 0xA
+    print(val3)
 
-
-
-
+    val4: int = 0 ** 23  - 43 * 23 + 44 - 2 + 1 // 3 ** 2 ^ 32 & 0 | 4094 % 3
+    print(val4)
 
 if __name__ == "__main__":
     main()
+
 

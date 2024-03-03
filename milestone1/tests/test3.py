@@ -6,6 +6,7 @@ class TreeNode:
     self.left: TreeNode = None
     self.right: TreeNode = None
     return
+  
 
 def height(node: TreeNode) -> int:
   if node is None:
@@ -27,17 +28,25 @@ def main() -> None:
   root: TreeNode = TreeNode(1)
   root.left = TreeNode(2)
   root.right = TreeNode(3)
+  left_child: TreeNode = root.left
+  right_child: TreeNode = root.right
+  left_child.left = TreeNode(4)
+  right_child.right = TreeNode(5)
 
   if is_balanced(root):
     print("Tree is balanced")
 
   unbalanced_root: TreeNode = TreeNode(1)
   unbalanced_root.left = TreeNode(2)
+  left_child: TreeNode = unbalanced_root.left
+  left_child.left = TreeNode(3)
 
   if(not is_balanced(unbalanced_root)):
     print("Tree is not balanced")
     
 if __name__ == "__main__":
   main()
+
+
 
   

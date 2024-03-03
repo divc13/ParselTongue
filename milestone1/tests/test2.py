@@ -1,4 +1,4 @@
-# this case tests inheritance, dynamic polymorphism
+# this case tests inheritance
 
 class country:
   def __init__(self, name: str, population: int, area: float):
@@ -11,9 +11,7 @@ class country:
 
   def is_larger_than(self, other: 'country') -> bool:
     return self.area > other.area
-
-  def country_info(self) -> str:
-    return "this is a country"
+    
 
 class developed_country(country):
   def __init__(self, name: str, population: int, area: float, index: float):
@@ -29,11 +27,8 @@ class developed_country(country):
       return "Medium"
     else:
       return "Low"
-
-  def country_info(self) -> str:
-    return "this is a developed country"
-
-
+    
+    
 class developing_country(country):
   def __init__(self, name: str, population: int, area: float, progress: int):
     country.__init__(self, name, population, area)
@@ -48,9 +43,7 @@ class developing_country(country):
       return "Fair"
     else:
       return "Poor"
-
-  def country_info(self) -> str:
-    return "this is a developing country"
+    
 
 def main() -> None:
   abc: developed_country = developed_country("abc", 2000, 900.0, 0.9)
@@ -58,9 +51,6 @@ def main() -> None:
 
   print("Population density of abc:", abc.population_density())
   print("progress of xyz:", xyz.progress)
-
-  print(abc.country_info())
-  print(xyz.country_info())
 
 if __name__ == "__main__":
   main()
