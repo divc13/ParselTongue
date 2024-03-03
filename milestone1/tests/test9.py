@@ -1,6 +1,6 @@
 arg2: int = 0
-def foo() -> int: pass
-class bar(): pass
+def foo() -> int: "do nothing"
+class bar(): "do nothing"
 
 # static polymorphism
 class abc():
@@ -19,7 +19,6 @@ class abc():
 
 	def add(self, a: float = 5.00e0, b: float = -1., c: float = -1) -> float:
 		return a + b + c;
-
 	
 
 class abc_child(abc):
@@ -30,13 +29,11 @@ class abc_child(abc):
 		return self.var1
 
 def main() -> None:
-	pass
 	obj1: abc = abc()
 	obj2: abc_child = abc_child()
 
 	print(obj1.get_var1)		# does not get the value but still valid syntax
 	print(obj2.get_var1())
-	
 
 	print(obj1.add(10, 5));
 	print(obj1.add(5.0, b = -1, c = -1))
@@ -45,7 +42,7 @@ def main() -> None:
 	print(abc.print_var2(abc))
 	print(abc.print_var2("any expr"))
 
-
-
 if __name__ == '__main__':
 	main()
+
+	

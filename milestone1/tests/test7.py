@@ -1,8 +1,5 @@
-pass
 def func1():
-	pass
 	quit("ur4jf3wr049j")
-
 
 def func2(param1:int = 10, param2:str = "default") -> None:
 	print(param1)
@@ -11,8 +8,6 @@ def func2(param1:int = 10, param2:str = "default") -> None:
 
 def func3(void, param1:str,  param2:int = 10, param3: list[bool] = [False, False], ):
 
-	
-	pass;pass;pass;\
 	return -1 + len("ehriwu") and not 1;	
 	print("this should not be printed")
 
@@ -45,7 +40,7 @@ def main() -> None:
 	func3("\n\n", 30)
 
 	a:int; b:int; c: float
-	a = b = c = ([5, 3] ), 	# this should still parse correctly
+	a = b = c = [5, 3] , 	# this should still parse correctly
 	print(a)
 	func4(1)
 	func5(-1)
@@ -57,11 +52,9 @@ def main() -> None:
 	func9(1, z = 100)
 	func10(1, 1)
 
-
-
-
 	func1()		# quits
-
 
 if __name__ == "__main__":
 	main()
+
+	

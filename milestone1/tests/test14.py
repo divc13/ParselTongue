@@ -1,14 +1,15 @@
 class Node:
-    def __init__(self, value: int):
+    def __init__(self, value: int) -> None:
         self.value: int = value
         self.left: 'Node' = None
         self.right: 'Node' = None
 
 class BinaryTree:
-    def __init__(self, values: list[int]):
+    def __init__(self, values: list[int]) -> None:
         self.root: 'Node' = None
-        for value in values:
-            self.insert(value)
+        i: int
+        for i in range(len(values)):
+            self.insert(values[i])
 
     def insert(self, value: int) -> None:
         if self.root is None:
@@ -57,8 +58,12 @@ values: list[int] = [7, 3, 10, 5, 1, 9, 12]
 tree: BinaryTree = BinaryTree(values)
 print(tree.inorder_traversal()) 
 print(tree.search(5))  
-print(tree.search(8))  
+print(tree.search(8)) 
+
+def main() -> None:
+    ""
 
 
 if __name__ == "__main__":
     main()
+    
