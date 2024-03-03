@@ -169,7 +169,10 @@ void TreeNode::make_dot(string out)
 			for (char c : node->name) {
 				if (c == '"') {
 					DOT << '\\' << '\"';
-				} else {
+				} else if (c == '\\'){
+					DOT << '\\' << '\\';
+				}
+				else {
 					DOT << c;
 				}
 			}

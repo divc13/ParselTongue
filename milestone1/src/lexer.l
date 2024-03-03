@@ -58,7 +58,7 @@ SHORTSTRING_ITEM				{SHORTSTRING_CHAR}|{STRING_ESCAPE_SEQ}
 LONGSTRING_ITEM					{LONGSTRING_CHAR}|{STRING_ESCAPE_SEQ}
 SHORTSTRING_CHAR				[^\\\n\"\']
 LONGSTRING_CHAR					[^\\]
-STRING_ESCAPE_SEQ				\\[.\n]|\\\r\n|\\n
+STRING_ESCAPE_SEQ				"\\".|"\\\r\n"|"\\\n"
 
 INTEGER							{DECINTEGER}|{BININTEGER}|{OCTINTEGER}|{HEXINTEGER}
 DECINTEGER	 					{NONZERODIGIT}([_]?{DIGIT})*|"0"+([_]?"0")*
@@ -289,8 +289,21 @@ NEWLINE							\n
 }
 
 {STRING_LITERAL} {
-	yylval.info.name = strdup(yytext);
+	string tmp(yytext), target = "\\\r\n";
+
+	size_t pos = 0;
+    while ((pos = tmp.find(target, pos)) != string::npos) {
+        tmp.replace(pos, target.length(), "");
+    }
+	pos = 0, target = "\\\n";
+
+    while ((pos = tmp.find(target, pos)) != string::npos) {
+        tmp.replace(pos, target.length(), "");
+    }
+
+	yylval.info.name = strdup(tmp.c_str());
 	yylval.info.type = strdup("STRING_LITERAL");
+
 	return STRING_LITERAL;
 }
 
