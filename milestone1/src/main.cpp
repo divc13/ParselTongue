@@ -47,8 +47,7 @@ int main(int argc, char **argv)
 		fclose(yyin);
 		return -1;
 	}
-	if(!verbose)
-		AST_Maker(root);
+	if(!verbose) AST_Maker(root);
 	root->make_dot(outputFile);
 	fclose(yyin);
 

@@ -4,13 +4,7 @@ input_files=()
 output_pdf_files=()
 output_dot_files=()
 verbose_flag=0
-
-handle_error() {
-    echo "An error occurred on line $1"
-    exit 1
-}
-
-trap 'handle_error $LINENO' ERR
+set -e
 
 
 
@@ -150,8 +144,8 @@ else
 		input_file="${input_files[$i]}"
 		output_file="${output_dot_files[$i]}"
 
-		./parser "${verbose_flag}" "$input_file" "$output_file"
-	done
+		./parser "${verbose_flag}" "$input_file" "$output_file" | true
+	done	
 fi
 
 for ((i = 0; i < ${#input_files[@]}; i++)); do
