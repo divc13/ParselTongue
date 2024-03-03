@@ -9,7 +9,8 @@ set<string> SkipToken2({
 	"block",
 	"slices",
 	"bitwise_operators",
-	// "expressions",
+	"kwargs",
+	"expression",
 });
 
 // Non-Terminals to remove from parse tree to form AST
@@ -28,7 +29,7 @@ set<string> SkipToken1({
 	"nonlocal",
 	"assert", 	
 	"class",		
-	"in",		
+	// "in",		
 	"def",
 	"for",
 	"while",
@@ -77,7 +78,7 @@ set<string> SkipToken1({
 	// "for_stmt",
 	"expressions",
 	"expressions_comma",
-	"expression",
+	// "expression",
 	"disjunction",
 	"conjunction",
 	"inversion",
@@ -109,6 +110,7 @@ set<string> SkipToken1({
 	"elif",
 	// "if_expression",
 	// "operand",
+	"param_default",
 });
 
 TreeNode::node(string __name, string __type)
@@ -265,6 +267,7 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 			continue;
 		}
 
+
 		// second iteration
 		
 		// handle colon in different cases, if used for expression, bring up, otherwise skip
@@ -277,14 +280,14 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 
 
 		// bring operators, dot and to symbol one level up
-		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("in") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
 		// perform constrained exchang, if the root nonterminal cannot be replaced
-		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
 		{
 			cout << child->name<< " , "<< root->name << " , " << (root->children).size() << endl;
 			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0) ConstrainedExchange(root, nchild, 1);

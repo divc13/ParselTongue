@@ -10,3 +10,4 @@ action_adder
 *.dot
 .vscode
 output/
+run.sh

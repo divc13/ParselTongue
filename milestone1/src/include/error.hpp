@@ -38,12 +38,12 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
     const char *format = error_format_string (1 + argsize + too_many_expected_tokens);
 
     const YYLTYPE *loc = yypcontext_location (ctx);
-	cerr << RED ;
+	cout << RED ;
     while (*format)
 	{
         if (format[0] == '%' && format[1] == '@')
         {
-            YY_LOCATION_PRINT (stderr, yylloc);
+            YY_LOCATION_PRINT (stdout, yylloc);
             format += 2;
         }
 
@@ -51,7 +51,7 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
 		{
 
             string token = (yysymbol_name(yypcontext_token(ctx)));
-            cerr << BLUE << TokenNameToString[token] << RESET;
+            cout << BLUE << TokenNameToString[token] << RESET;
 			format += 2;
 		}
 
@@ -59,19 +59,19 @@ int yyreport_syntax_error (const yypcontext_t *ctx)
 		{
 			int i = format[1] - '0';
             string token = yysymbol_name(arg[i]);
-			cerr << BLUE << TokenNameToString[token] <<RESET;
+			cout << BLUE << TokenNameToString[token] <<RESET;
 			format += 3;
 		}
 
 	  	else
 		{
-            cerr << RED;
+            cout << RED;
 			fputc (*format, stderr);
 			++format;
 		}
 
 	}
-	cerr << endl << RESET;
+	cout << endl << RESET;
 
 	return 1;
 
@@ -84,28 +84,28 @@ void yyerror (string s) {
 	int last_col = yylloc.last_column;
 	int last_line = yylloc.last_line;
 	
-	cerr << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
+	cout << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
 	if (s.length())
 	{
 		cout << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
 		return;
 	}
-    cerr << setw(10) << right << line << left << setw(6) << CYAN <<" | " <<text << RESET << endl;
-	cerr << setw(17) << right << MAGENTA << " | ";
+    cout << setw(10) << right << line << left << setw(6) << CYAN <<" | " <<text << RESET << endl;
+	cout << setw(17) << right << MAGENTA << " | ";
     
 	int i = 0;
 	if(last_col != column)
 	{
     	for (i = 0; i < column - 1; i++)
-        cerr << " ";
+        cout << " ";
 	}
 
 	while(i < last_col - 1) 
 	{
-		cerr << "~";
+		cout << "~";
 		i++;
 	}
 
-    cerr << "^" << endl << RESET;
+    cout << "^" << endl << RESET;
 
 } 
