@@ -14,7 +14,7 @@ class abc():
 		print("var2")
 		return "this is the return value for an empty return function but works"
 	
-	def add(self, a: int = 2, b: int = 5, /,) -> int:
+	def add(self, a: int = 2, b: int = 5, ) -> int:
 		return a + b;
 
 	def add(self, a: float = 5.00e0, b: float = -1., c: float = -1) -> float:
