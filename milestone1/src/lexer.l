@@ -89,7 +89,7 @@ BLANKLINE1						([ \t\f\r]*\n)*
 BLANKLINE2						^([ \t\f\r]*\n)*
 EXPLICIT_LINE_JOIN				{WHITESPACE}*("\\\r\n"|"\\\n")
 COMMENT							"#".*
-LINE_COMMENT					^{WHITESPACE}*"#".*\n
+LINE_COMMENT					^{WHITESPACE}*"#".*{BLANKLINE1}
 NEWLINE							\n
 
 %x IDT
@@ -119,7 +119,12 @@ NEWLINE							\n
 
 <IDT>{BLANKLINE1} {;}
 {BLANKLINE2} {
-	;
+	if (!insideBrackets) {
+		BEGIN IDT;
+		yylval.info.name = strdup("NEWLINE");
+		yylval.info.type = strdup("NEWLINE");
+		return NEWLINE;
+	}
 }
 
 {NEWLINE} {

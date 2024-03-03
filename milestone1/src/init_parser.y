@@ -46,6 +46,7 @@ extern TreeNode* root;
 %%
 
 file: ENDMARK 
+	| NEWLINE ENDMARK 
 	| statements ENDMARK 
 
 statements: statements statement
