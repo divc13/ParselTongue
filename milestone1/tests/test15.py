@@ -1,4 +1,4 @@
-def _func1__(var1: (3+4)) -> None:
+def _func1__(var1: int = (3+4)) -> None:
 	print("func1")
 
 class abc():
@@ -20,8 +20,8 @@ def insertion_sort(arr: list[int]) -> list[int]:
 	return arr
 
 
-def main() -> (5 + 3):
-	x: 5;\
+def main() -> None:
+	x: int = 5;\
 	_func1__(3)
 	obj1: abc = abc();
 	
