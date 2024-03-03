@@ -226,12 +226,10 @@ void ConstrainedExchange(TreeNode* root, int &nchild, int args)
 	children.erase(children.begin() + nchild + 1);
 	if(args == 2)
 	{
-		cout << children[nchild]->name << endl;
 		if (nchild < 1) return;
 		(child->children).insert((child->children).begin(), children[nchild - 1]);
 		children.erase(children.begin() + nchild - 1);
 		nchild--;
-		cout << children[nchild]->name << endl;
 	}
 	nchild++;
 	return;
