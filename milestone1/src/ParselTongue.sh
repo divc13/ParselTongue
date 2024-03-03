@@ -136,8 +136,6 @@ else
 		output_file="${output_dot_files[$i]}"
 		
 		./parser "${verbose_flag}" "$input_file" "$output_file"
-		# ./run.sh "${verbose_flag}" "$input_file" "$output_file" 2>/dev/null
-		# ./parser "${verbose_flag}" "$input_file" "$output_file" | true
 	done	
 fi
 

@@ -33,11 +33,6 @@ bool fileExists(const string &filename)
 int main(int argc, char **argv)
 {
 	// yydebug = 1;
-
-	fclose(stderr);
-	fopen("redir.txt", "w");
-	// freopen("redir.txt", "w", stdout);
-
 	argv++, argc--;
 	indent_stack.push(0);
 	init_symbol_name_tables();
