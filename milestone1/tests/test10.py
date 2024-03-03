@@ -13,7 +13,6 @@ class abc():
 
     def __init__(self, attr3: bool = True, ):        self.attr1: int = 1;        self.attr2: bool = attr3;
 
-    @staticmethod
     def static_method():
         print("static method")
         print(abc.static_variable)

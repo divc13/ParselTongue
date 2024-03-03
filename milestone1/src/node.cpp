@@ -181,7 +181,7 @@ void TreeNode::make_dot(string out)
 			else if (node->type == "NEWLINE") 				DOT << "pink";
 			else if (node->type == "INDENT") 				DOT << "pink";
 			else if (node->type == "KEYWORD") 				DOT << "orchid1";
-			else if (node->type == "OPERATOR") 				DOT << "lightblue";
+			else if (node->type == "OPERATOR") 				DOT << "lightcoral";
 			else if (node->type == "IDENTIFIER") 			DOT << "slategray1";
 			else if (node->type == "INT_LITERAL") 			DOT << "lightgreen";
 			else if (node->type == "FLOAT_LITERAL") 		DOT << "lightgreen";
@@ -206,6 +206,24 @@ void ExchangeWithChild(TreeNode* root, int nchild)
 	TreeNode* child = children[nchild];
 	*root = *child;
 	children.erase(children.begin() + nchild);
+	root -> children = children;
+	delete child;
+	return;
+}
+
+void ConstrainedExchange(TreeNode* root, int nchild, int args)
+{
+	vector<TreeNode*> children = root->children;
+	TreeNode* child = children[nchild];
+	if (nchild + 1 > (root->children).size()) return;
+	(child->children).insert((child->children).begin(), (root->children)[nchild + 1]);
+	children.erase(children.begin() + nchild + 1);
+	if(args == 2)
+	{
+		if (nchild < 1) return;
+		(child->children).insert((child->children).begin(), (root->children)[nchild - 1]);
+		children.erase(children.begin() + nchild - 1);
+	}
 	root -> children = children;
 	delete child;
 	return;
@@ -244,20 +262,29 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 			continue;
 		}
 
+		// second iteration
+		
 		// handle colon in different cases, if used for expression, bring up, otherwise skip
-		if((child->name).compare(":") == 0 && flag == 0)
+		if((child->name).compare(":") == 0 && flag == 1)
 		{
 			if ((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) ExchangeWithChild(root, nchild);
 			else SkipNode(root, nchild);
 			continue;
 		}
 
-		// second iteration
 
 		// bring operators, dot and to symbol one level up
 		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end())
 		{
 			ExchangeWithChild(root, nchild);
+			continue;
+		}
+
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1)
+		{
+			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0) ConstrainedExchange(root, nchild, 1);
+			else ConstrainedExchange(root, nchild, 1);
+			nchild++;
 			continue;
 		}
 

@@ -45,7 +45,7 @@ def main() -> None:
 	func3("\n\n", 30)
 
 	a:int; b:int; c: float
-	a = b = c = ([5, 3], ), 	# this should still parse correctly
+	a = b = c = ([5, 3] ), 	# this should still parse correctly
 	print(a)
 	func4(1)
 	func5(-1)

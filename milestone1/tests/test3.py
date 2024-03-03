@@ -27,15 +27,12 @@ def main() -> None:
   root: TreeNode = TreeNode(1)
   root.left = TreeNode(2)
   root.right = TreeNode(3)
-  root.left.left = TreeNode(4)
-  root.left.right = TreeNode(5)
 
   if is_balanced(root):
     print("Tree is balanced")
 
   unbalanced_root: TreeNode = TreeNode(1)
   unbalanced_root.left = TreeNode(2)
-  unbalanced_root.left.left = TreeNode(3)
 
   if(not is_balanced(unbalanced_root)):
     print("Tree is not balanced")
