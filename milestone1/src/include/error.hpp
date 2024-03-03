@@ -84,7 +84,7 @@ void yyerror (string s) {
 	int last_col = yylloc.last_column;
 	int last_line = yylloc.last_line;
 	
-	cerr << RED << "in line " << line << ", column " << column << RESET << endl;
+	cerr << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
 	if (s.length())
 	{
 		cout << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
