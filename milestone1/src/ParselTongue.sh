@@ -144,8 +144,8 @@ else
 		input_file="${input_files[$i]}"
 		output_file="${output_dot_files[$i]}"
 
-		./parser "${verbose_flag}" "$input_file" "$output_file"
-		# ./parser "${verbose_flag}" "$input_file" "$output_file" | true
+		# ./parser "${verbose_flag}" "$input_file" "$output_file"
+		./parser "${verbose_flag}" "$input_file" "$output_file" | true
 	done	
 fi
 
