@@ -19,6 +19,8 @@ void ExchangeWithChild(TreeNode* root, int nchild);
 // nchild is zero indexed
 void SkipNode(TreeNode* root, int nchild);
 
+// make sibling nodes of nchild its children without bring up the nchild
+void ConstrainedExchange(TreeNode* root, int &nchild, int args);
 
 // make AST from the parse tree
 void AST_Maker(TreeNode* root);
