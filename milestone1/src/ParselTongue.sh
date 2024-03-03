@@ -123,7 +123,7 @@ elif [ "${#input_files[@]}" -lt "${#output_pdf_files[@]}" ]; then
 		./parser "${verbose_flag}" "$input_file" "$output_file"
 	done
 else
-	echo -e "\e[33mWarning: More input files provided than output files.\e[0m"
+	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
 	for ((i = 0; i < ${#input_files[@]}; i++)); do
 		if [ "$i" -lt "${#output_pdf_files[@]}" ]; then
 			output_file="${output_pdf_files[$i]}"
@@ -133,17 +133,18 @@ else
 			echo -e "\e[34m${output_file}\e[0m"
 		fi
 	done
-	read -p "Do you want to proceed with the above additional default output files? (y/n): " response
+	# read -p "Do you want to proceed with the above additional default output files? (y/n): " response
 
-	if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-		echo "Exiting script."
-		exit 1
-	fi
+	# if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+	# 	echo "Exiting script."
+	# 	exit 1
+	# fi
 
 	for ((i = 0; i < ${#input_files[@]}; i++)); do
 		input_file="${input_files[$i]}"
 		output_file="${output_dot_files[$i]}"
 
+		# ./parser "${verbose_flag}" "$input_file" "$output_file"
 		./parser "${verbose_flag}" "$input_file" "$output_file" | true
 	done	
 fi
@@ -159,3 +160,4 @@ for ((i = 0; i < ${#input_files[@]}; i++)); do
 		dot -Tpdf "${dot_output_file}" -o "${pdf_output_file}" &
 	fi
 done
+wait

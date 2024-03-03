@@ -87,7 +87,7 @@ INDENT_TAB						^[\f]*[\t]*
 INDENT_MIX_ERROR				^[\t \f]*
 BLANKLINE1						([ \t\f\r]*\n)*
 BLANKLINE2						^([ \t\f\r]*\n)*
-EXPLICIT_LINE_JOIN				{WHITESPACE}*(\\\r\n|\\\n)
+EXPLICIT_LINE_JOIN				{WHITESPACE}*("\\\r\n"|"\\\n")
 COMMENT							"#".*
 LINE_COMMENT					^{WHITESPACE}*"#".*\n
 NEWLINE							\n
@@ -118,7 +118,9 @@ NEWLINE							\n
 {EXPLICIT_LINE_JOIN}+{WHITESPACE}* {;}
 
 <IDT>{BLANKLINE1} {;}
-{BLANKLINE2} {;}
+{BLANKLINE2} {
+	;
+}
 
 {NEWLINE} {
 	if (!insideBrackets) {

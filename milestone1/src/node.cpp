@@ -8,7 +8,7 @@ set<string> SkipToken2({
 	"statement",
 	"block",
 	"slices",
-	"bitwise_operator",
+	"bitwise_operators",
 	// "expressions",
 });
 
@@ -82,7 +82,8 @@ set<string> SkipToken1({
 	"conjunction",
 	"inversion",
 	"comparison",
-	// "bitwise_operator",
+	"bitwise_operator",
+	// "bitwise_operators",
 	"bitwise_xor",
 	"bitwise_or",
 	"bitwise_and",
@@ -211,21 +212,23 @@ void ExchangeWithChild(TreeNode* root, int nchild)
 	return;
 }
 
-void ConstrainedExchange(TreeNode* root, int nchild, int args)
+void ConstrainedExchange(TreeNode* root, int &nchild, int args)
 {
-	vector<TreeNode*> children = root->children;
+	vector<TreeNode*> &children = root->children;
 	TreeNode* child = children[nchild];
-	if (nchild + 1 > (root->children).size()) return;
-	(child->children).insert((child->children).begin(), (root->children)[nchild + 1]);
+	if (nchild + 1 >= (root->children).size()) return;
+	(child->children).insert((child->children).begin(), children[nchild + 1]);
 	children.erase(children.begin() + nchild + 1);
 	if(args == 2)
 	{
+		cout << children[nchild]->name << endl;
 		if (nchild < 1) return;
-		(child->children).insert((child->children).begin(), (root->children)[nchild - 1]);
+		(child->children).insert((child->children).begin(), children[nchild - 1]);
 		children.erase(children.begin() + nchild - 1);
+		nchild--;
+		cout << children[nchild]->name << endl;
 	}
-	root -> children = children;
-	delete child;
+	nchild++;
 	return;
 }
 
@@ -256,7 +259,7 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 		// first iteration
 
 		// remove all non terminals with one child
-		if((child->children).size() == 1 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 0)
+		if((child->children).size() == 1 && SkipToken1.find(child->name) != SkipToken1.end() && (child->type).compare("IDENTIFIER") != 0 && flag == 0)
 		{
 			SkipNode(root, nchild);
 			continue;
@@ -267,24 +270,24 @@ void generateAST(map<TreeNode*, bool> &visited, TreeNode* root, int flag)
 		// handle colon in different cases, if used for expression, bring up, otherwise skip
 		if((child->name).compare(":") == 0 && flag == 1)
 		{
-			if ((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) ExchangeWithChild(root, nchild);
+			if ((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0 && (child->type).compare("IDENTIFIER") != 0) ExchangeWithChild(root, nchild);
 			else SkipNode(root, nchild);
 			continue;
 		}
 
 
 		// bring operators, dot and to symbol one level up
-		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end())
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
-		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("->") == 0) && flag == 1)
+		if(((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
 		{
+			cout << child->name<< " , "<< root->name << " , " << (root->children).size() << endl;
 			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0) ConstrainedExchange(root, nchild, 1);
-			else ConstrainedExchange(root, nchild, 1);
-			nchild++;
+			else if(nchild > 1)ConstrainedExchange(root, nchild, 2);
 			continue;
 		}
 
