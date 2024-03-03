@@ -3,8 +3,6 @@ parser
 *.output
 *.tab.c
 *.tab.h
-Grammar_modifier/
-Faltu/
 *.gv
 parser.y
 *.lex.c

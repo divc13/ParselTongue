@@ -4,9 +4,6 @@ input_files=()
 output_pdf_files=()
 output_dot_files=()
 verbose_flag=0
-set -e
-
-
 
 display_help() {
 	echo -e "\e[32mUsage: $0 [-v] [-i input_files...] [-o output_pdf_files...]"
@@ -133,12 +130,6 @@ else
 			echo -e "\e[34m${output_file}\e[0m"
 		fi
 	done
-	# read -p "Do you want to proceed with the above additional default output files? (y/n): " response
-
-	# if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-	# 	echo "Exiting script."
-	# 	exit 1
-	# fi
 
 	for ((i = 0; i < ${#input_files[@]}; i++)); do
 		input_file="${input_files[$i]}"
