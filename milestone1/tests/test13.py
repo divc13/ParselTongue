@@ -5,7 +5,7 @@ def prime_factors(n: int) -> list[int]:
         factors.append(2)
         n //= 2
 
-    for i in range(3, int(n**0.5) + 1, 2):
+    for i in range(3, n**2 + 1, 2):
         while n % i == 0:
             factors.append(i)
             n //= i
@@ -19,7 +19,7 @@ def triangular_number(n: int) -> int:
     return (n * (n + 1)) // 2
 
 def is_perfect_square(n: int) -> bool:
-    root: int = int(n ** 0.5)
+    root: int = n ** 2
     return root * root == n
 
 def sum_of_squares_of_prime_factors(n: int) -> int:
