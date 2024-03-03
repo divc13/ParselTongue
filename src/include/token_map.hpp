@@ -1,4 +1,4 @@
-#include "parser.tab.h"
+#include "../parser.tab.h"
 
 map<string, int> StringToToken;
 map<string, string> TokenNameToString;

@@ -5,6 +5,8 @@
 #define MAGENTA "\033[1;35m"
 #define CYAN "\033[1;36m"
 
+extern string inputFile;
+
 static const char * error_format_string (int argc)
 {
   	switch (argc)
@@ -79,17 +81,30 @@ void yyerror (string s) {
 
     int column = yylloc.first_column;
     int line = yylloc.first_line;
-
+	int last_col = yylloc.last_column;
+	int last_line = yylloc.last_line;
+	
 	cerr << RED << "in line " << line << ", column " << column << RESET << endl;
 	if (s.length())
 	{
-		cerr << RED << s << RESET << endl;
+		cout << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
 		return;
 	}
     cerr << setw(10) << right << line << left << setw(6) << CYAN <<" | " <<text << RESET << endl;
 	cerr << setw(17) << right << MAGENTA << " | ";
-    for (int i = 0; i < column - 1; i++)
-        cerr << "~";
+    
+	int i = 0;
+	if(last_col != column)
+	{
+    	for (i = 0; i < column - 1; i++)
+        cerr << " ";
+	}
+
+	while(i < last_col - 1) 
+	{
+		cerr << "~";
+		i++;
+	}
 
     cerr << "^" << endl << RESET;
 

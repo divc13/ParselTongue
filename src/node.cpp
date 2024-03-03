@@ -1,7 +1,4 @@
-#include "node.hpp"
-// #include "token_map.hpp"
-
-extern map<string, string> TokenNameToString;
+#include "include/node.hpp"
 
 // root of the parse tree / AST
 TreeNode* root;

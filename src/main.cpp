@@ -2,8 +2,8 @@
 using namespace std;
 
 #include "parser.tab.h"
-#include "token_map.hpp"
-#include "node.hpp"
+#include "include/token_map.hpp"
+#include "include/node.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -19,6 +19,7 @@ extern FILE *yyin;
 extern int yylineno;
 extern string text;
 stack<int> indent_stack;
+string inputFile = "";
 extern TreeNode *root;
 
 bool fileExists(const string &filename)
@@ -37,7 +38,7 @@ int main(int argc, char **argv)
 	init_symbol_name_tables();
 
 	int verbose = atoi(argv[0]);
-	string inputFile = argv[1];
+	inputFile = argv[1];
 	string outputFile = argv[2];
 
 	yyin = fopen(inputFile.c_str(), "r");
