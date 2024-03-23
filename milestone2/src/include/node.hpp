@@ -4,13 +4,16 @@ using namespace std;
 typedef struct node{
 	string name;
 	string type;
+	int lineno;
+	int column;
+	int size;
 	vector <struct node*> children;
-	node(string __name, string __type = "NON_TERMINAL");
+	node(string __name, int __lineno = 0, int __column = 0, string __type = "NON_TERMINAL");
 	static void make_dot(string out);
 } TreeNode;
 
 
-// replace parent to one of the child, making the sibling so f the corrsponding child as its children
+// replace parent to one of the child, making the siblings of the corrsponding child as its children
 // nchild is 0 indexed
 // child must be a terminal symbol
 void ExchangeWithChild(TreeNode* root, int nchild);

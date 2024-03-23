@@ -30,7 +30,7 @@ void action_printer(string builder)
 		//terminal
 		if (builder[itr] == 't')
 		{
-			OUT << "\t\t\ttemp = new TreeNode(($" << child << ").name, ($" << child << ").type);\n";
+			OUT << "\t\t\ttemp = new TreeNode(($" << child << ").name, yylineno, yylloc.first_column, ($" << child << ").type);\n";
 			OUT << "\t\t\t(($$) -> children).push_back(temp); \n";
 		}
 

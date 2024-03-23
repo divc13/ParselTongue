@@ -108,7 +108,7 @@ if [ "${#input_files[@]}" -eq "${#output_pdf_files[@]}" ]; then
 		input_file="${input_files[$i]}"
 		output_file="${output_dot_files[$i]}"
 
-		./parser "${verbose_flag}" "$input_file" "$output_file"
+		./compiler "${verbose_flag}" "$input_file" "$output_file"
 	done
 elif [ "${#input_files[@]}" -lt "${#output_pdf_files[@]}" ]; then
 	echo -e "\e[33mWarning: Less input files provided than output files. The additional output files wont be used.\e[0m"
@@ -117,7 +117,7 @@ elif [ "${#input_files[@]}" -lt "${#output_pdf_files[@]}" ]; then
 		input_file="${input_files[$i]}"
 		output_file="${output_dot_files[$i]}"
 
-		./parser "${verbose_flag}" "$input_file" "$output_file"
+		./compiler "${verbose_flag}" "$input_file" "$output_file"
 	done
 else
 	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
@@ -135,7 +135,7 @@ else
 		input_file="${input_files[$i]}"
 		output_file="${output_dot_files[$i]}"
 		
-		./parser "${verbose_flag}" "$input_file" "$output_file"
+		./compiler "${verbose_flag}" "$input_file" "$output_file"
 	done	
 fi
 

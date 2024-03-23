@@ -87,10 +87,10 @@ void yyerror (string s) {
 	cout << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
 	if (s.length())
 	{
-		cout << RED << "In " << inputFile << ", found error in line " << line << ", column " << column << RESET << endl;
+		cout << RED << s << RESET << endl;
 		return;
 	}
-	cout << setw(10) << right << line << left << setw(6) << CYAN <<" | " <<text << RESET << endl;
+	cout << setw(10) << right << line << left << setw(6) << CYAN << " | " << text << RESET << endl;
 	cout << setw(17) << right << MAGENTA << " | ";
 	
 	int i = 0;
@@ -107,5 +107,4 @@ void yyerror (string s) {
 	}
 
 	cout << "^" << endl << RESET;
-
 } 

@@ -113,10 +113,12 @@ set<string> SkipToken1({
 	"param_default",
 });
 
-TreeNode::node(string __name, string __type)
+TreeNode::node(string __name, int __lineno, int __column, string __type)
 {
 	name = __name;
 	type = __type;
+	lineno = __lineno;
+	column = __column;
 }
 
 void TreeNode::make_dot(string out)
