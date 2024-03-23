@@ -1,7 +1,10 @@
 #include "include/node.hpp"
+#include "include/symtable.hpp"
 
 // root of the parse tree / AST
 TreeNode* root;
+symbolTable* currTable = new symbolTable("__GLOBAL__", NULL);
+symbolTable* globTable = currTable;
 
 set<string> SkipToken2({
 	"arguments",	// what to do in function
@@ -344,4 +347,67 @@ void AST_Maker(TreeNode* root)
 	visited[root] = true;
 	generateAST(visited, root, 3);
 	return;
+}
+
+void generate_symtable(map<TreeNode*, bool> &visited, TreeNode* root, tableRecord* record)
+{
+	if((root->type).compare("INT_LITERAL") == 0)
+	{
+		globTable->insert(root->name, "int", 28, root->lineno, root->column);
+		return;
+	}
+
+	if((root->type).compare("FLOAT_LITERAL") == 0)
+	{
+		globTable->insert(root->name, "float", 24, root->lineno, root->column);
+		return;
+	}
+
+	if((root->type).compare("STRING_LITERAL") == 0)
+	{
+		globTable->insert(root->name, "str", 49 + (root->name).length(), root->lineno, root->column);
+		return;
+	}
+
+	if((root->type).compare("DELIMITER") == 0 && (root->name).compare(":"))
+	{
+		record = new tableRecord();
+		if((((root->children)[0])->name).compare("list") == 0)
+		{
+			string type = ((root->children)[1])->name + "[" + (((root->children)[1])->children)[1]->name + "]";
+			
+		}
+	}
+
+	// if((root->type).compare("DELIMITER") == 0)
+	// {
+	// 	globTable->insert(root->name, "str", 49 + (root->name).length(), root->lineno, root->column);
+	// 	return;
+	// }
+
+	// if((root->type).compare("DELIMITER") == 0)
+	// {
+	// 	globTable->insert(root->name, "str", 49 + (root->name).length(), root->lineno, root->column);
+	// 	return;
+	// }
+
+
+	vector<TreeNode*> &children = root -> children;
+
+	for(int nchild = 0; nchild < (root -> children).size(); nchild++)
+	{
+		TreeNode* child = children[nchild];
+		if(visited[child] == true)
+			continue;
+		
+		visited[child] = true;
+		generate_symtable(visited, child, record);
+	}
+}
+
+void symTable_Maker(TreeNode* root)
+{
+	map<TreeNode*, bool> visited;
+	visited[root] = true;
+	generate_symtable(visited, root, NULL);
 }

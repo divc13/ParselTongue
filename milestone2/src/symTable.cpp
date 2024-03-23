@@ -1,8 +1,6 @@
 #include "include/symtable.hpp"
 #include "include/error.hpp"
 
-symbolTable* currTable = new symbolTable("__GLOBAL__", NULL);
-
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, symbolTable* __symTab)
 {
 	name = __name;

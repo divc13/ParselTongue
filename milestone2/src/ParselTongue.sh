@@ -67,6 +67,18 @@ for ((i=1; i<=$#; i++)); do
 	--verbose|-verbose|-v )
 		verbose_flag=1
 		;;
+	--dot|-dot|-d )
+		verbose_flag=1
+		;;
+	--ast|-ast|-a )
+		verbose_flag=1
+		;;
+	--ptree|-ptree|-p )
+		verbose_flag=1
+		;;
+	--table|-table|-t )
+		verbose_flag=1
+		;;
 	-* )
 		echo -e "\e[31mUnknown option: $arg\e[0m"
 		exit 1
@@ -150,4 +162,5 @@ for ((i = 0; i < ${#input_files[@]}; i++)); do
 		dot -Tpdf "${dot_output_file}" -o "${pdf_output_file}" &
 	fi
 done
+
 wait

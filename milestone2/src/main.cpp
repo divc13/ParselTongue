@@ -73,13 +73,13 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	if(!verbose) AST_Maker(root);
-	// root->make_dot(outputFile);
-	ofstream CSV(outputFile);
-	if (!CSV.is_open()) {
-		cout << "Error: Unable to open file " << outputFile << endl;
-		return 0;
-	}
-	currTable->generateCSV(CSV);
+	root->make_dot(outputFile);
+	// ofstream CSV(outputFile);
+	// if (!CSV.is_open()) {
+	// 	cout << "Error: Unable to open file " << outputFile << endl;
+	// 	return 0;
+	// }
+	// currTable->generateCSV(CSV);
 	fclose(yyin);
 
 	return 0;

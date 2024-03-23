@@ -11,7 +11,7 @@ typedef struct symRecord {
 	int column;
 	int index;
 	struct symTable* symTab;
-	symRecord(string __name, string __type, int __size, int __lineno, int __column, struct symTable* __symTab = NULL);
+	symRecord(string __name = NULL, string __type = NULL, int __size = NULL, int __lineno = NULL, int __column = NULL, struct symTable* __symTab = NULL);
 	void generateCSV(ofstream &CSV);
 
 } tableRecord;
