@@ -463,9 +463,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			record->type = ((root->children)[1])->name;
 
 			if ((record->type).compare("int") == 0)
-			{
 				record->size = SIZE_INT;
-			}
 
 			else if ((record->type).compare("float") == 0)
 				record->size = SIZE_FLOAT;

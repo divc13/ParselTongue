@@ -182,7 +182,30 @@ int symbolTable::UpdateRecord(tableRecord* newRecord)
 
 void tableRecord::generateCSV(ofstream &CSV)
 {
-	CSV << index << ", " << name << ", " << type << ", " << size << ", " << lineno << endl;
+	CSV << index << ", ";
+	
+	if (type.compare("str") == 0)
+	{
+		for (char c : name)
+		{
+			if (c == '"')
+			{
+				CSV << '\\' << '\"';
+			}
+			else if (c == '\\')
+			{
+				CSV << '\\' << '\\';
+			}
+			else
+			{
+				CSV << c;
+			}
+		}
+	}
+	else
+		CSV << name;
+	
+	CSV << ", " << type << ", " << size << ", " << lineno << endl;
 	return;
 }
 

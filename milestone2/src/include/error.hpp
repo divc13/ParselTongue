@@ -50,7 +50,7 @@ void printError(T first, Args... args) {
 template<typename T, typename... Args>
 void printErrorMsg(int lineno, int col, T first, Args... args)
 {
-	printError(BLUE, UNDERLINE, inputFile, ": ", lineno, ": ", col, ":", RESET, first, args...);
+	printError(BLUE, UNDERLINE, inputFile, ": ", lineno, ": ", col, ":", RESET, " ", first, args...);
 	printErrorLine(lineno, col);
 	return;
 }
