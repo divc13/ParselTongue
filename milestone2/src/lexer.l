@@ -323,15 +323,15 @@ NEWLINE							\n
 {STRING_LITERAL} {
 	string tmp(yytext), target = "\\\r\n";
 
-	size_t pos = 0;
-    while ((pos = tmp.find(target, pos)) != string::npos) {
-        tmp.replace(pos, target.length(), "");
-    }
-	pos = 0, target = "\\\n";
+	// size_t pos = 0;
+    // while ((pos = tmp.find(target, pos)) != string::npos) {
+    //     tmp.replace(pos, target.length(), "");
+    // }
+	// pos = 0, target = "\\\n";
 
-    while ((pos = tmp.find(target, pos)) != string::npos) {
-        tmp.replace(pos, target.length(), "");
-    }
+    // while ((pos = tmp.find(target, pos)) != string::npos) {
+    //     tmp.replace(pos, target.length(), "");
+    // }
 
 	yylval.info.name = strdup(tmp.c_str());
 	yylval.info.type = strdup("STRING_LITERAL");

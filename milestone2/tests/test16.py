@@ -10,7 +10,7 @@ class B(A):
   def __init__(self):
     self.x = 1
     self.y = 3.14
-    self.z: str = """I am 
+    self.z: str = """I am \
     \n new"""
 
 
