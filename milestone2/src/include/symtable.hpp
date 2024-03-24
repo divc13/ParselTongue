@@ -1,4 +1,4 @@
-#include "include/node.hpp"
+#include "node.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -65,4 +65,4 @@ enum tableType{
 };
 
 // genrates the symbol table
-void symTable_Maker(TreeNode *root);
+int symTable_Maker(TreeNode *root);

@@ -103,7 +103,11 @@ int main(int argc, char **argv)
 		root->make_dot(noExtentionOutputFile + "_ast.dot");
 
 
-	symTable_Maker(root);
+	rtnval = symTable_Maker(root);
+	// if(rtnval < 0) {
+	// 	fclose(yyin);
+	// 	return -1;
+	// } 
 
 	if(table_flag)
 	{

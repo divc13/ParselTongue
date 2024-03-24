@@ -287,7 +287,11 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		Table->tableType = tableType::FUNCTION;
 
 		currTable = Table;
-		currTable->offset = (((root->children)[2])->children).size();
+		for(auto &itr: ((root->children)[2])->children)
+		{
+			if ((itr->name).compare("self"))
+				currTable->offset++;
+		}
 	}
 
 	// handle classes
@@ -399,7 +403,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 				return -1;
 			}
 
-			if((currTable->parentSymtable)->tableType != tableType::CLASS)
+			if(!(currTable->parentSymtable) || (currTable->parentSymtable)->tableType != tableType::CLASS)
 			{
 				printErrorMsg((node->children)[0]->lineno, (node->children)[0]->column, RED, "constructor function \"__init__\" can only be defined inside a class", RESET);
 				return -1;
@@ -409,7 +413,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			node = (node->children)[1];
 		}
 
-		else if(currTable->tableType == tableType::CLASS)
+		else if(tempTable->tableType == tableType::CLASS)
 		{
 			isStatic = true;
 		}
@@ -441,10 +445,13 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			else if ((record->type).compare("bool") == 0)
 				record->size = SIZE_BOOL;
 
+			else if ((record->type).compare("str") == 0)
+				record->size = SIZE_PTR;
+
 			// dealing with classes
-			else if ((record->type).compare("str") && (record->type).compare(0, 4, "list"))
+			else if ((record->type).compare(0, 4, "list"))
 			{
-				tableRecord *entry = currTable->lookup(record->type, record->lineno, record->column, true);
+				tableRecord *entry = tempTable->lookup(record->type, record->lineno, record->column, true);
 				if (!entry)
 				{
 					return -1;
@@ -454,7 +461,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		}
 
-		int err = currTable->insert(record, NULL);
+		int err = tempTable->insert(record, NULL);
 		// cout <<"name = " << record->name << " type = " << record->type << " size = " << record->size << "lineno = " << record->lineno << endl;
 		
 		if (err < 0)
@@ -472,7 +479,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	// Update the sizes of the records, in case of lists and strings
 	if ((root->type).compare("OPERATOR") == 0 && (root->name).compare("=") == 0)
 	{
-		
+		assert((root->children).size() == 2);
 		if (record)
 		{
 			if (!(record->size))
@@ -500,12 +507,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 						record->size = num * SIZE_BOOL;
 
 					else if (category.compare("str") == 0)
-					{
-						for(auto &c: node->children)
-						{
-							record->size += SIZE_STRING((c->name).length());
-						}
-					}
+						record->size = num * SIZE_PTR;
 						
 					// class objects
 					else
@@ -520,9 +522,6 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 					
 				}
 
-				else if ((record->type).compare("str") == 0)
-					record->size = SIZE_STRING((node->name).length());
-
 				int ret = currTable->UpdateRecord(record);
 				if (ret < 0)
 					return ret;
@@ -531,6 +530,34 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 			free(record);
 			record = NULL;
+		}
+
+		else
+		{
+			if ((currTable->name).compare("__init__") == 0)
+			{
+
+				TreeNode* node = (root->children)[0];
+				assert(currTable->parentSymtable);
+				assert(currTable->parentSymtable->tableType == tableType::CLASS);
+
+				if ((node->name).compare(".") == 0)
+				{
+					assert((node->children).size() == 2);
+					if (((node->children)[0]->name).compare("self") == 0)
+					{
+						node = (node->children)[1];
+						tableRecord* entry = currTable->parentSymtable->lookup(node->name, node->lineno, node->column, true);
+						if (!entry)
+							return -1;
+
+						int err = currTable->parentSymtable->insert(entry, NULL);
+						if (err < 0)
+							return -1;
+
+					}
+				}
+			}
 		}
 
 		return 0;
@@ -546,6 +573,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		record = new tableRecord(node->name, type, currTable->size, node->lineno, node->column);
 
+		assert(currTable->parentSymtable);
 		int err = currTable->parentSymtable->insert(record, currTable);
 		if (err < 0)
 			return err;
@@ -576,9 +604,9 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	return 0;
 }
 
-void symTable_Maker(TreeNode *root)
+int symTable_Maker(TreeNode *root)
 {
 	globTable->tableType = tableType::GLOBAL;
 	tableRecord* record = NULL;
-	generate_symtable(root, record);
+	return generate_symtable(root, record);
 }

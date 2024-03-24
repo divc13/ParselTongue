@@ -249,6 +249,9 @@ power: primary OP_ATH_POW factor
     | primary
 
 primary: NAME DLM_DOT NAME 
+    | NAME DLM_LFT_SQ expressions DLM_RGT_SQ DLM_DOT NAME
+    | NAME DLM_LFT_SQ expressions DLM_RGT_SQ DLM_DOT NAME DLM_LFT_PRN arguments DLM_RGT_PRN
+    | NAME DLM_LFT_SQ expressions DLM_RGT_SQ DLM_DOT NAME DLM_LFT_PRN DLM_RGT_PRN
     | NAME DLM_DOT operand
     | operand 
     | atom
