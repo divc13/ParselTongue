@@ -30,6 +30,7 @@ string tokenString = "";
 vector<string> verbose_stack;
 ofstream VERBOSE;
 
+int table_flag = 0;
 
 //<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <table_flag>
 int main(int argc, char **argv)
@@ -42,10 +43,10 @@ int main(int argc, char **argv)
 	inputFile = argv[0];
 	string outputFile = argv[1];
 	string noExtentionOutputFile = argv[2];
-	int verbose_flag = atoi(argv[3]);
+	verbose = atoi(argv[3]);
 	int ast_flag = atoi(argv[4]);
 	int ptree_flag = atoi(argv[5]);
-	int table_flag = atoi(argv[6]);
+	table_flag = atoi(argv[6]);
 
 	// yyin = fopen(inputFile.c_str(), "r");
 	FILE* file = fopen(inputFile.c_str(), "r");
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 
-		globTable->generateCSV(CSV);
+		globTable->dumpCSV(CSV);
 	}
 
 	fclose(yyin);

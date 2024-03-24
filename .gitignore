@@ -1,5 +1,4 @@
 lex.yy.c
-compiler
 *.output
 *.tab.c
 *.tab.h
@@ -11,3 +10,4 @@ action_adder
 .vscode
 output/
 run.sh
+compiler

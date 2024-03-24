@@ -1,7 +1,23 @@
-def foo()->None:
-    a:int = 5
-    b:int = 5
-    c:int = 5
-    def hoo(a:int, b:str)->None:
-        a = 5
-        
+class A:
+
+  def __init__(self):
+    self.x: int = 1
+    self.y: float = 3.14
+
+
+class B(A):
+
+  def __init__(self):
+    self.x = 1
+    self.y = 3.14
+    self.z: str = """I am 
+    \n new"""
+
+
+def main():
+  a: A = A()
+  b: B = B()
+
+
+if __name__ == '__main__':
+  main()

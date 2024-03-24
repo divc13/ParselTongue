@@ -70,7 +70,7 @@ IDENTIFIER						[a-zA-Z_][a-zA-Z0-9_]*
 KEYWORD							False|await|else|import|None|break|except|in|raise|True|class|finally|is|return|continue|for|lambda|tryas|def|from|nonlocal|while|assert|del|global|with|async|elif|if|yield
 
 STRING_LITERAL					{STRINGPREFIX}?({SHORTSTRING}|{LONGSTRING})
-STRINGPREFIX					r|u|R|U|f|F|fr|Fr|fR|FR|rf|rF|Rf|RF
+STRINGPREFIX					r|R
 SHORTSTRING						"\'"{SHORTSTRING_ITEM}*"\'"|"\""{SHORTSTRING_ITEM}*"\""
 LONGSTRING						"\'\'\'"{LONGSTRING_ITEM}*"\'\'\'"|"\"\"\""{LONGSTRING_ITEM}*"\"\"\""
 SHORTSTRING_ITEM				{SHORTSTRING_CHAR}|{STRING_ESCAPE_SEQ}

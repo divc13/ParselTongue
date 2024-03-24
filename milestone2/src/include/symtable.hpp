@@ -17,9 +17,10 @@ typedef struct symRecord {
 	int lineno;
 	int column;
 	int index;
+	bool isStatic;
 	struct symTable* symTab;
-	symRecord(string __name = "", string __type = "", int __size = 0, int __lineno = 0, int __column = 0, struct symTable* __symTab = NULL);
-	void generateCSV(ofstream &CSV);
+	symRecord(string __name = "", string __type = "", int __size = 0, int __lineno = 0, int __column = 0, struct symTable* __symTab = NULL, bool isStatic = false);
+	void dumpCSV(ofstream &CSV);
 
 } tableRecord;
 
@@ -29,9 +30,17 @@ typedef struct symTable {
 	map<int, tableRecord*> entries;
     vector<int> childIndices;
 	struct symTable* parentSymtable;
+
+	// defined by enum of tableType
+	int tableType;
+
+	// for ease, denotes size of function or class
 	int size = 0;
 	int offset = 0;
     int currentIndex = 0;
+
+	// for static variables of a class
+	set<int> staticIndices;
 		
 	int UpdateRecord(tableRecord* newRecord);
 	symTable(string __name, struct symTable* __parentSymtable);
@@ -43,10 +52,17 @@ typedef struct symTable {
 	tableRecord* lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err);
 
 	int insert(tableRecord* inputRecord, struct symTable* funcTable);
-	void generateCSV(ofstream &CSV);
+	void dumpCSV(ofstream &CSV);
 
 } symbolTable;
 
+enum tableType{
+	
+	FUNCTION,
+	CLASS,
+	GLOBAL,
+
+};
 
 // genrates the symbol table
 void symTable_Maker(TreeNode *root);
