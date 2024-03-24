@@ -17,12 +17,6 @@ void printErrorLine(int line, int column);
 void printError() {cout << endl;};
 void printErrorMsg() {cout << endl;};
 
-// template<typename T, typename... Args>
-// void printError(T first, Args... args);
-
-// template<typename T, typename... Args>
-// void printErrorMsg(int lineno, int col, T first, Args... args);
-
 void printErrorLine(int line, int column)
 {
 	cout << setw(10) << right << line << left << setw(6) << CYAN << " | " << lines[line - 1] << RESET;
@@ -37,9 +31,6 @@ void printErrorLine(int line, int column)
 
 	cout << "^" << endl << RESET;
 }
-
-// template void printError();
-// template void printErrorMsg();
 
 template<typename T, typename... Args>
 void printError(T first, Args... args) {

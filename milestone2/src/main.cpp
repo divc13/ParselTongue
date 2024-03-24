@@ -3,7 +3,6 @@ using namespace std;
 
 #include "parser.tab.h"
 #include "include/token_map.hpp"
-#include "include/node.hpp"
 #include "include/symtable.hpp"
 
 #define RED "\033[1;31m"

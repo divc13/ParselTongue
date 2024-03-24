@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 input_files=()
 output_files=()
 output_files_without_extention=()

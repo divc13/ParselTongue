@@ -1,6 +1,4 @@
-#include<bits/stdc++.h>
-using namespace std;
-// #include "include/error.hpp"
+#include "include/node.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -49,3 +47,6 @@ typedef struct symTable {
 
 } symbolTable;
 
+
+// genrates the symbol table
+void symTable_Maker(TreeNode *root);

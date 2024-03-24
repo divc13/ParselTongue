@@ -26,6 +26,3 @@ void ConstrainedExchange(TreeNode* root, int &nchild, int args);
 
 // make AST from the parse tree
 void AST_Maker(TreeNode* root);
-
-// genrates the symbol table
-void symTable_Maker(TreeNode *root);
