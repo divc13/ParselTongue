@@ -23,8 +23,16 @@ stack<int> indent_stack;
 string inputFile = "";
 extern TreeNode *root;
 extern symbolTable* currTable;
+extern symbolTable* globTable;
 vector<string> lines;
 
+int verbose = 0;
+string tokenString = "";
+vector<string> verbose_stack;
+ofstream VERBOSE;
+
+
+//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <table_flag>
 int main(int argc, char **argv)
 {
 	// yydebug = 1;
@@ -32,9 +40,13 @@ int main(int argc, char **argv)
 	indent_stack.push(0);
 	init_symbol_name_tables();
 
-	int verbose = atoi(argv[0]);
-	inputFile = argv[1];
-	string outputFile = argv[2];
+	inputFile = argv[0];
+	string outputFile = argv[1];
+	string noExtentionOutputFile = argv[2];
+	int verbose_flag = atoi(argv[3]);
+	int ast_flag = atoi(argv[4]);
+	int ptree_flag = atoi(argv[5]);
+	int table_flag = atoi(argv[6]);
 
 	// yyin = fopen(inputFile.c_str(), "r");
 	FILE* file = fopen(inputFile.c_str(), "r");
@@ -65,6 +77,15 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (verbose)
+	{
+		VERBOSE.open(noExtentionOutputFile + ".debug");
+		if (!VERBOSE.is_open()) {
+			cout << RED << "Error: Unable to open file " << noExtentionOutputFile << ".debug" << RESET << endl;
+			return 0;
+		}
+	}
+
 	yyin = file;
 
 	int rtnval = yyparse();
@@ -72,14 +93,29 @@ int main(int argc, char **argv)
 		fclose(yyin);
 		return -1;
 	}
-	if(!verbose) AST_Maker(root);
-	root->make_dot(outputFile);
-	// ofstream CSV(outputFile);
-	// if (!CSV.is_open()) {
-	// 	cout << "Error: Unable to open file " << outputFile << endl;
-	// 	return 0;
-	// }
-	// currTable->generateCSV(CSV);
+
+	if (ptree_flag)
+		root->make_dot(noExtentionOutputFile + "_ptree.dot");
+
+	AST_Maker(root);
+
+	if (ast_flag)
+		root->make_dot(noExtentionOutputFile + "_ast.dot");
+
+
+	symTable_Maker(root);
+
+	if(table_flag)
+	{
+		ofstream CSV(noExtentionOutputFile + ".csv");
+		if (!CSV.is_open()) {
+			cout << RED << "Error: Unable to open file " << noExtentionOutputFile << ".csv" << RESET << endl;
+			return 0;
+		}
+
+		globTable->generateCSV(CSV);
+	}
+
 	fclose(yyin);
 
 	return 0;

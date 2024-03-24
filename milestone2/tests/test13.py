@@ -38,7 +38,7 @@ def special_value(n: int) -> int:
         return sum_of_squares_of_prime_factors(n)
 
 result: int = special_value(100)
-print(result)
+# print(result)
 
 def main() -> None:
     pass

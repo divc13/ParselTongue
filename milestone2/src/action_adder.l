@@ -13,7 +13,6 @@ string header = "";
 void action_printer(string builder)
 {
 	int itr = 0;
-	int child = 1;
 
 	OUT << "\n\n\t\t{\n";
 
@@ -30,19 +29,36 @@ void action_printer(string builder)
 		//terminal
 		if (builder[itr] == 't')
 		{
-			OUT << "\t\t\ttemp = new TreeNode(($" << child << ").name, yylineno, yylloc.first_column, ($" << child << ").type);\n";
+			OUT << "\t\t\ttemp = new TreeNode(($" << itr + 1 << ").name, yylineno, yylloc.first_column, ($" << itr + 1 << ").type);\n";
 			OUT << "\t\t\t(($$) -> children).push_back(temp); \n";
 		}
 
 		//non terminal
 		else if (builder[itr] == 'n')
 		{
-			OUT << "\t\t\t(($$) -> children).push_back($" << child << ");\n";
+			OUT << "\t\t\t(($$) -> children).push_back($" << itr + 1 << ");\n";
 		}
 
-		child++;
 		itr++;
 	}
+
+	if (builder.length())
+	{
+		itr = 0;
+		OUT << "\t\t\tlog_reduce(__LINE__, {($$)->name";
+		while (itr < builder.length())
+		{
+			if (builder[itr] == 'n')
+				OUT << ", ($" << itr + 1 << ")->name";
+			else
+				OUT << ", ($" << itr + 1 << ").name";
+			itr++;
+		}
+		OUT << "});\n";
+	}
+	else 
+		OUT << "\t\t\tlog_reduce(__LINE__, {($$)->name});\n";
+	
 	OUT << "\t\t}\n\n";
 
 }

@@ -1,6 +1,7 @@
 #include "include/symtable.hpp"
 #include "include/error.hpp"
 
+
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, symbolTable* __symTab)
 {
 	name = __name;
@@ -11,13 +12,14 @@ tableRecord::symRecord(string __name, string __type, int __size, int __lineno, i
 	symTab = __symTab;
 }
 
+
 symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 {
 	name = __name;
 	parentSymtable = __parentSymtable;
 }
 
-tableRecord* symbolTable::lookup(string name)
+tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
 {
 	vector<int>indices = name_to_indices[name];
 	tableRecord* record = NULL;
@@ -28,14 +30,20 @@ tableRecord* symbolTable::lookup(string name)
 		return record;
 	}
 
-	if(!parentSymtable) return NULL;
+	if(!parentSymtable) 
+	{
+		if (err)
+			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, RESET);
+		return NULL;
+	}
 
-	record = parentSymtable->lookup(name);
+	record = parentSymtable->lookup(name, line_no, column, err);
 	return record;
 
 }
 
-tableRecord* symbolTable::lookup(string name, vector<tableRecord*> &params)
+// error must be explicitly mentioned outside
+tableRecord* symbolTable::lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err)
 {
 	vector<int>indices = name_to_indices[name];
 	tableRecord* record = NULL;
@@ -57,33 +65,41 @@ tableRecord* symbolTable::lookup(string name, vector<tableRecord*> &params)
 		}
 	}
 
-	if(!parentSymtable) return NULL;
+	if(!parentSymtable) 
+	{
+		if (err)
+			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, RESET);
+		return NULL;
+	}
 
-	record = parentSymtable->lookup(name, params);
+	record = parentSymtable->lookup(name, params, line_no, column, err);
 	return record;	
 }
 
-int symbolTable::insert(string name, string type, int size, int lineno, int column)
+int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 {
-	vector<int>indices = name_to_indices[name];
-	
-	assert(indices.size() == 0 || indices.size() == 1);
-	if (indices.size()) return (entries[indices[0]])->lineno;
+	string name = inputRecord->name;
+	string type = inputRecord->type;
+	int lineno = inputRecord->lineno;
+	int column = inputRecord->column;
+	int __size = inputRecord->size;
 
-	tableRecord* record = new tableRecord(name, type, size, lineno, column, NULL);
-	
-	name_to_indices[name].push_back(currentIndex);
-	entries[currentIndex] = record;
-	currentIndex++;
+	vector<int> indices = name_to_indices[name];
 
-	return 0;
-}
-
-int symbolTable::insert(string name, string type, int size, int lineno, int column, symbolTable* funcTable)
-{
-	vector<int>indices = name_to_indices[name];
+	if (!funcTable)
+	{
+		assert(indices.size() == 0 || indices.size() == 1);
+		if (indices.size())
+		{
+			tableRecord* entry = entries[0];
+			printErrorMsg(lineno, column, RED, "redefintion of \'", name, "\'", RESET);
+			printErrorMsg(entry->lineno, entry->column, BLUE, " previous definition of \'", name, "\' with type ", entry->type, RESET);
+			return -1;
+		}
+		
+	}
 	
-	if (indices.size())
+	else if (indices.size())
 	{
 		for (auto idx: indices)
 		{
@@ -114,7 +130,7 @@ int symbolTable::insert(string name, string type, int size, int lineno, int colu
 
 			if (num == funcTable->offset)
 			{
-				printErrorMsg(lineno, column, RED, "redefintion of `", name, "`", RESET);
+				printErrorMsg(lineno, column, RED, "redefintion of \'", name, "\'", RESET);
 				printErrorMsg(entry->lineno, entry->column, BLUE, " previous definition of \'", name, "\' with type ", entry->type, RESET);
 				return -1;
 			}
@@ -123,16 +139,46 @@ int symbolTable::insert(string name, string type, int size, int lineno, int colu
 
 	}
 
-	tableRecord* record = new tableRecord(name, type, size, lineno, column, funcTable);
+	tableRecord* record = new tableRecord(name, type, __size, lineno, column, funcTable);
 	
 	name_to_indices[name].push_back(currentIndex);
-	childIndices.push_back(currentIndex);
+	record->index = currentIndex;
 	entries[currentIndex] = record;
+
+	// size of the table not updated when function or class entry
+	if (!funcTable)
+		size += __size;
+	else
+		childIndices.push_back(currentIndex);
 	currentIndex++;
 
 	return 0;
 }
 
+int symbolTable::UpdateRecord(tableRecord* newRecord)
+{
+	vector<int>indices = name_to_indices[newRecord->name];
+	if(indices.size() == 0)
+	{
+		printErrorMsg(newRecord->lineno, newRecord->column, RED, "Use of undeclared variable \'", newRecord->name, "\'", RESET);
+		return -1;
+	}
+
+	assert(indices.size() == 1);
+	int index = indices[0];
+	tableRecord* record = entries[index];
+
+	if((newRecord->type).length()) record->type = newRecord->type;
+	if(newRecord->size) 
+	{
+		size += newRecord->size - record->size;
+		record->size = newRecord->size;
+	}
+	record->lineno = newRecord->lineno;
+	record->column = newRecord->column;
+
+	return 0;	
+}
 
 void tableRecord::generateCSV(ofstream &CSV)
 {
@@ -164,9 +210,11 @@ void symbolTable::generateCSV(ofstream &CSV)
 	for (; index < currentIndex; index++)
 		(entries[index])->generateCSV(CSV);
 
+
 	for(auto index : childIndices) 
 	{
 		CSV << "\n\n\n\n\n";
+		assert(entries[index]->symTab);
 		((entries[index])->symTab)->generateCSV(CSV);
 	}
 

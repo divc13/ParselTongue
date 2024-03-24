@@ -1,6 +1,6 @@
 all: compiler 
 
-compiler: lex.yy.c parser.tab.c main.cpp parser.tab.h include/parsing_error.hpp include/token_map.hpp include/node.hpp node.cpp include/error.hpp symTable.cpp include/symtable.hpp
+compiler: lex.yy.c parser.tab.c main.cpp parser.tab.h include/parsing_error.hpp include/error.hpp include/token_map.hpp include/node.hpp node.cpp include/error.hpp symTable.cpp include/symtable.hpp
 	g++ main.cpp lex.yy.c parser.tab.c node.cpp symTable.cpp -o compiler
 
 lex.yy.c: lexer.l
