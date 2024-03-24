@@ -47,7 +47,7 @@ tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
 	if(!parentSymtable) 
 	{
 		if (err)
-			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, RESET);
+			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, "\'", RESET);
 		return NULL;
 	}
 
@@ -82,7 +82,7 @@ tableRecord* symbolTable::lookup(string name, vector<tableRecord*> &params, int 
 	if(!parentSymtable) 
 	{
 		if (err)
-			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, RESET);
+			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, "\'", RESET);
 		return NULL;
 	}
 
@@ -205,33 +205,125 @@ int symbolTable::UpdateRecord(tableRecord* newRecord)
 	return 0;	
 }
 
-void formatString(string &name);
+void formatString(string &name, string &type)
+{
+	if (name[0] == 'r' || name[0] == 'R')
+	{
+		name = name.substr(1, name.length() - 1);
+		if(name[0] == 'b' || name[0] == 'B')
+		{
+			name = name.substr(1, name.length() - 1);
+			while (name[0] == '\'' || name[0] == '\"')
+			{
+				name = name.substr(1, name.length() - 2);
+			}
+			type = "bstr";
+			return;
+		}
+		while (name[0] == '\'' || name[0] == '\"')
+		{
+			name = name.substr(1, name.length() - 2);
+		}
+		return;
+	}
+	if(name[0] == 'b' || name[0] == 'B')
+	{
+		name = name.substr(1, name.length() - 1);
+		if (name[0] == 'r' || name[0] == 'R')
+		{
+			name = name.substr(1, name.length() - 1);
+			while (name[0] == '\'' || name[0] == '\"')
+			{
+				name = name.substr(1, name.length() - 2);
+			}
+			type = "bstr";
+			return;
+		}
+		type = "bstr";
+	}
+	while (name[0] == '\'' || name[0] == '\"')
+	{
+		name = name.substr(1, name.length() - 2);
+	}
+	string tmp = "";
+	for (int i = 0; i < name.length(); i++)
+	{
+		if (name[i] == '\\')
+		{
+			switch (name[i + 1])
+			{
+			case '\\':
+				tmp += '\\';
+				i++;
+				break;
+			case '\'':
+				tmp += '\'';
+				i++;
+				break;
+			case '\"':
+				tmp += '\"';
+				i++;
+				break;
+			case 'a':
+				tmp += '\a';
+				i++;
+				break;
+			case 'b':
+				tmp += '\b';
+				i++;
+				break;
+			case 'f':
+				tmp += '\f';
+				i++;
+				break;
+			case 'n':
+				tmp += '\n';
+				i++;
+				break;
+			case 'r':
+				tmp += '\r';
+				i++;
+				break;
+			case 't':
+				tmp += '\t';
+				i++;
+				break;
+			case 'v':
+				tmp += '\v';
+				i++;
+				break;
+			case '\n':
+				tmp += '\\';
+				tmp += '\n';
+				i += 2;
+				break;
+			case '\r':
+				tmp += '\\';
+				tmp += '\r';
+				if (i + 2 < name.length() && name[i + 2] == '\n')
+				{
+					tmp += '\n';
+					i++;
+				}
+				i += 2;
+				break;
+			
+			default:
+				tmp += name[i + 1];
+				i++;
+				break;
+			}
+		}
+		else
+			tmp += name[i];
+	}
+	name = tmp;
+	return;
+}
 
 void tableRecord::dumpCSV(ofstream &CSV)
 {
-	CSV << index << ", ";
-	
-	if (type.compare("str") == 0)
-	{
-		for (char c : name)
-		{
-			if (c == '\n') {
-				CSV << '\r' << '\n';
-			}
-			else if (c == '\\')
-			{
-				CSV << '\\' << '\\';
-			}
-			else
-			{
-				CSV << c;
-			}
-		}
-	}
-	else
-		CSV << name;
-	
-	CSV << ", " << type << ", " << size << ", " << lineno << endl;
+	CSV << index << ", " << name << ", " << type << ", " << size << ", " << lineno << endl;
 	return;
 }
 
@@ -261,7 +353,7 @@ void symbolTable::dumpCSV(ofstream &CSV)
 
 	for(auto index : childIndices) 
 	{
-		CSV << "\n\n\n\n\n";
+		CSV << "\n\n\n";
 		assert(entries[index]->symTab);
 		((entries[index])->symTab)->dumpCSV(CSV);
 	}
@@ -366,9 +458,9 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root->type).compare("STRING_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
-		// if (!table_flag)
-		// 	formatString(root->name);
-		record = new tableRecord(root->name, "str", SIZE_STRING((root->name).length()), root->lineno, root->column);
+		string str_type = "str";
+		formatString(root->name, str_type);
+		record = new tableRecord(root->name, str_type, SIZE_STRING((root->name).length()), root->lineno, root->column);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
