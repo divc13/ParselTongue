@@ -32,6 +32,7 @@ symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 	parentSymtable = __parentSymtable;
 }
 
+// for variables
 tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
 {
 	vector<int>indices = name_to_indices[name];
@@ -55,7 +56,7 @@ tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
 
 }
 
-// error must be explicitly mentioned outside
+// for functions
 tableRecord* symbolTable::lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err)
 {
 	vector<int>indices = name_to_indices[name];
@@ -159,14 +160,19 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	record->index = currentIndex;
 	entries[currentIndex] = record;
 
-	// size of the table not updated when function or class entry
+	// size of the table not updated when function entry
 	if (!funcTable)
 		size += __size;
 	else
 		childIndices.push_back(currentIndex);
 
 	if (isStatic)
+	{
 		staticIndices.insert(currentIndex);
+
+		// only one pointer needs to be stored
+		size += SIZE_PTR - __size;
+	}
 	
 	currentIndex++;
 
@@ -194,6 +200,7 @@ int symbolTable::UpdateRecord(tableRecord* newRecord)
 	}
 	record->lineno = newRecord->lineno;
 	record->column = newRecord->column;
+	record->isStatic = newRecord->isStatic;
 
 	return 0;	
 }
@@ -209,7 +216,7 @@ void tableRecord::dumpCSV(ofstream &CSV)
 		for (char c : name)
 		{
 			if (c == '\n') {
-				CSV << "\r\n";
+				CSV << '\r' << '\n';
 			}
 			else if (c == '\\')
 			{
