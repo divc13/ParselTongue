@@ -8,6 +8,26 @@
 #define MAGENTA "\033[1;35m"
 #define CYAN "\033[1;36m"
 
+enum tableType{
+	
+	FUNCTION,
+	CLASS,
+	GLOBAL,
+
+};
+
+enum recordType{
+	
+	FUNCTION,
+	CLASS,
+	INT_LITERAL,
+	FLOAT_LITERAL,
+	STRING_LITERAL,
+	CLASS_ATTRIBUTE,	
+	OBJECT_ATTRIBUTE,	
+	VARIABLE,
+};
+
 struct symTable;
 
 typedef struct symRecord {
@@ -17,9 +37,9 @@ typedef struct symRecord {
 	int lineno;
 	int column;
 	int index;
-	bool isStatic;
+	int recordType;
 	struct symTable* symTab;
-	symRecord(string __name = "", string __type = "", int __size = 0, int __lineno = 0, int __column = 0, struct symTable* __symTab = NULL, bool isStatic = false);
+	symRecord(string __name = "", string __type = "", int __size = 0, int __lineno = 0, int __column = 0, int recordType = recordType::VARIABLE);
 	void dumpCSV(ofstream &CSV);
 
 } tableRecord;
@@ -51,18 +71,10 @@ typedef struct symTable {
 	// here linno and column are those of the entity that is found now and looked up, err shows whether to print error message
 	tableRecord* lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err);
 
-	int insert(tableRecord* inputRecord, struct symTable* funcTable);
+	int insert(tableRecord* inputRecord, struct symTable* funcTable = NULL);
 	void dumpCSV(ofstream &CSV);
 
 } symbolTable;
-
-enum tableType{
-	
-	FUNCTION,
-	CLASS,
-	GLOBAL,
-
-};
 
 // genrates the symbol table
 int symTable_Maker(TreeNode *root);

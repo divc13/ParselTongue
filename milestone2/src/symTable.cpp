@@ -14,15 +14,14 @@ extern TreeNode *root;
 symbolTable *currTable = new symbolTable("__GLOBAL__", NULL);
 symbolTable *globTable = currTable;
 
-tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, symbolTable* __symTab, bool __isStatic)
+tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
 {
 	name = __name;
 	type = __type;
 	size = __size;
 	lineno = __lineno;
 	column = __column;
-	symTab = __symTab;
-	isStatic = __isStatic;
+	recordType = __recordType;
 }
 
 
@@ -97,11 +96,11 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	int lineno = inputRecord->lineno;
 	int column = inputRecord->column;
 	int __size = inputRecord->size;
-	bool isStatic = inputRecord->isStatic;
+	int recordType = inputRecord->recordType;
 
 	vector<int> indices = name_to_indices[name];
 
-	if (!funcTable)
+	if (recordType != recordType::FUNCTION)
 	{
 		assert(indices.size() == 0 || indices.size() == 1);
 		if (indices.size())
@@ -134,6 +133,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 			tableRecord* entry = entries[idx];
 			symbolTable* table = entry->symTab;
 
+			assert(funcTable);
 			if (funcTable->offset != table->offset) continue;
 			
 			int num;
@@ -154,7 +154,8 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	}
 
-	tableRecord* record = new tableRecord(name, type, __size, lineno, column, funcTable, isStatic);
+	tableRecord* record = new tableRecord(name, type, __size, lineno, column, recordType);
+	record->symTab = this;
 	
 	name_to_indices[name].push_back(currentIndex);
 	record->index = currentIndex;
@@ -166,10 +167,10 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	else
 		childIndices.push_back(currentIndex);
 
-	if (isStatic)
+	// static
+	if (recordType == recordType::CLASS_ATTRIBUTE)
 	{
 		staticIndices.insert(currentIndex);
-
 		// only one pointer needs to be stored
 		size += SIZE_PTR - __size;
 	}
@@ -200,7 +201,7 @@ int symbolTable::UpdateRecord(tableRecord* newRecord)
 	}
 	record->lineno = newRecord->lineno;
 	record->column = newRecord->column;
-	record->isStatic = newRecord->isStatic;
+	record->recordType = newRecord->recordType;
 
 	return 0;	
 }
@@ -433,7 +434,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root->type).compare("INT_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
-		record = new tableRecord(root->name, "int", SIZE_INT, root->lineno, root->column);
+		record = new tableRecord(root->name, "int", SIZE_INT, root->lineno, root->column, recordType::INT_LITERAL);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
@@ -445,7 +446,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root->type).compare("FLOAT_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
-		record = new tableRecord(root->name, "float", SIZE_FLOAT, root->lineno, root->column);
+		record = new tableRecord(root->name, "float", SIZE_FLOAT, root->lineno, root->column, recordType::FLOAT_LITERAL);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
@@ -460,7 +461,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		tableRecord* tempRecord = record;
 		string str_type = "str";
 		formatString(root->name, str_type);
-		record = new tableRecord(root->name, str_type, SIZE_STRING((root->name).length()), root->lineno, root->column);
+		record = new tableRecord(root->name, str_type, SIZE_STRING((root->name).length()), root->lineno, root->column, recordType::STRING_LITERAL);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
@@ -477,6 +478,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		TreeNode* node = ((root->children)[0]);
 		symbolTable* tempTable = currTable;
 		bool isStatic = false;
+		int recordType = recordType::VARIABLE;
 
 
 		if((node->name).compare(".") == 0)
@@ -503,14 +505,15 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 			tempTable = currTable->parentSymtable;
 			node = (node->children)[1];
+			recordType = recordType::OBJECT_ATTRIBUTE;
 		}
 
 		else if(tempTable->tableType == tableType::CLASS)
 		{
-			isStatic = true;
+			recordType = recordType::CLASS_ATTRIBUTE;
 		}
 		
-		record = new tableRecord(node->name, "", 0, node->lineno, node->column, NULL, isStatic);
+		record = new tableRecord(node->name, "", 0, node->lineno, node->column, recordType);
 
 		node = (root->children)[1];
 
@@ -663,8 +666,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		if (((root->children)[0]->name).compare("main") && ((root->children)[0]->name).compare("__init__"))
 			type = (((root->children)[4])->children)[0]->name;
 
-		record = new tableRecord(node->name, type, currTable->size, node->lineno, node->column);
-
+		record = new tableRecord(node->name, type, currTable->size, node->lineno, node->column, recordType::FUNCTION);
+		
 		assert(currTable->parentSymtable);
 		int err = currTable->parentSymtable->insert(record, currTable);
 		if (err < 0)
@@ -681,7 +684,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	{
 		TreeNode* node = ((root->children)[0]);
 
-		record = new tableRecord(node->name, node->name, currTable->size, node->lineno, node->column);
+		record = new tableRecord(node->name, node->name, currTable->size, node->lineno, node->column, recordType::CLASS);
 
 		int err = globTable->insert(record, currTable);
 		if (err < 0)
