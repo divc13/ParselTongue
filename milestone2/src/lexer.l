@@ -46,19 +46,19 @@
 	extern int verbose;
 	extern string tokenString;
 	extern vector<string> verbose_stack;
+	extern ofstream VERBOSE;
 
-	void log_token(int token_line, int rule_line, struct __info info) {
+	void log_token(int rule_line, struct __info info) {
 		if(verbose)
 		{
-			printf("Token Received: %s(%s), From Line: %d, Lexer Rule Line: %d\n", info.type, info.name, token_line, rule_line);
+			VERBOSE << "Token Received: " + string(info.type) + "(" + string(info.name) + "), From Line: " + to_string(info.lineno) + ", Lexer Rule Line: " + to_string(rule_line) + "\n";
 			if (tokenString.length())
 				verbose_stack.push_back(tokenString);
 			tokenString = string(info.name);
-			printf("CURRENT STACK STATE \n");
+			VERBOSE << "CURRENT STACK STATE \n";
 			for(int i = 0; i < verbose_stack.size(); i++)
-				printf("| %s ", verbose_stack[i].c_str());
-			printf("|\n\n\n");
-			cout << endl;
+				VERBOSE << "| " + verbose_stack[i] + " ";
+			VERBOSE << "|\n\n\n";
 		}
 	}
 
@@ -122,13 +122,17 @@ NEWLINE							\n
 		indent_stack.pop();
 		yylval.info.name = strdup("DEDENT");
 		yylval.info.type = strdup("DEDENT");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return DEDENT;
 	}
 	
 	yylval.info.name = strdup("EOF");
 	yylval.info.type = strdup("EOF");
-	log_token(yylineno, __LINE__, yylval.info);
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	log_token(__LINE__, yylval.info);
 	return ENDMARK;
 }
 
@@ -144,7 +148,9 @@ NEWLINE							\n
 		BEGIN IDT;
 		yylval.info.name = strdup("NEWLINE");
 		yylval.info.type = strdup("NEWLINE");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return NEWLINE;
 	}
 }
@@ -154,7 +160,9 @@ NEWLINE							\n
 		BEGIN IDT;
 		yylval.info.name = strdup("NEWLINE");
 		yylval.info.type = strdup("NEWLINE");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return NEWLINE;
 	}
 }
@@ -179,7 +187,9 @@ NEWLINE							\n
 		BEGIN INITIAL;
 		yylval.info.name = strdup("INDENT");
 		yylval.info.type = strdup("INDENT");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return INDENT;
 	}
 	BEGIN INITIAL;
@@ -221,7 +231,9 @@ NEWLINE							\n
 		BEGIN INITIAL;
 		yylval.info.name = strdup("INDENT");
 		yylval.info.type = strdup("INDENT");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return INDENT;
 	}
 	BEGIN INITIAL;
@@ -251,7 +263,9 @@ NEWLINE							\n
 		indent_stack.pop();
 		yylval.info.name = strdup("DEDENT");
 		yylval.info.type = strdup("DEDENT");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return DEDENT;
 	}
 	num_pops = 0;
@@ -266,7 +280,9 @@ NEWLINE							\n
 		num_pops--;
 		yylval.info.name = strdup("DEDENT");
 		yylval.info.type = strdup("DEDENT");
-		log_token(yylineno, __LINE__, yylval.info);
+		yylval.info.lineno = yylineno;
+		yylval.info.colno = yylloc.first_column;
+		log_token(__LINE__, yylval.info);
 		return DEDENT;
 	}
 	BEGIN INITIAL;
@@ -285,8 +301,10 @@ NEWLINE							\n
 {KEYWORD} {
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("KEYWORD");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
 	string token_str = yytext;
-	log_token(yylineno, __LINE__, yylval.info);
+	log_token(__LINE__, yylval.info);
 	return StringToToken[token_str];
 }
 
@@ -294,29 +312,37 @@ NEWLINE							\n
 {OPERATOR} {
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("OPERATOR");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
 	string token_str = yytext;
-	log_token(yylineno, __LINE__, yylval.info);
+	log_token(__LINE__, yylval.info);
 	return StringToToken[token_str];
 }
 
 {IDENTIFIER} {
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("IDENTIFIER");
-	log_token(yylineno, __LINE__, yylval.info);
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	log_token(__LINE__, yylval.info);
 	return NAME;
 }
 
 {INTEGER} {
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("INT_LITERAL");
-	log_token(yylineno, __LINE__, yylval.info);
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	log_token(__LINE__, yylval.info);
 	return INT_LITERAL;
 }
 
 {FLOATNUMBER} {
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("FLOAT_LITERAL");
-	log_token(yylineno, __LINE__, yylval.info);
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	log_token(__LINE__, yylval.info);
 	return FLOAT_LITERAL;
 }
 
@@ -335,8 +361,10 @@ NEWLINE							\n
 
 	yylval.info.name = strdup(tmp.c_str());
 	yylval.info.type = strdup("STRING_LITERAL");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
 
-	log_token(yylineno, __LINE__, yylval.info);
+	log_token(__LINE__, yylval.info);
 	return STRING_LITERAL;
 }
 
@@ -348,8 +376,10 @@ NEWLINE							\n
 
 	yylval.info.name = strdup(yytext);
 	yylval.info.type = strdup("DELIMITER");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
 	string token_str = yytext;
-	log_token(yylineno, __LINE__, yylval.info);
+	log_token(__LINE__, yylval.info);
 	return StringToToken[token_str];
 }
 

@@ -34,16 +34,61 @@ void printErrorLine(int line, int column)
 	cout << endl;
 }
 
-template<typename T, typename... Args>
-void printError(T first, Args... args) {
-	cout << first;
-	printError(args...);
+// template<typename T, typename... Args>
+// void printError(T first, Args... args) {
+// 	cout << first;
+// 	printError(args...);
+// }
+
+// template<typename T, typename... Args>
+// void printErrorMsg(int lineno, int col, T first, Args... args)
+// {
+// 	printError(BLUE, UNDERLINE, inputFile, ":", lineno, ":", col, ":", RESET, " ", first, args...);
+// 	printErrorLine(lineno, col);
+// 	return;
+// }
+
+map<int, string> ErrorMap;
+
+void init_error()
+{
+	ErrorMap[0] = "no previous definition found for ";
+	ErrorMap[1] = "redefinition of ";
+	ErrorMap[2] = "a different kind of symbol was declared as ";
+	ErrorMap[3] = "Use of undeclared variable ";
+	ErrorMap[4] = "a class type must be declared as ";
+	ErrorMap[5] = "attribute declaration of class other than self class is forbidden";
+	ErrorMap[6] = "attribute declaration of self class allowed only within constructor";
+	ErrorMap[7] = "constructor function \"__init__\" can only be defined inside a class";
+	ErrorMap[8] = "None of the attributes of the class match with ";
 }
 
-template<typename T, typename... Args>
-void printErrorMsg(int lineno, int col, T first, Args... args)
+void init_note()
 {
-	printError(BLUE, UNDERLINE, inputFile, ":", lineno, ":", col, ":", RESET, " ", first, args...);
-	printErrorLine(lineno, col);
-	return;
+	ErrorMap[0] = "previous definition of ";
+	ErrorMap[1] = "previous declaration of ";
+}
+
+// enum ERR {
+
+
+
+// };
+
+// enum NOTE {
+
+
+
+// };
+
+void raise_error(int err, tableRecord* record)
+{
+	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << RED << ErrorMap[err] << record->name << ":" << RESET;
+	printErrorLine(record->lineno, record->column);
+}
+
+void raise_note(int err, tableRecord* record)
+{
+	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << ErrorMap[err] << record->name << ":" << RESET;
+	printErrorLine(record->lineno, record->column);
 }

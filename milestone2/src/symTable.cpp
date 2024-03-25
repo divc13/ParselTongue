@@ -116,7 +116,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		if (indices.size())
 		{
 			tableRecord* entry = entries[0];
-			printErrorMsg(lineno, column, RED, "redefintion of \'", name, "\'", RESET);
+			printErrorMsg(lineno, column, RED, "redefinition of \'", name, "\'", RESET);
 			printErrorMsg(entry->lineno, entry->column, BLUE, " previous definition of \'", name, "\' with type ", entry->type, RESET);
 			return -1;
 		}
@@ -361,11 +361,11 @@ void symbolTable::dumpCSV(ofstream &CSV)
 	for (; index < currentIndex; index++)
 		(entries[index])->dumpCSV(CSV);
 
-	for(auto index : childIndices) 
+	for(auto child : childIndices) 
 	{
 		CSV << "\n\n\n";
-		assert(entries[index]->symTab);
-		((entries[index])->symTab)->dumpCSV(CSV);
+		assert(entries[child]->symTab);
+		((entries[child])->symTab)->dumpCSV(CSV);
 	}
 
 	return;
@@ -665,7 +665,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 							assert (currTable->parentSymtable->parentSymtable);
 							if (entry->symTab->tableType != tableType::CLASS)
 							{
-								printErrorMsg((node->children)[1]->lineno, (node->children)[1]->column, RED, (node->children)[1]->name, " doesnot match with any of the attributes of the class", RESET);
+								printErrorMsg((node->children)[1]->lineno, (node->children)[1]->column, RED, (node->children)[1]->name, " does not match with any of the attributes of the class", RESET);
 								return -1;
 							}
 

@@ -11,8 +11,8 @@ class A:
 class B(A):
 
   def __init__(self):
-    self.x = 1
-    self.y = 3.14
+    self.x: float = 1
+    self.y: int = 3.14
     self.z: str = """I am \
     \n new"""
 

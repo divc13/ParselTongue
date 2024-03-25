@@ -4,6 +4,7 @@ using namespace std;
 #include "parser.tab.h"
 #include "include/token_map.hpp"
 #include "include/symtable.hpp"
+#include "include/error.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -39,6 +40,8 @@ int main(int argc, char **argv)
 	argv++, argc--;
 	indent_stack.push(0);
 	init_symbol_name_tables();
+	init_error();
+	init_note();
 
 	inputFile = argv[0];
 	string outputFile = argv[1];
