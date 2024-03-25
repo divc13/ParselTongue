@@ -100,7 +100,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	vector<int> indices = name_to_indices[name];
 
-	if (recordType != recordType::FUNCTION)
+	if (recordType != recordType::TYPE_FUNCTION)
 	{
 		assert(indices.size() == 0 || indices.size() == 1);
 		if (indices.size())
@@ -434,7 +434,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root->type).compare("INT_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
-		record = new tableRecord(root->name, "int", SIZE_INT, root->lineno, root->column, recordType::INT_LITERAL);
+		record = new tableRecord(root->name, "int", SIZE_INT, root->lineno, root->column, recordType::CONST_INT);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
@@ -446,7 +446,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root->type).compare("FLOAT_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
-		record = new tableRecord(root->name, "float", SIZE_FLOAT, root->lineno, root->column, recordType::FLOAT_LITERAL);
+		record = new tableRecord(root->name, "float", SIZE_FLOAT, root->lineno, root->column, recordType::CONST_FLOAT);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
@@ -461,7 +461,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		tableRecord* tempRecord = record;
 		string str_type = "str";
 		formatString(root->name, str_type);
-		record = new tableRecord(root->name, str_type, SIZE_STRING((root->name).length()), root->lineno, root->column, recordType::STRING_LITERAL);
+		record = new tableRecord(root->name, str_type, SIZE_STRING((root->name).length()), root->lineno, root->column, recordType::CONST_STRING);
 		if(!globTable->lookup(record->name, record->lineno, record->column, false))
 			globTable->insert(record, NULL);
 		free (record);
@@ -666,7 +666,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		if (((root->children)[0]->name).compare("main") && ((root->children)[0]->name).compare("__init__"))
 			type = (((root->children)[4])->children)[0]->name;
 
-		record = new tableRecord(node->name, type, currTable->size, node->lineno, node->column, recordType::FUNCTION);
+		record = new tableRecord(node->name, type, currTable->size, node->lineno, node->column, recordType::TYPE_FUNCTION);
 		
 		assert(currTable->parentSymtable);
 		int err = currTable->parentSymtable->insert(record, currTable);
@@ -684,7 +684,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	{
 		TreeNode* node = ((root->children)[0]);
 
-		record = new tableRecord(node->name, node->name, currTable->size, node->lineno, node->column, recordType::CLASS);
+		record = new tableRecord(node->name, node->name, currTable->size, node->lineno, node->column, recordType::TYPE_CLASS);
 
 		int err = globTable->insert(record, currTable);
 		if (err < 0)
