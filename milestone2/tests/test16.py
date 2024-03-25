@@ -4,6 +4,7 @@ class A:
     a:int = 1
     self.x: int = 1
     self.y: float = 3.14
+    self.t: float = 3.14
   a:int = 1
   def b()->None:
     b:int = 5
@@ -11,10 +12,35 @@ class A:
 class B(A):
 
   def __init__(self):
-    self.x: float = 1
-    self.y: int = 3.14
-    self.z: str = """I am \
-    \n new"""
+    # a:int = 1
+    self.x:int = 1
+    # self.y:float = 3.14
+    # self.z:str = """I am \
+    # \n new hekk"""
+
+class C(B):
+
+  def __init__(self):
+    # a:int = 1
+    self.x:int = 1
+    # self.y:float = 3.14
+    self.z:str = """I am \
+    \n new hekk"""
+
+class D:
+
+  def __init__(self):
+    # a:int = 1
+    self.x:int = 1
+    # self.y:float = 3.14
+    self.z:str = """I am \
+    \n new hekk"""
+    
+class E:
+
+  def __init__(self):
+    # a:int = 1
+    self.x:int = 1
 
 
 def main():

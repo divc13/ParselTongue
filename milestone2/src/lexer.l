@@ -62,6 +62,8 @@
 		}
 	}
 
+	string literal_token = "";
+
 	#define YY_USER_ACTION update_loc();
 
 %}
@@ -69,14 +71,11 @@
 IDENTIFIER						[a-zA-Z_][a-zA-Z0-9_]*
 KEYWORD							False|await|else|import|None|break|except|in|raise|True|class|finally|is|return|continue|for|lambda|tryas|def|from|nonlocal|while|assert|del|global|with|async|elif|if|yield
 
-STRING_LITERAL					{STRINGPREFIX}?({SHORTSTRING}|{LONGSTRING})
+STRING_LITERAL					{STRINGPREFIX}?({SHORTSTRING})
 STRINGPREFIX					r|R
 SHORTSTRING						"\'"{SHORTSTRING_ITEM}*"\'"|"\""{SHORTSTRING_ITEM}*"\""
-LONGSTRING						"\'\'\'"{LONGSTRING_ITEM}*"\'\'\'"|"\"\"\""{LONGSTRING_ITEM}*"\"\"\""
 SHORTSTRING_ITEM				{SHORTSTRING_CHAR}|{STRING_ESCAPE_SEQ}
-LONGSTRING_ITEM					{LONGSTRING_CHAR}|{STRING_ESCAPE_SEQ}
 SHORTSTRING_CHAR				[^\\\n\"\']
-LONGSTRING_CHAR					[^\\]
 STRING_ESCAPE_SEQ				"\\".|"\\\r\n"|"\\\n"
 
 INTEGER							{DECINTEGER}|{BININTEGER}|{OCTINTEGER}|{HEXINTEGER}
@@ -113,6 +112,8 @@ NEWLINE							\n
 
 %x IDT
 %x DDT
+%x SLS
+%x DLS
 
 %%
 
@@ -347,7 +348,8 @@ NEWLINE							\n
 }
 
 {STRING_LITERAL} {
-	string tmp(yytext), target = "\\\r\n";
+	// string tmp(yytext), target = "\\\r\n";
+	string tmp(yytext);
 
 	// size_t pos = 0;
     // while ((pos = tmp.find(target, pos)) != string::npos) {
@@ -366,6 +368,58 @@ NEWLINE							\n
 
 	log_token(__LINE__, yylval.info);
 	return STRING_LITERAL;
+}
+
+"\'\'\'" {
+	literal_token += "\'\'\'";
+	BEGIN SLS;
+}
+
+"\"\"\"" {
+	literal_token += "\"\"\"";
+	BEGIN DLS;
+}
+
+<SLS>"\'\'\'" {
+	literal_token += "\'\'\'";
+	BEGIN INITIAL;
+
+	string tmp(literal_token);
+	yylval.info.name = strdup(tmp.c_str());
+	yylval.info.type = strdup("STRING_LITERAL");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+
+	log_token(__LINE__, yylval.info);
+
+	literal_token.clear();
+
+	return STRING_LITERAL;
+}
+
+<SLS>. {
+	literal_token += yytext[0];
+}
+
+<DLS>"\"\"\"" {
+	literal_token += "\"\"\"";
+	BEGIN INITIAL;
+
+	string tmp(literal_token);
+	yylval.info.name = strdup(tmp.c_str());
+	yylval.info.type = strdup("STRING_LITERAL");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+
+	log_token(__LINE__, yylval.info);
+
+	literal_token.clear();
+
+	return STRING_LITERAL;
+}
+
+<DLS>. {
+	literal_token += yytext[0];
 }
 
 {DELIMITER} {

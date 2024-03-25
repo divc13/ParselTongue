@@ -13,6 +13,20 @@ extern int table_flag;
 extern TreeNode *root;
 symbolTable *currTable = new symbolTable("__GLOBAL__", NULL);
 symbolTable *globTable = currTable;
+map<int, string> recordTypeMap;
+
+void recordTypeInit()
+{
+	recordTypeMap[recordType::TYPE_FUNCTION] = "TYPE_FUNCTION";
+	recordTypeMap[recordType::TYPE_CLASS] = "TYPE_CLASS";
+	recordTypeMap[recordType::CONST_INT] = "CONST_INT";
+	recordTypeMap[recordType::CONST_FLOAT] = "CONST_FLOAT";
+	recordTypeMap[recordType::CONST_STRING] = "CONST_STRING";
+	recordTypeMap[recordType::CLASS_ATTRIBUTE] = "CLASS_ATTRIBUTE";
+	recordTypeMap[recordType::OBJECT_ATTRIBUTE] = "OBJECT_ATTRIBUTE";
+	recordTypeMap[recordType::VARIABLE] = "VARIABLE";
+	
+}
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
 {
@@ -157,6 +171,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	if (recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION)
 	{
 		record -> symTab = funcTable;
+		childIndices.push_back(currentIndex);
 	}
 	
 	name_to_indices[name].push_back(currentIndex);
@@ -164,12 +179,9 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	entries[currentIndex] = record;
 
 	// size of the table not updated when function entry
-	if (!funcTable)
+	if (!recordType::TYPE_FUNCTION)
 		size += __size;
 	
-	if (recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_CLASS)
-		childIndices.push_back(currentIndex);
-
 	if (recordType == recordType::CLASS_ATTRIBUTE)
 	{
 		staticIndices.insert(currentIndex);
@@ -354,7 +366,7 @@ void formatString(string &name, string &type)
 
 void tableRecord::dumpCSV(ofstream &CSV)
 {
-	CSV << index << ", " << name << ", " << type << ", " << size << ", " << lineno << endl;
+	CSV << index << ", " << name << ", " << type << ", " << recordTypeMap[recordType] << ", " << size << ", " << lineno << endl;
 	return;
 }
 
@@ -369,16 +381,16 @@ void symbolTable::dumpCSV(ofstream &CSV)
 
 	int index = 0;
 
-	if (offset)
+	if (tableType == tableType::FUNCTION)
 	{
 		CSV << "\n # Incoming Parameters: \n";
-		CSV << "index, name, type, size, line no. \n";
+		CSV << "index, name, type, recordType, size, line no. \n";
 		for (; index < offset; index++)
 			(entries[index]) -> dumpCSV(CSV);
 	}
 
 	CSV << "\n # Local Variables: \n";
-	CSV << "index, name, type, size, line no. \n";
+	CSV << "index, name, type, recordType, size, line no. \n";
 	for (; index < currentIndex; index++)
 		(entries[index]) -> dumpCSV(CSV);
 
@@ -416,6 +428,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			if ((itr -> name).compare("self"))
 				currTable -> offset++;
 		}
+
 	}
 
 
@@ -423,16 +436,14 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	// handle classes
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("class_def") == 0)
 	{
-
 		TreeNode* node = ((root -> children)[0]);
-		record = new tableRecord(node -> name, node -> name, currTable -> size, node -> lineno, node -> column, recordType::TYPE_CLASS);
+		tableRecord* tempRecord = new tableRecord(node -> name, node -> name, currTable -> size, node -> lineno, node -> column, recordType::TYPE_CLASS);
 		if (currTable != globTable)
 		{
-			raise_error(ERR::CLASS_NOT_GLOBAL, record);
-			free (record);
+			raise_error(ERR::CLASS_NOT_GLOBAL, tempRecord);
+			free (tempRecord);
 			return -1;
 		}
-
 		
 		symbolTable* parent = NULL;
 		if((root -> children.size() > 2))
@@ -458,15 +469,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		symbolTable *Table = new symbolTable(((root -> children)[0]) -> name, parent);
 		Table -> tableType = tableType::CLASS;
-		record -> symTab = Table;
 		currTable = Table;
-
-		int err = globTable -> insert(record, currTable);
-		if (err < 0)
-			return err;
-
-		free(record);
-		record = NULL;
 	}
 
 	// apply dfs here
@@ -716,6 +719,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 							if (entry -> symTab -> tableType != tableType::CLASS)
 							{
 								tableRecord* tempRecord = new tableRecord((node -> children)[1] -> name, "", 0, (node -> children)[1] -> lineno, (node -> children)[1] -> column);
+								raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
 								return -1;
 							}
 
@@ -762,6 +766,15 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	// dealing with classes again on coming back
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("class_def") == 0)
 	{
+		TreeNode* node = ((root -> children)[0]);
+		record = new tableRecord(node -> name, node -> name, currTable -> size, node -> lineno, node -> column, recordType::TYPE_CLASS);
+		
+		int err = globTable -> insert(record, currTable);
+		if (err < 0)
+			return err;
+
+		free(record);
+		record = NULL;
 		currTable = globTable;
 	}
 
@@ -772,5 +785,6 @@ int symTable_Maker(TreeNode *root)
 {
 	globTable -> tableType = tableType::GLOBAL;
 	tableRecord* record = NULL;
+	recordTypeInit();
 	return generate_symtable(root, record);
 }
