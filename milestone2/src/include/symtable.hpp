@@ -65,11 +65,14 @@ typedef struct symTable {
 	int UpdateRecord(tableRecord* newRecord);
 	symTable(string __name, struct symTable* __parentSymtable);
 
-	// here linno and column are those of the entity that is found now and looked up, err shows whether to print error message
+	// here lineno and column are those of the entity that is found now and looked up, err shows whether to print error message
 	tableRecord* lookup(string name, int line_no, int column, bool err);
 
-	// here linno and column are those of the entity that is found now and looked up, err shows whether to print error message
+	// here lineno and column are those of the entity that is found now and looked up, err shows whether to print error message
 	tableRecord* lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err);
+	
+	// lookup only inside the corresponding table, donot go up in the heirarchy
+	tableRecord* lookup_table(string name);
 
 	int insert(tableRecord* inputRecord, struct symTable* funcTable = NULL);
 	void dumpCSV(ofstream &CSV);

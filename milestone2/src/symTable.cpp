@@ -31,8 +31,8 @@ symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 	parentSymtable = __parentSymtable;
 }
 
-// for variables
-tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
+// lookonly inside the table, donot go one level up
+tableRecord* symbolTable::lookup_table(string name)
 {
 	vector<int>indices = name_to_indices[name];
 	tableRecord* record = NULL;
@@ -43,16 +43,26 @@ tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
 		return record;
 	}
 
+	return NULL;
+}
+
+// for variables
+tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
+{
+	tableRecord* record = lookup_table(name);
+	if (record)
+		return record;
+
 	if(!parentSymtable) 
 	{
 		if (err)
 			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, "\'", RESET);
+
 		return NULL;
 	}
 
 	record = parentSymtable->lookup(name, line_no, column, err);
 	return record;
-
 }
 
 // for functions
@@ -182,16 +192,13 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 int symbolTable::UpdateRecord(tableRecord* newRecord)
 {
-	vector<int>indices = name_to_indices[newRecord->name];
-	if(indices.size() == 0)
+
+	tableRecord* record = lookup_table(newRecord->name);
+	if(!record)
 	{
 		printErrorMsg(newRecord->lineno, newRecord->column, RED, "Use of undeclared variable \'", newRecord->name, "\'", RESET);
 		return -1;
 	}
-
-	assert(indices.size() == 1);
-	int index = indices[0];
-	tableRecord* record = entries[index];
 
 	if((newRecord->type).length()) record->type = newRecord->type;
 	if(newRecord->size) 
@@ -227,6 +234,7 @@ void formatString(string &name, string &type)
 		}
 		return;
 	}
+
 	if(name[0] == 'b' || name[0] == 'B')
 	{
 		name = name.substr(1, name.length() - 1);
@@ -321,6 +329,7 @@ void formatString(string &name, string &type)
 	name = tmp;
 	return;
 }
+
 
 void tableRecord::dumpCSV(ofstream &CSV)
 {
@@ -503,6 +512,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 				return -1;
 			}
 
+			// declaration inside ctor of a class
 			tempTable = currTable->parentSymtable;
 			node = (node->children)[1];
 			recordType = recordType::OBJECT_ATTRIBUTE;
@@ -629,6 +639,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		else
 		{
+			// assignment in ctor
 			if ((currTable->name).compare("__init__") == 0)
 			{
 
@@ -641,14 +652,29 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 					assert((node->children).size() == 2);
 					if (((node->children)[0]->name).compare("self") == 0)
 					{
-						node = (node->children)[1];
-						tableRecord* entry = currTable->parentSymtable->lookup(node->name, node->lineno, node->column, true);
-						if (!entry)
-							return -1;
 
-						int err = currTable->parentSymtable->insert(entry, NULL);
-						if (err < 0)
-							return -1;
+						tableRecord* entry = currTable->parentSymtable->lookup_table((node->children)[1]->name);
+						if (!entry)
+						{
+							node = (node->children)[1];
+							entry = currTable->parentSymtable->lookup(node->name, node->lineno, node->column, true);
+							if (!entry)
+								return -1;
+
+							// since the above lookup returned true
+							assert (currTable->parentSymtable->parentSymtable);
+							if (entry->symTab->tableType != tableType::CLASS)
+							{
+								printErrorMsg((node->children)[1]->lineno, (node->children)[1]->column, RED, (node->children)[1]->name, " doesnot match with any of the attributes of the class", RESET);
+								return -1;
+							}
+
+							int err = currTable->parentSymtable->insert(entry);
+							if (err < 0)
+								return -1;
+						}
+
+						// else do nothing, this is of the same class
 
 					}
 				}
