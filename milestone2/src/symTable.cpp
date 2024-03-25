@@ -215,9 +215,11 @@ int symbolTable::UpdateRecord(tableRecord* newRecord)
 
 void formatString(string &name, string &type)
 {
+
 	if (name[0] == 'r' || name[0] == 'R')
 	{
 		name = name.substr(1, name.length() - 1);
+
 		if(name[0] == 'b' || name[0] == 'B')
 		{
 			name = name.substr(1, name.length() - 1);
@@ -228,12 +230,15 @@ void formatString(string &name, string &type)
 			type = "bstr";
 			return;
 		}
+
 		while (name[0] == '\'' || name[0] == '\"')
 		{
 			name = name.substr(1, name.length() - 2);
 		}
 		return;
+
 	}
+
 
 	if(name[0] == 'b' || name[0] == 'B')
 	{
@@ -250,10 +255,14 @@ void formatString(string &name, string &type)
 		}
 		type = "bstr";
 	}
+
+
 	while (name[0] == '\'' || name[0] == '\"')
 	{
 		name = name.substr(1, name.length() - 2);
 	}
+
+
 	string tmp = "";
 	for (int i = 0; i < name.length(); i++)
 	{
@@ -261,66 +270,93 @@ void formatString(string &name, string &type)
 		{
 			switch (name[i + 1])
 			{
-			case '\\':
-				tmp += '\\';
-				i++;
-				break;
-			case '\'':
-				tmp += '\'';
-				i++;
-				break;
-			case '\"':
-				tmp += '\"';
-				i++;
-				break;
-			case 'a':
-				tmp += '\a';
-				i++;
-				break;
-			case 'b':
-				tmp += '\b';
-				i++;
-				break;
-			case 'f':
-				tmp += '\f';
-				i++;
-				break;
-			case 'n':
-				tmp += '\n';
-				i++;
-				break;
-			case 'r':
-				tmp += '\r';
-				i++;
-				break;
-			case 't':
-				tmp += '\t';
-				i++;
-				break;
-			case 'v':
-				tmp += '\v';
-				i++;
-				break;
-			case '\n':
-				tmp += '\\';
-				tmp += '\n';
-				i += 2;
-				break;
-			case '\r':
-				tmp += '\\';
-				tmp += '\r';
-				if (i + 2 < name.length() && name[i + 2] == '\n')
-				{
+
+
+				case '\\':
+					tmp += '\\';
+					i++;
+					break;
+					
+
+				case '\'':
+					tmp += '\'';
+					i++;
+					break;
+
+
+				case '\"':
+					tmp += '\"';
+					i++;
+					break;
+
+
+				case 'a':
+					tmp += '\a';
+					i++;
+					break;
+
+
+				case 'b':
+					tmp += '\b';
+					i++;
+					break;
+
+
+				case 'f':
+					tmp += '\f';
+					i++;
+					break;
+
+
+				case 'n':
 					tmp += '\n';
 					i++;
-				}
-				i += 2;
-				break;
-			
-			default:
-				tmp += name[i + 1];
-				i++;
-				break;
+					break;
+
+
+				case 'r':
+					tmp += '\r';
+					i++;
+					break;
+
+
+				case 't':
+					tmp += '\t';
+					i++;
+					break;
+
+
+				case 'v':
+					tmp += '\v';
+					i++;
+					break;
+
+
+				case '\n':
+					tmp += '\\';
+					tmp += '\n';
+					i += 2;
+					break;
+
+
+				case '\r':
+					tmp += '\\';
+					tmp += '\r';
+					if (i + 2 < name.length() && name[i + 2] == '\n')
+					{
+						tmp += '\n';
+						i++;
+					}
+					i += 2;
+					break;
+
+
+				default:
+					tmp += name[i + 1];
+					i++;
+					break;
+
+
 			}
 		}
 		else
@@ -374,6 +410,7 @@ void symbolTable::dumpCSV(ofstream &CSV)
 int generate_symtable(TreeNode *root, tableRecord* &record)
 {
 
+
 	// handle functions
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("function_def") == 0)
 	{
@@ -395,6 +432,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 				currTable->offset++;
 		}
 	}
+
+
 
 	// handle classes
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("class_def") == 0)
@@ -429,6 +468,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 	}
 
+
+
 	// apply dfs here
 	vector<TreeNode *> &children = root->children;
 	for (int nchild = 0; nchild < (root->children).size(); nchild++)
@@ -438,6 +479,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		if (ret < 0)
 			return ret;
 	}
+
+
 
 	// constant integers
 	if ((root->type).compare("INT_LITERAL") == 0)
@@ -451,6 +494,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		return 0;
 	}
 
+
+
 	// constant floating point literals
 	if ((root->type).compare("FLOAT_LITERAL") == 0)
 	{
@@ -463,6 +508,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		record = tempRecord;
 		return 0;
 	}
+
+
 
 	// constant string literals
 	if ((root->type).compare("STRING_LITERAL") == 0)
@@ -478,6 +525,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		record = tempRecord;
 		return 0;
 	}
+
+
 
 	// handle type declarations
 	if ((root->type).compare("DELIMITER") == 0 && (root->name).compare(":") == 0)
@@ -580,6 +629,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		return 0;
 	}
+
+	
 
 	// Update the sizes of the records, in case of lists and strings
 	if ((root->type).compare("OPERATOR") == 0 && (root->name).compare("=") == 0)
@@ -684,6 +735,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		return 0;
 	}
 
+
+
 	// dealing with functions again, after completing the function symbol table
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("function_def") == 0)
 	{
@@ -704,6 +757,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		free(record);
 		record = NULL;
 	}
+
+	
 
 	// dealing with classes again on coming back
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("class_def") == 0)
