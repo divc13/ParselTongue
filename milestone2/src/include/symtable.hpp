@@ -51,33 +51,34 @@ typedef struct symTable {
     vector<int> childIndices;
 	struct symTable* parentSymtable;
 
-	// defined by enum of tableType
+	/* defined by enum of tableType */
 	int tableType;
 
-	// for ease, denotes size of function or class
+	/* for ease, denotes size of function or class */
 	int size = 0;
 	int offset = 0;
     int currentIndex = 0;
 
-	// for static variables of a class
+	/* for static variables of a class */
 	set<int> staticIndices;
 		
+	/* needed only for variable declarations, not for function or class definitions */
 	int UpdateRecord(tableRecord* newRecord);
 	symTable(string __name, struct symTable* __parentSymtable);
 
-	// here lineno and column are those of the entity that is found now and looked up, err shows whether to print error message
-	tableRecord* lookup(string name, int line_no, int column, bool err);
-
-	// here lineno and column are those of the entity that is found now and looked up, err shows whether to print error message
-	tableRecord* lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err);
+	/* here lineno and column are those of the entity that is found now and looked up,
+	err shows whether to print error message
+	returns the first matched entry if multiple entries found */
+	tableRecord* lookup(string name, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
 	
-	// lookup only inside the corresponding table, donot go up in the heirarchy
-	tableRecord* lookup_table(string name);
+	/* lookup only inside the corresponding table, donot go up in the heirarchy,
+	returns the first matched entry if multiple entries found */
+	tableRecord* lookup_table(string name, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
 
 	int insert(tableRecord* inputRecord, struct symTable* funcTable = NULL);
 	void dumpCSV(ofstream &CSV);
 
 } symbolTable;
 
-// genrates the symbol table
+/* genrates the symbol table */
 int symTable_Maker(TreeNode *root);

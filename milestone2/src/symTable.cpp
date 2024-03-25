@@ -31,11 +31,58 @@ symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 	parentSymtable = __parentSymtable;
 }
 
-// lookonly inside the table, donot go one level up
-tableRecord* symbolTable::lookup_table(string name)
+// lookonly inside the table, donot go one level up (for variables)
+tableRecord* symbolTable::lookup_table(string name, int recordType, vector<tableRecord*> *params)
 {
 	vector<int>indices = name_to_indices[name];
 	tableRecord* record = NULL;
+
+	if (recordType == recordType::TYPE_FUNCTION)
+	{
+		for (auto &i: indices)
+		{
+			// return any matching entry with type other than function or class
+			if (entries[i]->recordType != TYPE_CLASS && entries[i]->recordType != TYPE_FUNCTION)
+			{
+				return entries[i];
+			}
+		}
+
+		for (auto &i: indices)
+		{
+			// the type must now be class or function
+			if (entries[i]->recordType == TYPE_FUNCTION && params)
+			{
+				tableRecord* entry = entries[i];
+				symbolTable* table = entry->symTab;
+				if (params->size() != table->offset) continue;
+		
+				int num;
+				for (num = 0; num < params->size(); num++)
+				{
+					if ((*params)[num]->type != ((table->entries)[num])->type)
+						break;
+				}
+				if (num == params->size()) return entry;
+			}
+		}
+
+		return NULL;
+	}
+
+	if (recordType == recordType::TYPE_CLASS)
+	{
+		for (auto &i: indices)
+		{
+			// return any matching entry with type other than function or class
+			if (entries[i]->recordType != TYPE_FUNCTION)
+			{
+				return entries[i];
+			}
+		}
+		return NULL;
+	}
+
 	if(indices.size())
 	{
 		assert(indices.size() == 1);
@@ -47,56 +94,17 @@ tableRecord* symbolTable::lookup_table(string name)
 }
 
 // for variables
-tableRecord* symbolTable::lookup(string name, int line_no, int column, bool err)
+tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord*> *params)
 {
-	tableRecord* record = lookup_table(name);
+	tableRecord* record = lookup_table(name, recordType);
 	if (record)
 		return record;
 
 	if(!parentSymtable) 
-	{
-		if (err)
-			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, "\'", RESET);
-
 		return NULL;
-	}
 
-	record = parentSymtable->lookup(name, line_no, column, err);
+	record = parentSymtable->lookup(name, recordType, params);
 	return record;
-}
-
-// for functions
-tableRecord* symbolTable::lookup(string name, vector<tableRecord*> &params, int line_no, int column, bool err)
-{
-	vector<int>indices = name_to_indices[name];
-	tableRecord* record = NULL;
-	if (indices.size())
-	{
-		for (auto idx: indices)
-		{
-			tableRecord* entry = entries[idx];
-			symbolTable* table = entry->symTab;
-			if (params.size() != table->offset) continue;
-			
-			int num;
-			for (num = 0; num < params.size(); num++)
-			{
-				if (params[num]->type != ((table->entries)[num])->type)
-					break;
-			}
-			if (num == params.size()) return entry;
-		}
-	}
-
-	if(!parentSymtable) 
-	{
-		if (err)
-			printErrorMsg(line_no, column, RED, " no previous definition found for \'", name, "\'", RESET);
-		return NULL;
-	}
-
-	record = parentSymtable->lookup(name, params, line_no, column, err);
-	return record;	
 }
 
 int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
@@ -108,58 +116,38 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	int __size = inputRecord->size;
 	int recordType = inputRecord->recordType;
 
-	vector<int> indices = name_to_indices[name];
-
 	if (recordType != recordType::TYPE_FUNCTION)
 	{
-		assert(indices.size() == 0 || indices.size() == 1);
-		if (indices.size())
+		tableRecord* entry = lookup_table(name, recordType);
+		if (entry)
 		{
 			tableRecord* entry = entries[0];
 			printErrorMsg(lineno, column, RED, "redefinition of \'", name, "\'", RESET);
 			printErrorMsg(entry->lineno, entry->column, BLUE, " previous definition of \'", name, "\' with type ", entry->type, RESET);
 			return -1;
 		}
-		
 	}
-	
-	else if (indices.size())
+
+	else
 	{
-		for (auto idx: indices)
+		assert(funcTable);
+		vector<tableRecord*> params;
+		for (int i = 0; i < funcTable->offset; i++)
+			params.push_back((funcTable->entries)[i]);
+
+		tableRecord* entry = lookup_table(name, recordType, &params);
+		if(entry)
 		{
-			tableRecord* entry = entries[idx];
-			symbolTable* table = entry->symTab;
-			if(!table) 
-			{
-				printErrorMsg(lineno, column, RED, name, " redeclared as different kind of symbol", RESET);
-				printErrorMsg(entry->lineno, entry->column, BLUE, name, " was declared previously as ", entry->type, RESET);
-
-				return -1;
-			}
-		}
-
-		for (auto idx: indices)
-		{
-			tableRecord* entry = entries[idx];
-			symbolTable* table = entry->symTab;
-
-			assert(funcTable);
-			if (funcTable->offset != table->offset) continue;
-			
-			int num;
-			for (num = 0; num < funcTable->offset; num++)
-			{
-				if (((funcTable->entries)[num])->type != ((table->entries)[num])->type)
-					break;
-			}
-
-			if (num == funcTable->offset)
+			if (entry->recordType == recordType::TYPE_FUNCTION)
 			{
 				printErrorMsg(lineno, column, RED, "redefintion of \'", name, "\'", RESET);
 				printErrorMsg(entry->lineno, entry->column, BLUE, " previous definition of \'", name, "\' with type ", entry->type, RESET);
 				return -1;
 			}
 
+			printErrorMsg(lineno, column, RED, name, " redeclared as different kind of symbol", RESET);
+			printErrorMsg(entry->lineno, entry->column, BLUE, name, " was declared previously as ", entry->type, RESET);
+			return -1;
 		}
 
 	}
@@ -174,31 +162,24 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	// size of the table not updated when function entry
 	if (!funcTable)
 		size += __size;
-	else
+	
+	if (recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_CLASS)
 		childIndices.push_back(currentIndex);
 
-	// static
 	if (recordType == recordType::CLASS_ATTRIBUTE)
 	{
 		staticIndices.insert(currentIndex);
-		// only one pointer needs to be stored
-		size += SIZE_PTR - __size;
+		size += SIZE_PTR - __size; 			// only one pointer needs to be stored
 	}
 	
 	currentIndex++;
-
 	return 0;
 }
 
 int symbolTable::UpdateRecord(tableRecord* newRecord)
 {
-
-	tableRecord* record = lookup_table(newRecord->name);
-	if(!record)
-	{
-		printErrorMsg(newRecord->lineno, newRecord->column, RED, "Use of undeclared variable \'", newRecord->name, "\'", RESET);
-		return -1;
-	}
+	tableRecord* record = lookup_table(newRecord->name, newRecord->recordType, NULL);
+	assert(record);
 
 	if((newRecord->type).length()) record->type = newRecord->type;
 	if(newRecord->size) 
@@ -215,9 +196,11 @@ int symbolTable::UpdateRecord(tableRecord* newRecord)
 
 void formatString(string &name, string &type)
 {
+
 	if (name[0] == 'r' || name[0] == 'R')
 	{
 		name = name.substr(1, name.length() - 1);
+
 		if(name[0] == 'b' || name[0] == 'B')
 		{
 			name = name.substr(1, name.length() - 1);
@@ -228,12 +211,15 @@ void formatString(string &name, string &type)
 			type = "bstr";
 			return;
 		}
+
 		while (name[0] == '\'' || name[0] == '\"')
 		{
 			name = name.substr(1, name.length() - 2);
 		}
 		return;
+
 	}
+
 
 	if(name[0] == 'b' || name[0] == 'B')
 	{
@@ -250,10 +236,14 @@ void formatString(string &name, string &type)
 		}
 		type = "bstr";
 	}
+
+
 	while (name[0] == '\'' || name[0] == '\"')
 	{
 		name = name.substr(1, name.length() - 2);
 	}
+
+
 	string tmp = "";
 	for (int i = 0; i < name.length(); i++)
 	{
@@ -261,66 +251,93 @@ void formatString(string &name, string &type)
 		{
 			switch (name[i + 1])
 			{
-			case '\\':
-				tmp += '\\';
-				i++;
-				break;
-			case '\'':
-				tmp += '\'';
-				i++;
-				break;
-			case '\"':
-				tmp += '\"';
-				i++;
-				break;
-			case 'a':
-				tmp += '\a';
-				i++;
-				break;
-			case 'b':
-				tmp += '\b';
-				i++;
-				break;
-			case 'f':
-				tmp += '\f';
-				i++;
-				break;
-			case 'n':
-				tmp += '\n';
-				i++;
-				break;
-			case 'r':
-				tmp += '\r';
-				i++;
-				break;
-			case 't':
-				tmp += '\t';
-				i++;
-				break;
-			case 'v':
-				tmp += '\v';
-				i++;
-				break;
-			case '\n':
-				tmp += '\\';
-				tmp += '\n';
-				i += 2;
-				break;
-			case '\r':
-				tmp += '\\';
-				tmp += '\r';
-				if (i + 2 < name.length() && name[i + 2] == '\n')
-				{
+
+
+				case '\\':
+					tmp += '\\';
+					i++;
+					break;
+					
+
+				case '\'':
+					tmp += '\'';
+					i++;
+					break;
+
+
+				case '\"':
+					tmp += '\"';
+					i++;
+					break;
+
+
+				case 'a':
+					tmp += '\a';
+					i++;
+					break;
+
+
+				case 'b':
+					tmp += '\b';
+					i++;
+					break;
+
+
+				case 'f':
+					tmp += '\f';
+					i++;
+					break;
+
+
+				case 'n':
 					tmp += '\n';
 					i++;
-				}
-				i += 2;
-				break;
-			
-			default:
-				tmp += name[i + 1];
-				i++;
-				break;
+					break;
+
+
+				case 'r':
+					tmp += '\r';
+					i++;
+					break;
+
+
+				case 't':
+					tmp += '\t';
+					i++;
+					break;
+
+
+				case 'v':
+					tmp += '\v';
+					i++;
+					break;
+
+
+				case '\n':
+					tmp += '\\';
+					tmp += '\n';
+					i += 2;
+					break;
+
+
+				case '\r':
+					tmp += '\\';
+					tmp += '\r';
+					if (i + 2 < name.length() && name[i + 2] == '\n')
+					{
+						tmp += '\n';
+						i++;
+					}
+					i += 2;
+					break;
+
+
+				default:
+					tmp += name[i + 1];
+					i++;
+					break;
+
+
 			}
 		}
 		else
@@ -374,6 +391,7 @@ void symbolTable::dumpCSV(ofstream &CSV)
 int generate_symtable(TreeNode *root, tableRecord* &record)
 {
 
+
 	// handle functions
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("function_def") == 0)
 	{
@@ -396,6 +414,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		}
 	}
 
+
+
 	// handle classes
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("class_def") == 0)
 	{
@@ -407,14 +427,21 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 			if((node->type).compare("IDENTIFIER") == 0)
 			{
-				tableRecord* entry = currTable->lookup(node->name, root->lineno, root->column, true);
-				if(!entry)
+				
+				tableRecord* entry = currTable->lookup(node->name, recordType::TYPE_CLASS);
+				if(entry)
+				{
+					if (entry->recordType == recordType::TYPE_CLASS)
+					{
+
+					}	
+					printErrorMsg(root->lineno, root->column, RED, node->name, " must be declared as a class type", RESET);
+					printErrorMsg(entry->lineno, entry->column, BLUE, entry->name, " was declared previously as ", entry->type, RESET);
 					return -1;
+				}
 
 				if(!entry->symTab)
 				{
-					printErrorMsg(root->lineno, root->column, RED, node->name, " must be declared as a class type", RESET);
-					printErrorMsg(entry->lineno, entry->column, BLUE, entry->name, " was declared previously as ", entry->type, RESET);
 					return -1;
 				}
 
@@ -429,6 +456,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 	}
 
+
+
 	// apply dfs here
 	vector<TreeNode *> &children = root->children;
 	for (int nchild = 0; nchild < (root->children).size(); nchild++)
@@ -439,30 +468,36 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			return ret;
 	}
 
+
+
 	// constant integers
 	if ((root->type).compare("INT_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
 		record = new tableRecord(root->name, "int", SIZE_INT, root->lineno, root->column, recordType::CONST_INT);
-		if(!globTable->lookup(record->name, record->lineno, record->column, false))
+		if(!globTable->lookup(record->name, recordType::CONST_INT))
 			globTable->insert(record, NULL);
 		free (record);
 		record = tempRecord;
 		return 0;
 	}
 
+
+
 	// constant floating point literals
 	if ((root->type).compare("FLOAT_LITERAL") == 0)
 	{
 		tableRecord* tempRecord = record;
 		record = new tableRecord(root->name, "float", SIZE_FLOAT, root->lineno, root->column, recordType::CONST_FLOAT);
-		if(!globTable->lookup(record->name, record->lineno, record->column, false))
+		if(!globTable->lookup(record->name, recordType::CONST_FLOAT))
 			globTable->insert(record, NULL);
 		free (record);
 		record = NULL;
 		record = tempRecord;
 		return 0;
 	}
+
+
 
 	// constant string literals
 	if ((root->type).compare("STRING_LITERAL") == 0)
@@ -471,13 +506,15 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		string str_type = "str";
 		formatString(root->name, str_type);
 		record = new tableRecord(root->name, str_type, SIZE_STRING((root->name).length()), root->lineno, root->column, recordType::CONST_STRING);
-		if(!globTable->lookup(record->name, record->lineno, record->column, false))
+		if(!globTable->lookup(record->name, recordType::CONST_STRING))
 			globTable->insert(record, NULL);
 		free (record);
 		record = NULL;
 		record = tempRecord;
 		return 0;
 	}
+
+
 
 	// handle type declarations
 	if ((root->type).compare("DELIMITER") == 0 && (root->name).compare(":") == 0)
@@ -556,7 +593,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			// dealing with classes
 			else if ((record->type).compare(0, 4, "list"))
 			{
-				tableRecord *entry = tempTable->lookup(record->type, record->lineno, record->column, true);
+				tableRecord *entry = tempTable->lookup(record->type, recordType::TYPE_CLASS);
 				if (!entry)
 				{
 					return -1;
@@ -566,7 +603,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		}
 
-		int err = tempTable->insert(record, NULL);
+		int err = tempTable->insert(record);
 		// cout <<"name = " << record->name << " type = " << record->type << " size = " << record->size << "lineno = " << record->lineno << endl;
 		
 		if (err < 0)
@@ -580,6 +617,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 
 		return 0;
 	}
+
+	
 
 	// Update the sizes of the records, in case of lists and strings
 	if ((root->type).compare("OPERATOR") == 0 && (root->name).compare("=") == 0)
@@ -617,7 +656,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 					// class objects
 					else
 					{
-						tableRecord *entry = currTable->lookup(record->type, record->lineno, record->column, true);
+						tableRecord *entry = currTable->lookup(record->type, recordType::TYPE_CLASS);
 						if (!entry)
 						{
 							return -1;
@@ -642,7 +681,6 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			// assignment in ctor
 			if ((currTable->name).compare("__init__") == 0)
 			{
-
 				TreeNode* node = (root->children)[0];
 				assert(currTable->parentSymtable);
 				assert(currTable->parentSymtable->tableType == tableType::CLASS);
@@ -656,8 +694,9 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 						tableRecord* entry = currTable->parentSymtable->lookup_table((node->children)[1]->name);
 						if (!entry)
 						{
+							// nothing found in the immidiate table, may be in parent class table
 							node = (node->children)[1];
-							entry = currTable->parentSymtable->lookup(node->name, node->lineno, node->column, true);
+							entry = currTable->parentSymtable->lookup(node->name);
 							if (!entry)
 								return -1;
 
@@ -684,6 +723,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		return 0;
 	}
 
+
+
 	// dealing with functions again, after completing the function symbol table
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("function_def") == 0)
 	{
@@ -704,6 +745,8 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		free(record);
 		record = NULL;
 	}
+
+
 
 	// dealing with classes again on coming back
 	if ((root->type).compare("NON_TERMINAL") == 0 && (root->name).compare("class_def") == 0)
