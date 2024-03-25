@@ -1,8 +1,6 @@
 #include "include/symtable.hpp"
 #include "include/error.hpp"
 
-extern int table_flag;
-
 #define SIZE_INT 4
 #define SIZE_PTR 8
 #define SIZE_FLOAT 8
@@ -383,20 +381,20 @@ void symbolTable::dumpCSV(ofstream &CSV)
 
 	if (tableType == tableType::FUNCTION)
 	{
-		CSV << "\n # Incoming Parameters: \n";
+		CSV << "\n# Incoming Parameters: \n";
 		CSV << "index, name, type, recordType, size, line no. \n";
 		for (; index < offset; index++)
 			(entries[index]) -> dumpCSV(CSV);
 	}
 
-	CSV << "\n # Local Variables: \n";
+	CSV << "\n# Local Variables: \n";
 	CSV << "index, name, type, recordType, size, line no. \n";
 	for (; index < currentIndex; index++)
 		(entries[index]) -> dumpCSV(CSV);
 
 	for(auto child : childIndices) 
 	{
-		CSV << "\n\n\n";
+		CSV << ",\n,\n,\n";
 		assert(entries[child] -> symTab);
 		((entries[child]) -> symTab) -> dumpCSV(CSV);
 	}

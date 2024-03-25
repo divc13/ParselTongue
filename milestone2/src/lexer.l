@@ -71,11 +71,16 @@
 IDENTIFIER						[a-zA-Z_][a-zA-Z0-9_]*
 KEYWORD							False|await|else|import|None|break|except|in|raise|True|class|finally|is|return|continue|for|lambda|tryas|def|from|nonlocal|while|assert|del|global|with|async|elif|if|yield
 
-STRING_LITERAL					{STRINGPREFIX}?({SHORTSTRING})
-STRINGPREFIX					r|R
+STRING_LITERAL					{STRINGPREFIX}?({SHORTSTRING}|{LONGSTRING})
+STRINGPREFIX					r|R|b|B|rb|rB|br|bR|Rb|RB|Br|BR
 SHORTSTRING						"\'"{SHORTSTRING_ITEM}*"\'"|"\""{SHORTSTRING_ITEM}*"\""
+LONGSTRING						"\'\'\'"{SLONGSTRING_ITEM}*"\'\'\'"|"\"\"\""{DLONGSTRING_ITEM}*"\"\"\""
 SHORTSTRING_ITEM				{SHORTSTRING_CHAR}|{STRING_ESCAPE_SEQ}
+SLONGSTRING_ITEM				{SLONGSTRING_CHAR}|{STRING_ESCAPE_SEQ}
+DLONGSTRING_ITEM				{DLONGSTRING_CHAR}|{STRING_ESCAPE_SEQ}
 SHORTSTRING_CHAR				[^\\\n\"\']
+SLONGSTRING_CHAR				[^\\']|\'[^\\']|\'\'[^\\']
+DLONGSTRING_CHAR				[^\\"]|\"[^\\"]|\"\"[^\\"]
 STRING_ESCAPE_SEQ				"\\".|"\\\r\n"|"\\\n"
 
 INTEGER							{DECINTEGER}|{BININTEGER}|{OCTINTEGER}|{HEXINTEGER}
@@ -112,8 +117,6 @@ NEWLINE							\n
 
 %x IDT
 %x DDT
-%x SLS
-%x DLS
 
 %%
 
@@ -368,58 +371,6 @@ NEWLINE							\n
 
 	log_token(__LINE__, yylval.info);
 	return STRING_LITERAL;
-}
-
-"\'\'\'" {
-	literal_token += "\'\'\'";
-	BEGIN SLS;
-}
-
-"\"\"\"" {
-	literal_token += "\"\"\"";
-	BEGIN DLS;
-}
-
-<SLS>"\'\'\'" {
-	literal_token += "\'\'\'";
-	BEGIN INITIAL;
-
-	string tmp(literal_token);
-	yylval.info.name = strdup(tmp.c_str());
-	yylval.info.type = strdup("STRING_LITERAL");
-	yylval.info.lineno = yylineno;
-	yylval.info.colno = yylloc.first_column;
-
-	log_token(__LINE__, yylval.info);
-
-	literal_token.clear();
-
-	return STRING_LITERAL;
-}
-
-<SLS>. {
-	literal_token += yytext[0];
-}
-
-<DLS>"\"\"\"" {
-	literal_token += "\"\"\"";
-	BEGIN INITIAL;
-
-	string tmp(literal_token);
-	yylval.info.name = strdup(tmp.c_str());
-	yylval.info.type = strdup("STRING_LITERAL");
-	yylval.info.lineno = yylineno;
-	yylval.info.colno = yylloc.first_column;
-
-	log_token(__LINE__, yylval.info);
-
-	literal_token.clear();
-
-	return STRING_LITERAL;
-}
-
-<DLS>. {
-	literal_token += yytext[0];
 }
 
 {DELIMITER} {

@@ -31,9 +31,7 @@ string tokenString = "";
 vector<string> verbose_stack;
 ofstream VERBOSE;
 
-int table_flag = 0;
-
-//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <table_flag>
+//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <csv_flag>
 int main(int argc, char **argv)
 {
 	// yydebug = 1;
@@ -49,7 +47,7 @@ int main(int argc, char **argv)
 	verbose = atoi(argv[3]);
 	int ast_flag = atoi(argv[4]);
 	int ptree_flag = atoi(argv[5]);
-	table_flag = atoi(argv[6]);
+	int csv_flag = atoi(argv[6]);
 
 	// yyin = fopen(inputFile.c_str(), "r");
 	FILE* file = fopen(inputFile.c_str(), "r");
@@ -76,7 +74,7 @@ int main(int argc, char **argv)
 
 		if (file == nullptr) {
 			cout << RED << "Unable to open file: " << inputFile << RESET << endl;
-			return 1;
+			return 0;
 		}
 	}
 
@@ -112,7 +110,7 @@ int main(int argc, char **argv)
 	// 	return -1;
 	// } 
 
-	if(table_flag)
+	if(csv_flag)
 	{
 		ofstream CSV(noExtentionOutputFile + ".csv");
 		if (!CSV.is_open()) {

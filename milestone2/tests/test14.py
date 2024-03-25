@@ -1,11 +1,11 @@
 class Node:
-    def __init__(self, value: int) -> None:
+    def __init__(self, value: int):
         self.value: int = value
         self.left: 'Node' = None
         self.right: 'Node' = None
 
 class BinaryTree:
-    def __init__(self, values: list[int]) -> None:
+    def __init__(self, values: list[int]):
         self.root: 'Node' = None
         i: int
         for i in range(len(values)):
@@ -60,7 +60,7 @@ print(tree.inorder_traversal())
 print(tree.search(5))  
 print(tree.search(8)) 
 
-def main() -> None:
+def main():
     ""
 
 
