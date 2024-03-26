@@ -20,8 +20,6 @@ enum recordType{
 	
 	TYPE_FUNCTION,
 	TYPE_CLASS,
-	CONST_INT,
-	CONST_FLOAT,
 	CONST_STRING,
 	CLASS_ATTRIBUTE,
 	CLASS_OBJECT,
@@ -63,9 +61,8 @@ typedef struct symTable {
 
 	/* for static variables of a class */
 	set<int> staticIndices;
-		
-	/* needed only for variable declarations, not for function or class definitions */
-	int UpdateRecord(tableRecord* newRecord);
+
+	/* ctor */
 	symTable(string __name, struct symTable* __parentSymtable);
 
 	/* here lineno and column are those of the entity that is found now and looked up,

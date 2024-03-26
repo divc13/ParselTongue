@@ -17,8 +17,6 @@ void recordTypeInit()
 {
 	recordTypeMap[recordType::TYPE_FUNCTION] = "TYPE_FUNCTION";
 	recordTypeMap[recordType::TYPE_CLASS] = "TYPE_CLASS";
-	recordTypeMap[recordType::CONST_INT] = "CONST_INT";
-	recordTypeMap[recordType::CONST_FLOAT] = "CONST_FLOAT";
 	recordTypeMap[recordType::CONST_STRING] = "CONST_STRING";
 	recordTypeMap[recordType::CLASS_ATTRIBUTE] = "CLASS_ATTRIBUTE";
 	recordTypeMap[recordType::CLASS_OBJECT] = "CLASS_OBJECT";
@@ -57,7 +55,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			// return any matching entry with type other than function or class
 			if (entries[i] -> recordType != recordType::TYPE_CLASS && entries[i] -> recordType != recordType::TYPE_FUNCTION)
 			{
-				if (entries[i] -> recordType == recordType::CONST_STRING || entries[i] -> recordType == recordType::CONST_INT || entries[i] -> recordType == recordType::CONST_FLOAT)
+				if (entries[i] -> recordType == recordType::CONST_STRING)
 					continue;
 
 				return entries[i];
@@ -93,9 +91,9 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			// return any matching entry with type other than function or class
 			if (entries[i] -> recordType != recordType::TYPE_FUNCTION)
 			{
-				if (entries[i] -> recordType == recordType::CONST_STRING || entries[i] -> recordType == recordType::CONST_INT || entries[i] -> recordType == recordType::CONST_FLOAT)
+				if (entries[i] -> recordType == recordType::CONST_STRING)
 					continue;
-					
+
 				return entries[i];
 			}
 		}
@@ -198,29 +196,6 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	currentIndex++;
 	return 0;
-}
-
-int symbolTable::UpdateRecord(tableRecord* newRecord)
-{
-
-	tableRecord* record = NULL;
-	assert(newRecord);
-	assert(newRecord -> symTab);
-
-	record = lookup(newRecord -> name, newRecord -> recordType, NULL);
-	assert(record);
-
-	if((newRecord -> type).length()) record -> type = newRecord -> type;
-	if(newRecord -> size) 
-	{
-		size += newRecord -> size - record -> size;
-		record -> size = newRecord -> size;
-	}
-	record -> lineno = newRecord -> lineno;
-	record -> column = newRecord -> column;
-	record -> recordType = newRecord -> recordType;
-
-	return 0;	
 }
 
 void formatString(string &name, string &type)
@@ -527,34 +502,6 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	}
 
 
-	// constant integers
-	if ((root -> type).compare("INT_LITERAL") == 0)
-	{
-		tableRecord* tempRecord = record;
-		record = new tableRecord(root -> name, "int", SIZE_INT, root -> lineno, root -> column, recordType::CONST_INT);
-		if(!globTable -> lookup(record -> name, recordType::CONST_INT))
-			globTable -> insert(record, NULL);
-		free (record);
-		record = tempRecord;
-		return 0;
-	}
-
-
-
-	// constant floating point literals
-	if ((root -> type).compare("FLOAT_LITERAL") == 0)
-	{
-		tableRecord* tempRecord = record;
-		record = new tableRecord(root -> name, "float", SIZE_FLOAT, root -> lineno, root -> column, recordType::CONST_FLOAT);
-		if(!globTable -> lookup(record -> name, recordType::CONST_FLOAT))
-			globTable -> insert(record, NULL);
-		free (record);
-		record = NULL;
-		record = tempRecord;
-		return 0;
-	}
-
-
 
 	// constant string literals
 	if ((root -> type).compare("STRING_LITERAL") == 0)
@@ -694,7 +641,6 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root -> type).compare("OPERATOR") == 0 && (root -> name).compare("=") == 0)
 	{
 		assert((root -> children).size() == 2);
-		
 		// assignment in ctor
 		if ((currTable -> name).compare("__init__") == 0)
 		{
