@@ -55,8 +55,11 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		for (auto &i: indices)
 		{
 			// return any matching entry with type other than function or class
-			if (entries[i] -> recordType != TYPE_CLASS && entries[i] -> recordType != TYPE_FUNCTION)
+			if (entries[i] -> recordType != recordType::TYPE_CLASS && entries[i] -> recordType != recordType::TYPE_FUNCTION)
 			{
+				if (entries[i] -> recordType == recordType::CONST_STRING || entries[i] -> recordType == recordType::CONST_INT || entries[i] -> recordType == recordType::CONST_FLOAT)
+					continue;
+
 				return entries[i];
 			}
 		}
@@ -64,11 +67,11 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		for (auto &i: indices)
 		{
 			// the type must now be class or function
-			if (entries[i] -> recordType == TYPE_FUNCTION && params)
+			if (entries[i] -> recordType == recordType::TYPE_FUNCTION && params)
 			{
 				tableRecord* entry = entries[i];
 				symbolTable* table = entry -> symTab;
-				if (params -> size() != table -> offset) continue;
+				if (params -> size() != table -> numParams) continue;
 		
 				int num;
 				for (num = 0; num < params -> size(); num++)
@@ -88,8 +91,11 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		for (auto &i: indices)
 		{
 			// return any matching entry with type other than function or class
-			if (entries[i] -> recordType != TYPE_FUNCTION)
+			if (entries[i] -> recordType != recordType::TYPE_FUNCTION)
 			{
+				if (entries[i] -> recordType == recordType::CONST_STRING || entries[i] -> recordType == recordType::CONST_INT || entries[i] -> recordType == recordType::CONST_FLOAT)
+					continue;
+					
 				return entries[i];
 			}
 		}
@@ -144,7 +150,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	{
 		assert(funcTable);
 		vector<tableRecord*> params;
-		for (int i = 0; i < funcTable -> offset; i++)
+		for (int i = 0; i < funcTable -> numParams; i++)
 			params.push_back((funcTable -> entries)[i]);
 
 		tableRecord* entry = lookup_table(name, recordType, &params);
@@ -177,6 +183,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	name_to_indices[name].push_back(currentIndex);
 	record -> index = currentIndex;
 	entries[currentIndex] = record;
+	record -> offset = size;
 
 	// size of the table not updated when function entry
 	if (recordType != recordType::TYPE_FUNCTION)
@@ -188,6 +195,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		size += SIZE_PTR - __size; 			// only one pointer needs to be stored
 	}
 	
+
 	currentIndex++;
 	return 0;
 }
@@ -371,13 +379,14 @@ void formatString(string &name, string &type)
 
 void tableRecord::dumpCSV(ofstream &CSV)
 {
-	CSV << index << ", " << name << ", " << type << ", " << recordTypeMap[recordType] << ", " << size << ", " << lineno << endl;
+	CSV << index << ", " << name << ", " << type << ", " << recordTypeMap[recordType] << ", " << offset << ", " << size << ", " << lineno << endl;
 	return;
 }
 
 
 void symbolTable::dumpCSV(ofstream &CSV)
 {
+	CSV << "# File Name: " << inputFile << endl;
 	CSV << "# Table Name: " << name;
 	if (parentSymtable)
 		CSV << ", Parent Table: " << parentSymtable -> name;
@@ -389,13 +398,13 @@ void symbolTable::dumpCSV(ofstream &CSV)
 	if (tableType == tableType::FUNCTION)
 	{
 		CSV << "\n# Incoming Parameters: \n";
-		CSV << "index, name, type, recordType, size, line no. \n";
-		for (; index < offset; index++)
+		CSV << "index, name, type, recordType, offset, size, line no. \n";
+		for (; index < numParams; index++)
 			(entries[index]) -> dumpCSV(CSV);
 	}
 
 	CSV << "\n# Local Variables: \n";
-	CSV << "index, name, type, recordType, size, line no. \n";
+	CSV << "index, name, type, recordType, offset, size, line no. \n";
 	for (; index < currentIndex; index++)
 		(entries[index]) -> dumpCSV(CSV);
 
@@ -431,7 +440,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		for(auto &itr: ((root -> children)[2]) -> children)
 		{
 			if ((itr -> name).compare("self"))
-				currTable -> offset++;
+				currTable -> numParams++;
 		}
 
 		TreeNode* node = ((root -> children)[0]);
@@ -574,7 +583,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		int recordType = recordType::VARIABLE;
 		int size = 0;
 
-		if (tempTable->offset > tempTable->currentIndex)
+		if (tempTable->numParams > tempTable->currentIndex)
 		{
 			// function parameter is set here
 			node = ((root -> children)[1]);
@@ -741,7 +750,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	{
 		assert ((currTable -> name).compare((root -> children)[0] -> name) == 0);
 		vector<tableRecord*> params;
-		for (int i = 0; i < currTable -> offset; i++)
+		for (int i = 0; i < currTable -> numParams; i++)
 			params.push_back((currTable -> entries)[i]);
 		
 		assert(currTable -> parentSymtable);
