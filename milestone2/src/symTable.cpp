@@ -21,6 +21,7 @@ void recordTypeInit()
 	recordTypeMap[recordType::CONST_FLOAT] = "CONST_FLOAT";
 	recordTypeMap[recordType::CONST_STRING] = "CONST_STRING";
 	recordTypeMap[recordType::CLASS_ATTRIBUTE] = "CLASS_ATTRIBUTE";
+	recordTypeMap[recordType::CLASS_OBJECT] = "CLASS_OBJECT";
 	recordTypeMap[recordType::OBJECT_ATTRIBUTE] = "OBJECT_ATTRIBUTE";
 	recordTypeMap[recordType::VARIABLE] = "VARIABLE";
 	
@@ -649,16 +650,13 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			else if ((record -> type).compare("str") == 0)
 				record -> size = SIZE_PTR;
 
+			else if ((record -> type).compare(0, 4, "list") == 0)
+				record -> size = SIZE_PTR;
+
 			// dealing with classes
 			else if ((record -> type).compare(0, 4, "list"))
 			{
-				tableRecord *entry = tempTable -> lookup(record -> type, recordType::TYPE_CLASS);
-				if (!entry)
-				{
-					raise_error(ERR::UNKNOWN_TYPE, record);
-					return -1;
-				}
-				record -> size = entry -> size;
+				record -> size = SIZE_PTR;
 				record -> recordType = recordType::CLASS_OBJECT;
 			}
 
@@ -687,106 +685,48 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	if ((root -> type).compare("OPERATOR") == 0 && (root -> name).compare("=") == 0)
 	{
 		assert((root -> children).size() == 2);
-		if (record)
+		
+		// assignment in ctor
+		if ((currTable -> name).compare("__init__") == 0)
 		{
-			if (!(record -> size))
+			TreeNode* node = (root -> children)[0];
+			assert(currTable -> parentSymtable);
+			assert(currTable -> parentSymtable -> tableType == tableType::CLASS);
+
+			if ((node -> name).compare(".") == 0)
 			{
-				
-				// = will have only 2 child
-				assert((root -> children).size() == 2);
-
-				TreeNode* node = (root -> children)[1];
-				if ((record -> type).compare(0, 4, "list") == 0)
+				assert((node -> children).size() == 2);
+				if (((node -> children)[0] -> name).compare("self") == 0)
 				{
-					int num = (node -> children).size() - 2;
-					string type = record -> type;
 
-					// remove the characters l i s t [ ] = 6
-					string category = type.substr(5, type.length() - 6);
-
-					if (category.compare("int") == 0)
-						record -> size = num * SIZE_INT;
-
-					else if (category.compare("float") == 0)
-						record -> size = num * SIZE_FLOAT;
-
-					else if (category.compare("bool") == 0)
-						record -> size = num * SIZE_BOOL;
-
-					else if (category.compare("str") == 0)
-						record -> size = num * SIZE_PTR;
-						
-					// class objects
-					else
+					tableRecord* entry = currTable -> parentSymtable -> lookup_table((node -> children)[1] -> name);
+					if (!entry)
 					{
-						tableRecord *entry = currTable -> lookup(record -> type, recordType::TYPE_CLASS);
+						// nothing found in the immidiate table, may be in parent class table
+						node = (node -> children)[1];
+						entry = currTable -> parentSymtable -> lookup(node -> name);
 						if (!entry)
 						{
-							raise_error(ERR::UNDECLARED, record);
+							raise_error(ERR::CLASS_NO_MATCH_ATTR, record);
 							return -1;
 						}
-						record -> size = num * entry -> size;
-					}
-					
-				}
 
-
-				assert (record -> symTab);
-				int ret = currTable -> UpdateRecord(record);
-
-				if (ret < 0)
-					return ret;
-
-			}
-
-			free(record);
-			record = NULL;
-		}
-
-		else
-		{
-			// assignment in ctor
-			if ((currTable -> name).compare("__init__") == 0)
-			{
-				TreeNode* node = (root -> children)[0];
-				assert(currTable -> parentSymtable);
-				assert(currTable -> parentSymtable -> tableType == tableType::CLASS);
-
-				if ((node -> name).compare(".") == 0)
-				{
-					assert((node -> children).size() == 2);
-					if (((node -> children)[0] -> name).compare("self") == 0)
-					{
-
-						tableRecord* entry = currTable -> parentSymtable -> lookup_table((node -> children)[1] -> name);
-						if (!entry)
+						// since the above lookup returned true
+						assert (currTable -> parentSymtable -> parentSymtable);
+						if (entry -> symTab -> tableType != tableType::CLASS)
 						{
-							// nothing found in the immidiate table, may be in parent class table
-							node = (node -> children)[1];
-							entry = currTable -> parentSymtable -> lookup(node -> name);
-							if (!entry)
-							{
-								raise_error(ERR::CLASS_NO_MATCH_ATTR, record);
-								return -1;
-							}
-
-							// since the above lookup returned true
-							assert (currTable -> parentSymtable -> parentSymtable);
-							if (entry -> symTab -> tableType != tableType::CLASS)
-							{
-								tableRecord* tempRecord = new tableRecord((node -> children)[1] -> name, "", 0, (node -> children)[1] -> lineno, (node -> children)[1] -> column);
-								raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
-								return -1;
-							}
-
-							int err = currTable -> parentSymtable -> insert(entry);
-							if (err < 0)
-								return -1;
+							tableRecord* tempRecord = new tableRecord((node -> children)[1] -> name, "", 0, (node -> children)[1] -> lineno, (node -> children)[1] -> column);
+							raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
+							return -1;
 						}
 
-						// else do nothing, this is of the same class
-
+						int err = currTable -> parentSymtable -> insert(entry);
+						if (err < 0)
+							return -1;
 					}
+
+					// else do nothing, this is of the same class
+
 				}
 			}
 		}
