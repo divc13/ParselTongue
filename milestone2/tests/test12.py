@@ -23,7 +23,7 @@ def main():
     print(hexa_8)
 
     # redeclaring same variable but should parse
-    list1: list[int] = [1, 2, 3, 4, 5]
+    list2: list[int] = [1, 2, 3, 4, 5]
 
     list1.append(6)
     print(list1) 
@@ -45,7 +45,7 @@ def main():
     list1.clear()
     print(list1) 
 
-    list1: list[int] = [1, 2, 3, 4, 5]
+    list3: list[int] = [1, 2, 3, 4, 5]
 
     find_index4: int = list1.index(4)
     print(find_index4)  

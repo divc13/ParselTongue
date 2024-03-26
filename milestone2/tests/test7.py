@@ -1,4 +1,4 @@
-def func1():
+def func1() -> None:
 	quit("ur4jf3wr049j")
 
 def func2(param1:int = 10, param2:str = "default") -> None:
@@ -6,30 +6,30 @@ def func2(param1:int = 10, param2:str = "default") -> None:
 	print(param2)
 	return "hi";
 
-def func3(void, param1:str,  param2:int = 10, param3: list[bool] = [False, False], ):
+def func3(param1:str,  param2:int = 10, param3: list[bool] = [False, False], ) -> None:
 
 	return -1 + len("ehriwu") and not 1;	
 	print("this should not be printed")
 
-def func4(x: int, ):
+def func4(x: int, )-> None:
 	print("func4")
 
-def func5(x:int,  ):
+def func5(x:int,  )-> None:
 	print("func5")
 
-def func6(x:int = 7, y:int = 8, ):
+def func6(x:int = 7, y:int = 8, )-> None:
 	print("func6")
 
-def func7(x:int, y:int, ):
+def func7(x:int, y:int, )-> None:
 	print("func7")
 
-def func8(x:int, y:int, z: int,  z2:int = 10):
+def func8(x:int, y:int, z: int,  z2:int = 10)-> None:
 	print("func8")
 
-def func9(x:int, z:int):
+def func9(x:int, z:int)-> None:
 	print("func9")
 
-def func10(x: int ,  p: int  , y:int = 2,  z: int = 100):
+def func10(x: int ,  p: int  , y:int = 2,  z: int = 100)-> None:
 	print("func10")
 	
 

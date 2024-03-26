@@ -818,10 +818,10 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	{
 		assert ((currTable -> name).compare((root -> children)[0] -> name) == 0);
 		assert(currTable -> parentSymtable);
-		tableRecord* entry = currTable -> parentSymtable -> lookup_table((root->children)[0]->name, recordType::TYPE_CLASS);
+		tableRecord* entry = globTable -> lookup_table((root->children)[0]->name, recordType::TYPE_CLASS);
 		assert(entry);
 		entry -> size = currTable -> size;
-		currTable = currTable -> parentSymtable;
+		currTable = globTable;
 	}
 
 	return 0;

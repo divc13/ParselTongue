@@ -1,4 +1,4 @@
-def _00(void) -> None:
+def _00() -> None:
 	exit("fjieo");
 
 def _func1_(var1: int) -> None:

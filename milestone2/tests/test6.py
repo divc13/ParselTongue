@@ -14,13 +14,13 @@ assert 2, -1
 assert -0.00001
 assert (True or False and True)
 
-def func1(a:list[float] = [0, 0], b:int = 10):
+def func1(a:list[float] = [0, 0], b:int = 10)-> None:
 	i:int = 0;
 
 	for i in range(len(a)):
 		print(a[i])
 
-def func2(void, a:int , b: float=4.4) -> str:
+def func2(a:int , b: float=4.4) -> str:
 	return "func2";\
 
 
