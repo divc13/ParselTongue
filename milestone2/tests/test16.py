@@ -1,5 +1,4 @@
-a:str = "Hello"
 class Hello:
   def __init__(self):
-    self.x:int = 5
+    self.x = 5
     

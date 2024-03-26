@@ -653,16 +653,19 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 				assert((node -> children).size() == 2);
 				if (((node -> children)[0] -> name).compare("self") == 0)
 				{
-
+					
 					tableRecord* entry = currTable -> parentSymtable -> lookup_table((node -> children)[1] -> name);
 					if (!entry)
 					{
 						// nothing found in the immidiate table, may be in parent class table
 						node = (node -> children)[1];
+						assert(node);
 						entry = currTable -> parentSymtable -> lookup(node -> name);
 						if (!entry)
 						{
-							raise_error(ERR::CLASS_NO_MATCH_ATTR, record);
+							tableRecord* tempRecord = new tableRecord(node-> name, "", 0, node  -> lineno, node -> column);
+							raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
+							free(tempRecord);
 							return -1;
 						}
 
@@ -670,8 +673,9 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 						assert (currTable -> parentSymtable -> parentSymtable);
 						if (entry -> symTab -> tableType != tableType::CLASS)
 						{
-							tableRecord* tempRecord = new tableRecord((node -> children)[1] -> name, "", 0, (node -> children)[1] -> lineno, (node -> children)[1] -> column);
+							tableRecord* tempRecord = new tableRecord(node-> name, "", 0, node  -> lineno, node -> column);
 							raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
+							free(tempRecord);
 							return -1;
 						}
 

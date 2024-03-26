@@ -165,7 +165,7 @@ void TreeNode::make_dot(string out)
 		else if (node->type == "DEDENT" || node->type == "EOF" || node->type == "NEWLINE" || node->type == "INDENT")
 			tmp = node->type;
 		else
-			tmp = node->type + "\n" + to_string(node->lineno) + "(" + node->name + ")";
+			tmp = node->type + "\n" + "(" + node->name + ")";
 
 		DOT << current_index << " [ label = \"";
 
