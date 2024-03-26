@@ -43,7 +43,7 @@ void init_note()
 void raise_error(int err, tableRecord* record)
 {
 	if(err < ERR::CLASS_ATTRIBUTE_DECL_SELF)
-		cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << RED << ErrorMap[err] << record->name << ":" << RESET;
+		cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << RED << ErrorMap[err] << CYAN << record->name << RESET << RED << ":" << RESET;
 	else
 		cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << RED << ErrorMap[err] << ":" << RESET;
 	printErrorLine(record->lineno, record->column);
@@ -51,6 +51,6 @@ void raise_error(int err, tableRecord* record)
 
 void print_note(int note, tableRecord* record)
 {
-	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << NoteMap[note] << record->name << ":" << RESET;
+	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << NoteMap[note] << CYAN << record->name << RESET << RED << ":" << RESET;
 	printErrorLine(record->lineno, record->column);
 }
