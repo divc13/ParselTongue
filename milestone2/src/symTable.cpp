@@ -177,7 +177,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	entries[currentIndex] = record;
 
 	// size of the table not updated when function entry
-	if (!recordType::TYPE_FUNCTION)
+	if (recordType != recordType::TYPE_FUNCTION)
 		size += __size;
 	
 	if (recordType == recordType::CLASS_ATTRIBUTE)

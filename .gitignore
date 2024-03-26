@@ -10,4 +10,4 @@ action_adder
 .vscode
 output/
 run.sh
-compiler
+runner

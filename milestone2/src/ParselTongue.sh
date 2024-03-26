@@ -155,7 +155,7 @@ if [ "${#input_files[@]}" -eq "${#output_files[@]}" ]; then
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./compiler "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
 	done
 elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 	echo -e "\e[33mWarning: Less input files provided than output files. The additional output files wont be used.\e[0m"
@@ -166,7 +166,7 @@ elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./compiler "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
 	done
 else
 	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
@@ -186,7 +186,7 @@ else
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./compiler "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
 	done	
 fi
 

@@ -41,6 +41,10 @@ class E:
   def __init__(self):
     # a:int = 1
     self.x:int = 1
+    
+  class D(A):
+
+    a:int = 5
 
 
 def main():
