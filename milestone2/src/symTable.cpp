@@ -193,6 +193,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 int symbolTable::UpdateRecord(tableRecord* newRecord)
 {
 	tableRecord* record = lookup_table(newRecord -> name, newRecord -> recordType, NULL);
+	assert(newRecord);
 	assert(record);
 
 	if((newRecord -> type).length()) record -> type = newRecord -> type;
@@ -415,7 +416,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			assert((root -> children).size() == 6);
 
 		else 
-			assert((root -> children).size() == 5);
+			assert((root -> children).size() == 5 || (root -> children).size() == 6);
 
 		symbolTable *Table = new symbolTable(((root -> children)[0]) -> name, currTable);
 		Table -> tableType = tableType::FUNCTION;
@@ -443,7 +444,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			return -1;
 		}
 		
-		symbolTable* parent = NULL;
+		symbolTable* parent = globTable;
 		if((root -> children.size() > 2))
 		{
 			node = (root -> children)[2];
@@ -534,8 +535,19 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		assert((root -> children).size() == 2);
 		TreeNode* node = ((root -> children)[0]);
 		symbolTable* tempTable = currTable;
-		bool isStatic = false;
 		int recordType = recordType::VARIABLE;
+		int size = 0;
+
+		if (tempTable->offset > tempTable->currentIndex)
+		{
+			// function parameter is set here
+			node = ((root -> children)[1]);
+			if ((node -> name).compare("list") == 0)
+			{
+				size = SIZE_PTR;
+			}
+			node = ((root -> children)[0]);
+		}
 
 
 		if((node -> name).compare(".") == 0)
@@ -572,7 +584,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			recordType = recordType::CLASS_ATTRIBUTE;
 		}
 		
-		record = new tableRecord(node -> name, "", 0, node -> lineno, node -> column, recordType);
+		record = new tableRecord(node -> name, "", size, node -> lineno, node -> column, recordType);
 
 		node = (root -> children)[1];
 
@@ -608,6 +620,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 				tableRecord *entry = tempTable -> lookup(record -> type, recordType::TYPE_CLASS);
 				if (!entry)
 				{
+					raise_error(ERR::UNKNOWN_TYPE, record);
 					return -1;
 				}
 				record -> size = entry -> size;
@@ -671,6 +684,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 						tableRecord *entry = currTable -> lookup(record -> type, recordType::TYPE_CLASS);
 						if (!entry)
 						{
+							raise_error(ERR::UNDECLARED, record);
 							return -1;
 						}
 						record -> size = num * entry -> size;
@@ -710,7 +724,10 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 							node = (node -> children)[1];
 							entry = currTable -> parentSymtable -> lookup(node -> name);
 							if (!entry)
+							{
+								raise_error(ERR::CLASS_NO_MATCH_ATTR, record);
 								return -1;
+							}
 
 							// since the above lookup returned true
 							assert (currTable -> parentSymtable -> parentSymtable);
