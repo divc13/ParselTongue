@@ -101,7 +101,12 @@ DIGITPART						{DIGIT}([_]?{DIGIT})*
 FRACTION						"."{DIGITPART}
 EXPONENT						[eE][+-]?{DIGITPART}
 
-OPERATOR		 				"+"|"-"|"*"|"/"|"//"|"%"|"**"|"=="|"!="|">"|"<"|">="|"<="|and|or|not|"&"|"|"|"^"|"~"|"<<"|">>"|"="|"+="|"-="|"*="|"/="|"//="|"%="|"**="|"&="|"|="|"^="|"<<="|">>="
+OP_ARITHMATIC					"+"|"-"|"*"|"/"|"//"|"%"|"**"
+OP_RELATIONAL					"=="|"!="|">"|"<"|">="|"<="
+OP_LOGICAL						and|or|not
+OP_BITWISE		 				"&"|"|"|"^"|"~"|"<<"|">>"
+OP_ASSIGNMENT					"="|"+="|"-="|"*="|"/="|"//="|"%="|"**="|"&="|"|="|"^="|"<<="|">>="
+
 DELIMITER 						"("|")"|"["|"]"|"{"|"}"|","|":"|"."|";"|"@"|"->"
 
 WHITESPACE						[ \t\f\r]
@@ -313,9 +318,49 @@ NEWLINE							\n
 }
 
 
-{OPERATOR} {
+{OP_ARITHMATIC} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = strdup("OPERATOR");
+	yylval.info.type = strdup("OP_ARITHMATIC");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	string token_str = yytext;
+	log_token(__LINE__, yylval.info);
+	return StringToToken[token_str];
+}
+
+{OP_RELATIONAL} {
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = strdup("OP_RELATIONAL");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	string token_str = yytext;
+	log_token(__LINE__, yylval.info);
+	return StringToToken[token_str];
+}
+
+{OP_LOGICAL} {
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = strdup("OP_LOGICAL");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	string token_str = yytext;
+	log_token(__LINE__, yylval.info);
+	return StringToToken[token_str];
+}
+
+{OP_BITWISE} {
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = strdup("OP_BITWISE");
+	yylval.info.lineno = yylineno;
+	yylval.info.colno = yylloc.first_column;
+	string token_str = yytext;
+	log_token(__LINE__, yylval.info);
+	return StringToToken[token_str];
+}
+
+{OP_ASSIGNMENT} {
+	yylval.info.name = strdup(yytext);
+	yylval.info.type = strdup("OP_ASSIGNMENT");
 	yylval.info.lineno = yylineno;
 	yylval.info.colno = yylloc.first_column;
 	string token_str = yytext;
@@ -351,18 +396,7 @@ NEWLINE							\n
 }
 
 {STRING_LITERAL} {
-	// string tmp(yytext), target = "\\\r\n";
 	string tmp(yytext);
-
-	// size_t pos = 0;
-    // while ((pos = tmp.find(target, pos)) != string::npos) {
-    //     tmp.replace(pos, target.length(), "");
-    // }
-	// pos = 0, target = "\\\n";
-
-    // while ((pos = tmp.find(target, pos)) != string::npos) {
-    //     tmp.replace(pos, target.length(), "");
-    // }
 
 	yylval.info.name = strdup(tmp.c_str());
 	yylval.info.type = strdup("STRING_LITERAL");

@@ -6,7 +6,7 @@ typedef struct node{
 	string type;
 	int lineno;
 	int column;
-	int dataType = 0;
+	string dataType = "";
 	vector <struct node*> children;
 	node(string __name, int __lineno = 0, int __column = 0, string __type = "NON_TERMINAL");
 	static void make_dot(string out);
@@ -27,3 +27,5 @@ void ConstrainedExchange(TreeNode* root, int &nchild, int args);
 
 // make AST from the parse tree
 void AST_Maker(TreeNode* root);
+
+bool isOperator(TreeNode* root);

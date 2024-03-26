@@ -26,6 +26,7 @@ enum ERR {
 	CLASS_CTOR,
 	ILL_PARENT,
 	CLASS_NOT_GLOBAL,
+	TYPE_MISMATCH,
 	
 };
 
@@ -39,6 +40,6 @@ void init_error();
 
 void init_note();
 
-void raise_error(int err, tableRecord* record);
+void raise_error(int err, TreeNode* root);
 
 void print_note(int note, tableRecord* record);

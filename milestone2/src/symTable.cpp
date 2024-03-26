@@ -146,14 +146,16 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	int column = inputRecord -> column;
 	int __size = inputRecord -> size;
 	int recordType = inputRecord -> recordType;
+	TreeNode *tempNode = new TreeNode(name, lineno, column);
 
 	if (recordType != recordType::TYPE_FUNCTION)
 	{
 		tableRecord* entry = lookup_table(name, recordType);
 		if (entry)
 		{
-			raise_error (ERR::REDIFINITION, inputRecord);
+			raise_error (ERR::REDIFINITION, tempNode);
 			print_note (NOTE::PREV_DECL, entry);
+			free(tempNode);
 			return -1;
 		}
 	}
@@ -170,12 +172,14 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		{
 			if (entry -> recordType == recordType::TYPE_FUNCTION)
 			{
-				raise_error (ERR::REDIFINITION, inputRecord);
+				raise_error (ERR::REDIFINITION, tempNode);
 				print_note (NOTE::PREV_DECL, entry);
+				free(tempNode);
 				return -1;
 			}
-			raise_error (ERR::TYPE_REDECLARATION, inputRecord);
+			raise_error (ERR::TYPE_REDECLARATION, tempNode);
 			print_note (NOTE::PREV_DECL, entry);
+			free(tempNode);
 			return -1;
 		}
 
@@ -438,11 +442,14 @@ int handle_function_declaration(TreeNode* root)
 	
 	assert(currTable -> parentSymtable);
 	int err = currTable -> parentSymtable -> insert(record, currTable);
-	if (err < 0)
-		return err;
+	node -> dataType = type;
 
 	free(record);
 	record = NULL;
+	
+	if (err < 0)
+		return err;
+
 	return 0;
 }
 
@@ -450,11 +457,9 @@ int handle_function_declaration(TreeNode* root)
 int handle_class_declaration(TreeNode* root)
 {
 	TreeNode* node = ((root -> children)[0]);
-	tableRecord* tempRecord = new tableRecord(node -> name, node -> name, currTable -> size, node -> lineno, node -> column, recordType::TYPE_CLASS);
 	if (currTable != globTable)
 	{
-		raise_error(ERR::CLASS_NOT_GLOBAL, tempRecord);
-		free (tempRecord);
+		raise_error(ERR::CLASS_NOT_GLOBAL, node);
 		return -1;
 	}
 	
@@ -465,23 +470,21 @@ int handle_class_declaration(TreeNode* root)
 		if((node -> type).compare("IDENTIFIER") == 0)
 		{
 			tableRecord* entry = currTable -> lookup(node -> name, recordType::TYPE_CLASS);
-			tempRecord->name = entry->name;
-			tempRecord->lineno = entry->lineno;
-			tempRecord->column = entry->column;
+			TreeNode *tempNode = new TreeNode(entry -> name, entry->lineno, entry->column);
 			if(entry)
 			{
 				if (entry -> recordType != recordType::TYPE_CLASS)
 				{
-					raise_error(ERR::ILL_PARENT, tempRecord);
-					free (tempRecord);
+					raise_error(ERR::ILL_PARENT, tempNode);
+					free (tempNode);
 					return -1;
 				}	
 			}
 
 			assert(entry -> symTab);
 			parent = entry -> symTab;
-			free (tempRecord);
-			tempRecord = NULL;
+			free (tempNode);
+			tempNode = NULL;
 		}
 	}
 
@@ -494,11 +497,14 @@ int handle_class_declaration(TreeNode* root)
 	
 	int err = globTable -> insert(record, currTable);
 
-	if (err < 0)
-		return err;
+	node -> dataType = node -> name;
 
 	free(record);
 	record = NULL;
+
+	if (err < 0)
+		return err;
+
 	return 0;
 }
 
@@ -511,6 +517,9 @@ int handle_const_strings(TreeNode* root)
 	record = new tableRecord(root -> name, str_type, SIZE_STRING((root -> name).length()), root -> lineno, root -> column, recordType::CONST_STRING);
 	if(!globTable -> lookup(record -> name, recordType::CONST_STRING))
 		globTable -> insert(record, NULL);
+
+	root -> dataType = str_type;
+
 	free (record);
 	return 0;
 }
@@ -572,23 +581,22 @@ int handle_type_declarations(TreeNode* root)
 	if((node -> name).compare(".") == 0)
 	{
 		assert((node -> children).size() == 2);
-		tableRecord* tempRecord = new tableRecord((node -> children)[0] -> name, "", 0, (node -> children)[0] -> lineno,  (node -> children)[0] -> column);
-
+		TreeNode* tempNode = (node -> children)[0];
 		if(((node -> children)[0] -> name).compare("self"))
 		{
-			raise_error(ERR::CLASS_ATTRIBUTE_DECL_SELF, tempRecord);
+			raise_error(ERR::CLASS_ATTRIBUTE_DECL_SELF, node);
 			return -1;
 		}
 
 		if((currTable -> name).compare("__init__"))
 		{
-			raise_error(ERR::CLASS_ATTRIBUTE_DECL_CTOR, tempRecord);
+			raise_error(ERR::CLASS_ATTRIBUTE_DECL_CTOR, node);
 			return -1;
 		}
 
 		if(!(currTable -> parentSymtable) || (currTable -> parentSymtable) -> tableType != tableType::CLASS)
 		{
-			raise_error(ERR::CLASS_CTOR, tempRecord);
+			raise_error(ERR::CLASS_CTOR, node);
 			return -1;
 		}
 
@@ -603,9 +611,12 @@ int handle_type_declarations(TreeNode* root)
 	
 	tableRecord* record = new tableRecord(node -> name, "", size, node -> lineno, node -> column, recordType);
 	set_record_size(root, record);
+
+	node -> dataType = record -> type;
 	
 	int err = tempTable -> insert(record);
 	assert(record->symTab);
+	
 	free(record);
 	record = NULL;
 
@@ -640,9 +651,7 @@ int handle_ctor_assignments(TreeNode* root)
 					entry = currTable -> parentSymtable -> lookup(node -> name);
 					if (!entry)
 					{
-						tableRecord* tempRecord = new tableRecord(node-> name, "", 0, node  -> lineno, node -> column);
-						raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
-						free(tempRecord);
+						raise_error(ERR::CLASS_NO_MATCH_ATTR, node);
 						return -1;
 					}
 
@@ -650,13 +659,14 @@ int handle_ctor_assignments(TreeNode* root)
 					assert (currTable -> parentSymtable -> parentSymtable);
 					if (entry -> symTab -> tableType != tableType::CLASS)
 					{
-						tableRecord* tempRecord = new tableRecord(node-> name, "", 0, node  -> lineno, node -> column);
-						raise_error(ERR::CLASS_NO_MATCH_ATTR, tempRecord);
-						free(tempRecord);
+						raise_error(ERR::CLASS_NO_MATCH_ATTR, node);
 						return -1;
 					}
 
 					int err = currTable -> parentSymtable -> insert(entry);
+
+					node -> dataType = entry -> type;
+
 					if (err < 0)
 						return -1;
 				}
@@ -669,7 +679,7 @@ int handle_ctor_assignments(TreeNode* root)
 	return 0;
 }
 
-int generate_symtable(TreeNode *root, tableRecord* &record)
+int generate_symtable(TreeNode *root)
 {
 
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("function_def") == 0)
@@ -689,7 +699,7 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	vector<TreeNode *> &children = root -> children;
 	for (int nchild = 0; nchild < (root -> children).size(); nchild++)
 	{
-		int ret = generate_symtable(children[nchild], record);
+		int ret = generate_symtable(children[nchild]);
 		if (ret < 0)
 			return ret;
 	}
@@ -710,12 +720,36 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		return 0;
 	}
 
-	if ((root -> type).compare("OPERATOR") == 0 && (root -> name).compare("=") == 0)
+	if (isOperator(root) && (root -> name).compare("=") == 0)
 	{
 		int ret = handle_ctor_assignments(root);
 		if (ret < 0)
 			return ret;
-		return 0;
+	}
+
+	if (isOperator(root))
+	{
+		if ((root -> type).compare("OP_ARITHMATIC") == 0)
+		{
+			if (root->name != "-")
+				assert((root -> children).size() == 2);
+			else assert ((root -> children).size() == 2 || (root -> children).size() == 1);
+
+			if ((root -> children).size() == 2)
+			{
+				string type1 = (root->children)[0]->dataType;
+				string type2 = (root->children)[1]->dataType;
+				string myType = isCompatible(type1, type2);
+				if (! myType.length())
+				{
+					raise_error(ERR::TYPE_MISMATCH, (root->children)[1]);
+					return -1;
+				}
+
+				if (! isNumberType(type1) && isNumberType(type2));
+
+			}
+		}
 	}
 
 	// dealing with functions again, after completing the function symbol table
@@ -734,7 +768,6 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 		return 0;
 
 	}
-
 
 	// dealing with classes again on coming back
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("class_def") == 0)
@@ -756,7 +789,7 @@ int symTable_Maker(TreeNode *root)
 	globTable -> tableType = tableType::GLOBAL;
 	tableRecord* record = NULL;
 	initTypes();
-	return generate_symtable(root, record);
+	return generate_symtable(root);
 }
 
 inline int isValidType(string type1)
@@ -784,6 +817,18 @@ string isCompatible(string type1, string type2)
 		return type2;
 
 	return "";
+}
+
+bool isNumberType(string type)
+{
+
+	if (type == "float")
+		return true;
+
+	if (type == "float")
+		return true;
+
+	return false;
 }
 
 // int checkListAccess(TreeNode* root)

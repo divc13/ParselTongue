@@ -1,5 +1,11 @@
 #include "include/node.hpp"
 
+bool isOperator(TreeNode* root)
+{
+	if ((root->type).compare(0, 3, "OP_"))
+		return false;
+	return true;
+}
 
 // root of the parse tree / AST
 TreeNode *root;
@@ -205,7 +211,7 @@ void TreeNode::make_dot(string out)
 				DOT << "pink";
 			else if (node->type == "KEYWORD")
 				DOT << "orchid1";
-			else if (node->type == "OPERATOR")
+			else if (isOperator(node))
 				DOT << "lightcoral";
 			else if (node->type == "IDENTIFIER")
 				DOT << "slategray1";
@@ -301,14 +307,14 @@ void generateAST(TreeNode *root, int flag)
 		}
 
 		// bring operators, dot and to symbol one level up
-		if (((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("in") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
+		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
 		// perform constrained exchang, if the root nonterminal cannot be replaced
-		if (((child->type).compare("OPERATOR") == 0 || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
+		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
 		{
 			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0)
 				ConstrainedExchange(root, nchild, 1);
