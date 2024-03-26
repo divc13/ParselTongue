@@ -31,7 +31,7 @@ string tokenString = "";
 vector<string> verbose_stack;
 ofstream VERBOSE;
 
-//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <csv_flag>
+//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <csv_flag> <md_flag>
 int main(int argc, char **argv)
 {
 	// yydebug = 1;
@@ -48,6 +48,7 @@ int main(int argc, char **argv)
 	int ast_flag = atoi(argv[4]);
 	int ptree_flag = atoi(argv[5]);
 	int csv_flag = atoi(argv[6]);
+	int md_flag = atoi(argv[7]);
 
 	// yyin = fopen(inputFile.c_str(), "r");
 	FILE* file = fopen(inputFile.c_str(), "r");
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
 	// 	return -1;
 	// } 
 
-	if(csv_flag)
+	if (csv_flag)
 	{
 		ofstream CSV(noExtentionOutputFile + ".csv");
 		if (!CSV.is_open()) {
@@ -119,6 +120,17 @@ int main(int argc, char **argv)
 		}
 
 		globTable->dumpCSV(CSV);
+	}
+
+	if (md_flag)
+	{
+		ofstream MD(noExtentionOutputFile + ".md");
+		if (!MD.is_open()) {
+			cout << RED << "Error: Unable to open file " << noExtentionOutputFile << ".md" << RESET << endl;
+			return 0;
+		}
+
+		globTable->dumpMD(MD);
 	}
 
 	fclose(yyin);

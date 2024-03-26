@@ -211,8 +211,8 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		size += SIZE_PTR - __size; 			// only one pointer needs to be stored
 	}
 	
-	if (!isValidType(record -> type))
-		typeMap[record -> type] = type_offset++;
+	// if (!isValidType(record -> type))
+	// 	typeMap[record -> type] = type_offset++;
 
 	currentIndex++;
 	return 0;
@@ -371,6 +371,114 @@ void formatString(string &name, string &type)
 	return;
 }
 
+void print_name(ofstream &MD, string temp)
+{
+	size_t pos = 0;
+    while((pos = temp.find("\\\r\n", pos)) != string::npos)
+	{
+        temp.replace(pos, 4, "\\\\<br>");
+		pos++;
+    }
+
+	pos = 0;
+    while((pos = temp.find("\\\r", pos)) != string::npos)
+	{
+        temp.replace(pos, 3, "\\\\<br>");
+		pos++;
+    }
+
+	pos = 0;
+    while((pos = temp.find("\\\n", pos)) != string::npos)
+	{
+        temp.replace(pos, 3, "\\\\<br>");
+		pos++;
+    }
+
+	pos = 0;
+    while((pos = temp.find("\n", pos)) != string::npos)
+	{
+        temp.replace(pos, 2, "<br>");
+		pos++;
+    }
+
+	pos = 0;
+    while((pos = temp.find("_", pos)) != string::npos)
+	{
+        temp.replace(pos, 1, "\\_");
+		pos+=2;
+    }
+
+	MD << temp;
+}
+
+void tableRecord::dumpMD(ofstream &MD)
+{
+	MD << "| ";
+	MD << index;
+	MD << "  |  ";
+	print_name(MD, name);
+	MD << "  |  " << type;
+	MD << "  |  " << recordTypeMap[recordType];
+	MD << "  |  " << offset;
+	MD << "  |  " << size;
+	MD << "  |  " << lineno;
+	MD << "  |" << endl;
+
+	return;
+}
+
+
+void symbolTable::dumpMD(ofstream &MD)
+{
+	MD << "## Table Name: ";
+	print_name(MD, name);
+	if (parentSymtable)
+	{
+		MD << " &emsp;&emsp;&emsp;&emsp; Parent Table: ";
+		print_name(MD, parentSymtable -> name);
+	}
+	
+	MD << " <br>";
+	MD << endl;
+
+	int index = 0;
+
+	if (tableType == tableType::FUNCTION)
+	{
+		MD << "\n### Incoming Parameters: \n";
+		MD << "|  index";
+		MD << "  |  name";
+		MD << "  |  type";
+		MD << "  |  recordType";
+		MD << "  |  offset";
+		MD << "  |  size";
+		MD << "  |  line no. |\n";
+		MD << "|-|-|-|-|-|-|-|\n";
+		for (; index < numParams; index++)
+			(entries[index]) -> dumpMD(MD);
+	}
+
+	MD << "\n### Local Variables: \n";
+	MD << "|  index";
+	MD << "  |  name";
+	MD << "  |  type";
+	MD << "  |  recordType";
+	MD << "  |  offset";
+	MD << "  |  size";
+	MD << "  |  line no. |\n";
+	MD << "|-|-|-|-|-|-|-|\n";
+	for (; index < currentIndex; index++)
+		(entries[index]) -> dumpMD(MD);
+
+	for(auto child : childIndices) 
+	{
+		MD << "\n\n\n";
+		assert(entries[child] -> symTab);
+		((entries[child]) -> symTab) -> dumpMD(MD);
+	}
+
+	return;
+}
 
 void tableRecord::dumpCSV(ofstream &CSV)
 {

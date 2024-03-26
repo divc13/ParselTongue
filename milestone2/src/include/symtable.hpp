@@ -41,6 +41,7 @@ typedef struct symRecord {
 	struct symTable* symTab;
 	symRecord(string __name = "", string __type = "", int __size = 0, int __lineno = 0, int __column = 0, int recordType = recordType::VARIABLE);
 	void dumpCSV(ofstream &CSV);
+	void dumpMD(ofstream &MD);
 
 } tableRecord;
 
@@ -76,6 +77,7 @@ typedef struct symTable {
 
 	int insert(tableRecord* inputRecord, struct symTable* funcTable = NULL);
 	void dumpCSV(ofstream &CSV);
+	void dumpMD(ofstream &MD);
 
 } symbolTable;
 

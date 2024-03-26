@@ -8,6 +8,7 @@ dot_flag=0
 ast_flag=0
 ptree_flag=0
 csv_flag=1
+md_flag=0
 output_flag=0
 
 display_help() {
@@ -20,7 +21,8 @@ display_help() {
 	echo -e "	-d,	--dot				: Output a .DOT file at the output folder"
 	echo -e "	-a,	--ast				: Output an AST pdf file at the output folder"
 	echo -e "	-p,	--ptree				: Output a Parse Tree pdf file at the output folder"
-	echo -e "	-t,	-table				: Output a CSV file containing Symbol Tables at the output folder"
+	echo -e "	-c,	--csv				: Output a CSV file containing Symbol Tables at the output folder"
+	echo -e "	-m,	--markdown			: Output a MD file containing Symbol Tables at the output folder"
 	echo -e "	-h,	--help				: Display this help message\e[0m"
 	echo ""
 }
@@ -71,6 +73,9 @@ for ((i=1; i<=$#; i++)); do
 	--csv )
 		csv_flag=1
 		;;
+	--markdown )
+		md_flag=1
+		;;
 	--* )
 		echo -e "\e[31mUnknown flag: -${arg:j:1}\e[0m"
 		exit 1
@@ -102,6 +107,9 @@ for ((i=1; i<=$#; i++)); do
 				;;
 			c)
 				csv_flag=1
+				;;
+			m)
+				md_flag=1
 				;;
 			*)
 				echo -e "\e[31mUnknown flag: -${arg:j:1}\e[0m"
@@ -155,7 +163,7 @@ if [ "${#input_files[@]}" -eq "${#output_files[@]}" ]; then
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
 	done
 elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 	echo -e "\e[33mWarning: Less input files provided than output files. The additional output files wont be used.\e[0m"
@@ -166,7 +174,7 @@ elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
 	done
 else
 	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
@@ -186,7 +194,7 @@ else
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
 	done	
 fi
 
