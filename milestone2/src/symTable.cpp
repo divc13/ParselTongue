@@ -43,7 +43,7 @@ symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 	parentSymtable = __parentSymtable;
 }
 
-// lookonly inside the table, donot go one level up (for variables)
+// look only inside the table, donot go one level up (for variables)
 tableRecord* symbolTable::lookup_table(string name, int recordType, vector<tableRecord*> *params)
 {
 	vector<int>indices = name_to_indices[name];
@@ -133,7 +133,6 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		tableRecord* entry = lookup_table(name, recordType);
 		if (entry)
 		{
-			tableRecord* entry = entries[0];
 			raise_error (ERR::REDIFINITION, inputRecord);
 			print_note (NOTE::PREV_DECL, entry);
 			return -1;
@@ -166,12 +165,14 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	tableRecord* record = new tableRecord(name, type, __size, lineno, column, recordType);
 	record -> symTab = this;
 
-	if (recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION)
+	if ((recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION))
 	{
 		record -> symTab = funcTable;
 		childIndices.push_back(currentIndex);
 	}
-	
+
+	inputRecord -> symTab = record -> symTab;
+
 	name_to_indices[name].push_back(currentIndex);
 	record -> index = currentIndex;
 	entries[currentIndex] = record;
@@ -192,8 +193,12 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 int symbolTable::UpdateRecord(tableRecord* newRecord)
 {
-	tableRecord* record = lookup_table(newRecord -> name, newRecord -> recordType, NULL);
+
+	tableRecord* record = NULL;
 	assert(newRecord);
+	assert(newRecord -> symTab);
+
+	record = lookup(newRecord -> name, newRecord -> recordType, NULL);
 	assert(record);
 
 	if((newRecord -> type).length()) record -> type = newRecord -> type;
@@ -428,8 +433,22 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 				currTable -> offset++;
 		}
 
-	}
+		TreeNode* node = ((root -> children)[0]);
+		string type = "None";
+		if (((root -> children)[0] -> name).compare("main") && ((root -> children)[0] -> name).compare("__init__"))
+			type = (((root -> children)[4]) -> children)[0] -> name;
 
+		record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
+		
+		assert(currTable -> parentSymtable);
+		int err = currTable -> parentSymtable -> insert(record, currTable);
+		if (err < 0)
+			return err;
+
+		free(record);
+		record = NULL;
+
+	}
 
 
 	// handle classes
@@ -451,24 +470,40 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 			if((node -> type).compare("IDENTIFIER") == 0)
 			{
 				tableRecord* entry = currTable -> lookup(node -> name, recordType::TYPE_CLASS);
+				tempRecord->name = entry->name;
+				tempRecord->lineno = entry->lineno;
+				tempRecord->column = entry->column;
 				if(entry)
 				{
 					if (entry -> recordType != recordType::TYPE_CLASS)
 					{
-						raise_error(ERR::ILL_PARENT, record);
-						free (record);
+						raise_error(ERR::ILL_PARENT, tempRecord);
+						free (tempRecord);
 						return -1;
 					}	
 				}
 
 				assert(entry -> symTab);
 				parent = entry -> symTab;
+				free (tempRecord);
+				tempRecord = NULL;
 			}
 		}
 
 		symbolTable *Table = new symbolTable(((root -> children)[0]) -> name, parent);
 		Table -> tableType = tableType::CLASS;
 		currTable = Table;
+
+		node = ((root -> children)[0]);
+		record = new tableRecord(node -> name, node -> name, currTable -> size, node -> lineno, node -> column, recordType::TYPE_CLASS);
+		
+		int err = globTable -> insert(record, currTable);
+		if (err < 0)
+			return err;
+
+		free(record);
+		record = NULL;
+
 	}
 
 	// apply dfs here
@@ -624,12 +659,15 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 					return -1;
 				}
 				record -> size = entry -> size;
+				record -> recordType = recordType::CLASS_OBJECT;
 			}
 
 		}
 
 		int err = tempTable -> insert(record);
 		// cout <<"name = " << record -> name << " type = " << record -> type << " size = " << record -> size << "lineno = " << record -> lineno << endl;
+
+		assert(record->symTab);
 		
 		if (err < 0)
 			return err;
@@ -692,7 +730,10 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 					
 				}
 
+
+				assert (record -> symTab);
 				int ret = currTable -> UpdateRecord(record);
+
 				if (ret < 0)
 					return ret;
 
@@ -758,22 +799,16 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	// dealing with functions again, after completing the function symbol table
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("function_def") == 0)
 	{
-		TreeNode* node = ((root -> children)[0]);
-		string type = "None";
-		if (((root -> children)[0] -> name).compare("main") && ((root -> children)[0] -> name).compare("__init__"))
-			type = (((root -> children)[4]) -> children)[0] -> name;
-
-		record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
+		assert ((currTable -> name).compare((root -> children)[0] -> name) == 0);
+		vector<tableRecord*> params;
+		for (int i = 0; i < currTable -> offset; i++)
+			params.push_back((currTable -> entries)[i]);
 		
 		assert(currTable -> parentSymtable);
-		int err = currTable -> parentSymtable -> insert(record, currTable);
-		if (err < 0)
-			return err;
-
+		tableRecord* entry = currTable -> parentSymtable -> lookup_table((root->children)[0]->name, recordType::TYPE_FUNCTION, &params);
+		assert(entry);
+		entry -> size = currTable -> size;
 		currTable = currTable -> parentSymtable;
-
-		free(record);
-		record = NULL;
 	}
 
 
@@ -781,16 +816,12 @@ int generate_symtable(TreeNode *root, tableRecord* &record)
 	// dealing with classes again on coming back
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("class_def") == 0)
 	{
-		TreeNode* node = ((root -> children)[0]);
-		record = new tableRecord(node -> name, node -> name, currTable -> size, node -> lineno, node -> column, recordType::TYPE_CLASS);
-		
-		int err = globTable -> insert(record, currTable);
-		if (err < 0)
-			return err;
-
-		free(record);
-		record = NULL;
-		currTable = globTable;
+		assert ((currTable -> name).compare((root -> children)[0] -> name) == 0);
+		assert(currTable -> parentSymtable);
+		tableRecord* entry = currTable -> parentSymtable -> lookup_table((root->children)[0]->name, recordType::TYPE_CLASS);
+		assert(entry);
+		entry -> size = currTable -> size;
+		currTable = currTable -> parentSymtable;
 	}
 
 	return 0;
