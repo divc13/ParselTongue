@@ -81,3 +81,22 @@ typedef struct symTable {
 
 /* genrates the symbol table */
 int symTable_Maker(TreeNode *root);
+
+int isValidType(string type);
+
+/* returns empty string if types cannot be converted 
+returns the higher of the 2 types if the types match */
+string isCompatible(string type1, string type2);
+
+/* array access check 
+returns 0 if not any list 
+returns 1 if the access is correct 
+returns -1 if the access is incorrect */ 
+int checkListAccess(TreeNode* root);
+
+// function call arguments check
+int checkFunctionArgs(TreeNode* root, symbolTable* table);
+
+////////////////////////////////////// do in normal dfs ///////////////////////////////////////
+// operators check
+// use before declarations check

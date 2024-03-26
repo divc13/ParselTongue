@@ -26,6 +26,7 @@ enum ERR {
 	CLASS_CTOR,
 	ILL_PARENT,
 	CLASS_NOT_GLOBAL,
+	
 };
 
 enum NOTE {

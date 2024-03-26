@@ -1,4 +1,4 @@
 class Hello:
   def __init__(self):
-    self.x = 5
+    self.x:int = 5
     
