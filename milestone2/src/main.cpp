@@ -1,10 +1,16 @@
 #include <bits/stdc++.h>
 using namespace std;
-
 #include "parser.tab.h"
-#include "include/token_map.hpp"
 #include "include/symtable.hpp"
 #include "include/error.hpp"
+
+
+map<string, int> StringToToken;
+map<string, string> TokenNameToString;
+map<string, string> opType;
+
+
+#include "include/token_map.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -12,6 +18,8 @@ using namespace std;
 #define BLUE "\033[1;34m"
 #define MAGENTA "\033[1;35m"
 #define CYAN "\033[1;36m"
+
+
 
 void yyerror(string s);
 int yylex();

@@ -15,24 +15,35 @@ extern vector<string> lines;
 void printErrorLine(int line, int column);
 
 enum ERR {
-
+	// root- -> name printed
 	UNDECLARED,
 	REDIFINITION,
 	TYPE_REDECLARATION,
+	TYPE_NOT_DECL_PARAM,
+	TYPE_MISMATCH,
 	CLASS_NO_MATCH_ATTR,
 	UNKNOWN_TYPE,
+
+
+	// root- -> name not printed
 	CLASS_ATTRIBUTE_DECL_SELF,
 	CLASS_ATTRIBUTE_DECL_CTOR,
 	CLASS_CTOR,
 	ILL_PARENT,
 	CLASS_NOT_GLOBAL,
-	TYPE_MISMATCH,
+	NOT_NUMBER,
+	OVERLOAD,
+
+
+	// root- -> type printed
+	INTEGER_EXECTED,
 	
 };
 
 enum NOTE {
 
 	PREV_DECL,
+	SHOW_TYPE,
 
 };
 

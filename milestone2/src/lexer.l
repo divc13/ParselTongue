@@ -101,7 +101,7 @@ DIGITPART						{DIGIT}([_]?{DIGIT})*
 FRACTION						"."{DIGITPART}
 EXPONENT						[eE][+-]?{DIGITPART}
 
-OP_ARITHMATIC					"+"|"-"|"*"|"/"|"//"|"%"|"**"
+OP_ARITHMETIC					"+"|"-"|"*"|"/"|"//"|"%"|"**"
 OP_RELATIONAL					"=="|"!="|">"|"<"|">="|"<="
 OP_LOGICAL						and|or|not
 OP_BITWISE		 				"&"|"|"|"^"|"~"|"<<"|">>"
@@ -318,9 +318,9 @@ NEWLINE							\n
 }
 
 
-{OP_ARITHMATIC} {
+{OP_ARITHMETIC} {
 	yylval.info.name = strdup(yytext);
-	yylval.info.type = strdup("OP_ARITHMATIC");
+	yylval.info.type = strdup("OP_ARITHMETIC");
 	yylval.info.lineno = yylineno;
 	yylval.info.colno = yylloc.first_column;
 	string token_str = yytext;

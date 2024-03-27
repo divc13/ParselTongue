@@ -9,6 +9,7 @@ bool isOperator(TreeNode* root)
 
 // root of the parse tree / AST
 TreeNode *root;
+extern map<string, string> opType;
 
 set<string> SkipToken2({
 	"arguments", // what to do in function
@@ -116,7 +117,7 @@ set<string> SkipToken1({
 	"else",
 	"elif",
 	// "if_expression",
-	// "operand",
+	"operand",
 	"param_default",
 });
 
@@ -266,6 +267,27 @@ void ConstrainedExchange(TreeNode *root, int &nchild, int args)
 	return;
 }
 
+// just for bitwise_operators pair (is not, not in)
+void ConstrainedExchange_bitwise(TreeNode *root, int &nchild, int args)
+{
+	vector<TreeNode *> &children = root->children;
+	TreeNode *child = children[nchild];
+	if (nchild + 1 >= (root->children).size())
+		return;
+	(child->children).push_back(children[nchild + 1]);
+	children.erase(children.begin() + nchild + 1);
+	if (args == 2)
+	{
+		if (nchild < 1)
+			return;
+		(child->children).insert((child->children).begin(), children[nchild - 1]);
+		children.erase(children.begin() + nchild - 1);
+		nchild--;
+	}
+	nchild++;
+	return;
+}
+
 void SkipNode(TreeNode *root, int nchild)
 {
 	vector<TreeNode *> children = root->children;
@@ -276,6 +298,25 @@ void SkipNode(TreeNode *root, int nchild)
 	root->children = children;
 	delete child;
 	return;
+}
+
+void handle_augAssign(TreeNode* child)
+{
+	int len = (child->name).length();
+	assert((child->children).size() == 2);
+				
+	TreeNode* node1 = (child->children)[0];
+	TreeNode* node2 = (child->children)[1];
+
+	string newOpName = (child->name).substr(0, len - 1);
+	TreeNode* newOperator = new TreeNode(newOpName, child->lineno, child->column, opType[newOpName]);
+	TreeNode* newOperand = new TreeNode((child->children)[0]->name, (child->children)[0]->lineno, (child->children)[0]->column, (child->children)[0]->type);
+	
+	(newOperator -> children).push_back(newOperand);
+	(newOperator -> children).push_back((child->children)[1]);
+
+	child -> name = "=";
+	(child->children)[1] = newOperator;
 }
 
 void generateAST(TreeNode *root, int flag)
@@ -297,24 +338,26 @@ void generateAST(TreeNode *root, int flag)
 		// second iteration
 
 		// handle colon in different cases, if used for expression, bring up, otherwise skip
-		if ((child->name).compare(":") == 0 && flag == 1)
+		if (((child->name).compare(":") == 0 || (child->name).compare("bitwise_operators") == 0) && flag == 1)
 		{
-			if ((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0 && (child->type).compare("IDENTIFIER") != 0)
+			if (((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) && (child->type).compare("IDENTIFIER") != 0)
 				ExchangeWithChild(root, nchild);
+			else if((root->name).compare("comparison") == 0 && (child->name).compare("bitwise_operators") == 0)
+				ConstrainedExchange_bitwise(root, nchild, 2);
 			else
 				SkipNode(root, nchild);
 			continue;
 		}
 
 		// bring operators, dot and to symbol one level up
-		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0 || (child->name).compare("->") == 0) && flag == 1 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
+		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0 || (child->name).compare("->") == 0) && flag == 2 && SkipToken1.find(root->name) != SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
 		}
 
 		// perform constrained exchang, if the root nonterminal cannot be replaced
-		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 1 && (root->name).compare("bitwise_operators") != 0)
+		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 2 && (root->name).compare("bitwise_operators") != 0)
 		{
 			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0)
 				ConstrainedExchange(root, nchild, 1);
@@ -324,7 +367,7 @@ void generateAST(TreeNode *root, int flag)
 		}
 
 		// handle function call and array access
-		if ((root->name).compare("operand") == 0 && (nchild == 0) && (child->type).compare("IDENTIFIER") == 0 && flag == 1)
+		if ((root->name).compare("operand") == 0 && (nchild == 0) && (child->type).compare("IDENTIFIER") == 0 && flag == 2)
 		{
 			ExchangeWithChild(root, nchild);
 			continue;
@@ -333,7 +376,7 @@ void generateAST(TreeNode *root, int flag)
 		// third iteration
 
 		// skip all unnecessary nonterminal symbols
-		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 2)
+		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 3)
 		{
 			SkipNode(root, nchild);
 			continue;
@@ -342,14 +385,23 @@ void generateAST(TreeNode *root, int flag)
 		// fourth iteration
 
 		// skip statements block and args with only one child
-		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken2.find(child->name) != SkipToken2.end() && (child->children).size() == 1 && flag == 3)
+		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken2.find(child->name) != SkipToken2.end() && (child->children).size() == 1 && flag == 4)
 		{
 			SkipNode(root, nchild);
 			continue;
 		}
 
-		generateAST(child, flag);
+		if (isOperator(child) && flag == 4)
+		{
+			int len = (child->name).length();
+			if (opType[child -> name].compare("OP_ASSIGNMENT") == 0 && len > 1)
+			{
+				handle_augAssign(child);
+				continue;
+			}
+		}
 
+		generateAST(child, flag);
 		nchild++;
 	}
 }
@@ -360,5 +412,6 @@ void AST_Maker(TreeNode *root)
 	generateAST(root, 1);
 	generateAST(root, 2);
 	generateAST(root, 3);
+	generateAST(root, 4);
 	return;
 }

@@ -29,6 +29,8 @@ void init_error()
 	ErrorMap[ERR::TYPE_REDECLARATION] 			=		"a different kind of symbol was already declared as ";
 	ErrorMap[ERR::CLASS_NO_MATCH_ATTR] 			=		"None of the attributes of the class match with ";
 	ErrorMap[ERR::UNKNOWN_TYPE] 				=		"Use of an unknown type ";
+	ErrorMap[ERR::TYPE_MISMATCH] 				=		"mismatched types, cannot perform operation ";
+	ErrorMap[ERR::TYPE_NOT_DECL_PARAM] 			=		"Type was not declared for the parameter ";
 
 
 	// root- -> name not printed
@@ -37,31 +39,40 @@ void init_error()
 	ErrorMap[ERR::CLASS_CTOR] 					=		"constructor function \"__init__\" can only be defined inside a class";
 	ErrorMap[ERR::ILL_PARENT] 					=		"a class can only be inherited from a class";
 	ErrorMap[ERR::CLASS_NOT_GLOBAL] 			=		"a class can only be declared in a global scope";
+	ErrorMap[ERR::NOT_NUMBER] 					=		"Operation is not supported for the given type";
+	ErrorMap[ERR::OVERLOAD] 					=		"Operation cannot be overloaded for the given types";
 
 
 	// root- -> type printed
-	ErrorMap[ERR::TYPE_MISMATCH] 				=		"operation cannot be performed for mismatched types";
+	ErrorMap[ERR::INTEGER_EXECTED]				=		"expected an integer, received";
 }
 
 void init_note()
 {
 	NoteMap[NOTE::PREV_DECL] 					= 		"previous declaration of ";
+	
+	
+	NoteMap[NOTE::SHOW_TYPE] 					= 		"found one operand of type ";
 }
 
 void raise_error(int err, TreeNode* root)
 {
 	if (err < ERR::CLASS_ATTRIBUTE_DECL_SELF)
-		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << ErrorMap[err] << CYAN << root->name << RESET << RED << ":" << RESET;
-	else if (err < ERR::TYPE_MISMATCH)
-		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << ErrorMap[err] << ":" << RESET;
+		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << CYAN << root->name << RESET << RED << ":" << RESET;
+
+	else if (err < ERR::INTEGER_EXECTED)
+		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << ":" << RESET;
+
 	else
-		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << ErrorMap[err] << CYAN << root->type << RESET << RED << ":" << RESET;
+		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << CYAN << root->type << RESET << RED << ":" << RESET;
 	
 	printErrorLine(root->lineno, root->column);
 }
 
 void print_note(int note, tableRecord* record)
 {
-	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << NoteMap[note] << CYAN << record->name << RESET << RED << ":" << RESET;
-	printErrorLine(record->lineno, record->column);
+
+	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << "Note: " << NoteMap[note] << CYAN << record->name  << RESET << BLUE << " :" << RESET;
+	if(note < NOTE::SHOW_TYPE)
+		printErrorLine(record->lineno, record->column);
 }

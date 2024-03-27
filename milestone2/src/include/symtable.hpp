@@ -21,8 +21,12 @@ enum recordType{
 	TYPE_FUNCTION,
 	TYPE_CLASS,
 	CONST_STRING,
+	CONST_INT,
+	CONST_FLOAT,
+	CONST_BOOL,
 	CLASS_ATTRIBUTE,
 	CLASS_OBJECT,
+	CLASS_CONSTRUCTOR,
 	OBJECT_ATTRIBUTE,
 	VARIABLE,
 };
@@ -98,6 +102,10 @@ int checkListAccess(TreeNode* root);
 
 // function call arguments check
 int checkFunctionArgs(TreeNode* root, symbolTable* table);
+
+bool checkDeclaration(TreeNode* root, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
+
+int handle_operators(TreeNode* root);
 
 ////////////////////////////////////// do in normal dfs ///////////////////////////////////////
 // operators check

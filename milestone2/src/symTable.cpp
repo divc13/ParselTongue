@@ -20,8 +20,12 @@ inline void initTypes()
 	recordTypeMap[recordType::TYPE_FUNCTION] = "TYPE_FUNCTION";
 	recordTypeMap[recordType::TYPE_CLASS] = "TYPE_CLASS";
 	recordTypeMap[recordType::CONST_STRING] = "CONST_STRING";
+	recordTypeMap[recordType::CONST_INT] = "CONST_INT";
+	recordTypeMap[recordType::CONST_FLOAT] = "CONST_FLOAT";
+	recordTypeMap[recordType::CONST_BOOL] = "CONST_BOOL";
 	recordTypeMap[recordType::CLASS_ATTRIBUTE] = "CLASS_ATTRIBUTE";
 	recordTypeMap[recordType::CLASS_OBJECT] = "CLASS_OBJECT";
+	recordTypeMap[recordType::CLASS_CONSTRUCTOR] = "CLASS_CONSTRUCTOR";
 	recordTypeMap[recordType::OBJECT_ATTRIBUTE] = "OBJECT_ATTRIBUTE";
 	recordTypeMap[recordType::VARIABLE] = "VARIABLE";
 
@@ -36,6 +40,45 @@ inline void initTypes()
 	typeMap["list[int]"]	= 7;
 	typeMap["list[float]"]	= 8;
 	typeMap["list[str]"]	= 9;
+
+
+
+	tableRecord* tempRecord = new tableRecord("int", "int", SIZE_INT, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord, globTable);
+	free(tempRecord);
+	tempRecord = NULL;
+	tempRecord = new tableRecord("float", "float", SIZE_FLOAT, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord, globTable);
+	free(tempRecord);
+	tempRecord = NULL;
+	tempRecord = new tableRecord("bool", "bool", SIZE_BOOL, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord, globTable);
+	free(tempRecord);
+	tempRecord = NULL;
+	tempRecord = new tableRecord("str", "str", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord, globTable);
+	free(tempRecord);
+	tempRecord = NULL;
+	tempRecord = new tableRecord("list", "list", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord, globTable);
+	// free(tempRecord);
+	// tempRecord = NULL;
+	// tempRecord = new tableRecord("list[int]", "list[int]", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	// globTable -> insert(tempRecord, globTable);
+	// free(tempRecord);
+	// tempRecord = NULL;
+	// tempRecord = new tableRecord("list[float]", "list[float]", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	// globTable -> insert(tempRecord, globTable);
+	// free(tempRecord);
+	// tempRecord = NULL;
+	// tempRecord = new tableRecord("list[bool]", "list[bool]", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	// globTable -> insert(tempRecord, globTable);
+	// free(tempRecord);
+	// tempRecord = NULL;
+	// tempRecord = new tableRecord("list[str]", "list[str]", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	// globTable -> insert(tempRecord, globTable);
+	free(tempRecord);
+	tempRecord = NULL;
 	
 }
 
@@ -211,8 +254,8 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		size += SIZE_PTR - __size; 			// only one pointer needs to be stored
 	}
 	
-	// if (!isValidType(record -> type))
-	// 	typeMap[record -> type] = type_offset++;
+	if (!isValidType(record -> type))
+		typeMap[record -> type] = type_offset++;
 
 	currentIndex++;
 	return 0;
@@ -534,12 +577,23 @@ int handle_function_declaration(TreeNode* root)
 	symbolTable *Table = new symbolTable(((root -> children)[0]) -> name, currTable);
 	Table -> tableType = tableType::FUNCTION;
 
-	currTable = Table;
-	for(auto &itr: ((root -> children)[2]) -> children)
+	int numParam = 0;
+
+	for (auto &itr: ((root -> children)[2]) -> children)
 	{
-		if ((itr -> name).compare("self"))
-			currTable -> numParams++;
+		if ((currTable -> tableType != tableType::CLASS && (itr -> name).compare("self") == 0))
+		{
+			raise_error(ERR::TYPE_NOT_DECL_PARAM, itr);
+			free(Table);
+			return -1;
+		}
+		else if ((itr -> name).compare(":") == 0)
+			numParam++;
+		else if (!(currTable -> tableType == tableType::CLASS && (itr -> name).compare("self") == 0))
+			assert(false);
 	}
+	currTable = Table;
+	currTable -> numParams = numParam;
 
 	TreeNode* node = ((root -> children)[0]);
 	string type = "None";
@@ -632,6 +686,51 @@ int handle_const_strings(TreeNode* root)
 	return 0;
 }
 
+// root is const int here
+int handle_const_int(TreeNode* root)
+{
+	tableRecord* record;
+	string type = "int";
+	record = new tableRecord(root -> name, type, SIZE_INT, root -> lineno, root -> column, recordType::CONST_INT);
+	if(!globTable -> lookup(record -> name, recordType::CONST_INT))
+		globTable -> insert(record, NULL);
+
+	root -> dataType = type;
+
+	free (record);
+	return 0;
+}
+
+// root is const float here
+int handle_const_float(TreeNode* root)
+{
+	tableRecord* record;
+	string type = "float";
+	record = new tableRecord(root -> name, type, SIZE_FLOAT, root -> lineno, root -> column, recordType::CONST_FLOAT);
+	if(!globTable -> lookup(record -> name, recordType::CONST_FLOAT))
+		globTable -> insert(record, NULL);
+
+	root -> dataType = type;
+
+	free (record);
+	return 0;
+}
+
+// root is True / False here
+int handle_const_bool(TreeNode* root)
+{
+	tableRecord* record;
+	string type = "bool";
+	record = new tableRecord(root -> name, type, SIZE_BOOL, root -> lineno, root -> column, recordType::CONST_BOOL);
+	if(!globTable -> lookup(record -> name, recordType::CONST_BOOL))
+		globTable -> insert(record, NULL);
+
+	root -> dataType = type;
+
+	free (record);
+	return 0;
+}
+
 // root is colon here
 void set_record_size(TreeNode* root, tableRecord* record)
 {
@@ -646,6 +745,7 @@ void set_record_size(TreeNode* root, tableRecord* record)
 
 		string type = node -> name + "[" + (node -> children)[1] -> name + "]";
 		record -> type = type;
+		record -> size = SIZE_PTR;
 	}
 
 	else
@@ -662,9 +762,6 @@ void set_record_size(TreeNode* root, tableRecord* record)
 			record -> size = SIZE_BOOL;
 
 		else if ((record -> type).compare("str") == 0)
-			record -> size = SIZE_PTR;
-
-		else if ((record -> type).compare(0, 4, "list") == 0)
 			record -> size = SIZE_PTR;
 
 		// dealing with classes
@@ -685,6 +782,8 @@ int handle_type_declarations(TreeNode* root)
 	symbolTable* tempTable = currTable;
 	int recordType = recordType::VARIABLE;
 	int size = 0;
+
+	assert ((root -> children)[0]->type == "IDENTIFIER" || (root -> children)[0]->name == ".");
 
 	if((node -> name).compare(".") == 0)
 	{
@@ -721,6 +820,10 @@ int handle_type_declarations(TreeNode* root)
 	set_record_size(root, record);
 
 	node -> dataType = record -> type;
+	root -> dataType = node -> dataType;
+
+	if (((root -> children)[0]->name).compare(".") == 0)
+		(root -> children)[0] -> dataType = node -> dataType;
 	
 	int err = tempTable -> insert(record);
 	assert(record->symTab);
@@ -819,6 +922,30 @@ int generate_symtable(TreeNode *root)
 			return ret;
 		return 0;
 	}
+	
+	if ((root -> type).compare("INT_LITERAL") == 0)
+	{
+		int ret = handle_const_int(root);
+		if (ret < 0)
+			return ret;
+		return 0;
+	}
+	
+	if ((root -> type).compare("FLOAT_LITERAL") == 0)
+	{
+		int ret = handle_const_float(root);
+		if (ret < 0)
+			return ret;
+		return 0;
+	}
+
+	if ((root -> type).compare("KEYWORD") == 0 && ((root -> name).compare("True") == 0 || (root -> name).compare("False") == 0))
+	{
+		int ret = handle_const_bool(root);
+		if (ret < 0)
+			return ret;
+		return 0;
+	}
 
 	if ((root -> type).compare("DELIMITER") == 0 && (root -> name).compare(":") == 0)
 	{
@@ -828,6 +955,88 @@ int generate_symtable(TreeNode *root)
 		return 0;
 	}
 
+
+	if ((root -> name ).compare(".") == 0)
+	{
+		assert((root->children).size() == 2);
+		bool retVal = checkDeclaration((root->children)[0], recordType::CLASS_OBJECT);
+		if (!retVal)
+			return -1;
+
+		tableRecord* entry = currTable->lookup((root->children)[0] -> name, recordType::CLASS_OBJECT);
+		assert(entry);
+
+		tableRecord* classRecord = globTable->lookup_table(entry->type, recordType::TYPE_CLASS);
+		assert(classRecord);
+
+		entry = (classRecord->symTab)->lookup_table((root->children)[1]->name);
+		if(!entry)
+		{
+			raise_error(ERR::CLASS_NO_MATCH_ATTR, (root->children)[1]);
+			return -1;
+		}
+
+		root -> dataType = (root->children)[1]->dataType;
+		return 0;
+	}
+
+
+	if (root->type == "NONTERMINAL" && (root->name).compare("list_access"))
+	{
+		assert((root -> children).size() == 4);
+
+		tableRecord* entry = currTable -> lookup((root->children)[2]->name);
+		if (!entry)
+		{
+
+		}
+
+		string final = isCompatible((root->children)[2]->dataType, "bool");
+		if (final.length() == 0)
+		{
+			raise_error(ERR::INTEGER_EXECTED, (root->children)[1]);
+			return -1;
+		}
+		root -> dataType = "int";
+		return 0;
+
+	}
+
+	if (root->type == "NONTERMINAL" && (root->name).compare("function_call"))
+	{
+		/* function call */
+		if ((root -> children)[0] -> name == "(")
+		{
+			int nparams = (root -> children).size() - 2;
+			vector<tableRecord*> params;
+			// for(int i = 1; i < nparams - 1; i++)
+			// {
+			// 	// tableRecord* record = new tableRecord("", )
+			// }
+		}
+		
+
+	}
+
+		
+
+	if((root -> name).compare("in") == 0)
+	{
+		assert ((root -> children).size() == 2);
+		TreeNode* left = (root -> children)[0];
+		TreeNode* right = (root -> children)[1];
+		assert (left -> type == "IDENTIFIER" || left -> name == ".");
+		assert (right -> type == "IDENTIFIER" || right -> name == ".");
+
+		if (left -> dataType != right -> dataType)
+		{
+			raise_error(ERR::TYPE_MISMATCH, root);
+			return -1;
+		}
+
+	}
+
+
 	if (isOperator(root) && (root -> name).compare("=") == 0)
 	{
 		int ret = handle_ctor_assignments(root);
@@ -835,29 +1044,14 @@ int generate_symtable(TreeNode *root)
 			return ret;
 	}
 
+
 	if (isOperator(root))
 	{
-		if ((root -> type).compare("OP_ARITHMATIC") == 0)
-		{
-			if (root->name != "-")
-				assert((root -> children).size() == 2);
-			else assert ((root -> children).size() == 2 || (root -> children).size() == 1);
+		int ret = handle_operators(root);
+		if (ret < 0)
+			return ret;
 
-			if ((root -> children).size() == 2)
-			{
-				string type1 = (root->children)[0]->dataType;
-				string type2 = (root->children)[1]->dataType;
-				string myType = isCompatible(type1, type2);
-				if (! myType.length())
-				{
-					raise_error(ERR::TYPE_MISMATCH, (root->children)[1]);
-					return -1;
-				}
-
-				if (! isNumberType(type1) && isNumberType(type2));
-
-			}
-		}
+		return 0;
 	}
 
 	// dealing with functions again, after completing the function symbol table
@@ -872,6 +1066,16 @@ int generate_symtable(TreeNode *root)
 		tableRecord* entry = currTable -> parentSymtable -> lookup_table((root->children)[0]->name, recordType::TYPE_FUNCTION, &params);
 		assert(entry);
 		entry -> size = currTable -> size;
+
+		if(entry -> name == "__init__")
+		{
+			string name = entry -> symTab -> parentSymtable -> name;
+			tableRecord* record = new tableRecord(name, "", entry -> size, entry -> lineno, entry -> column, recordType::CLASS_CONSTRUCTOR);
+			int ret = globTable -> insert(record, entry -> symTab);
+			if (ret < 0)
+				return -1;
+		}
+		
 		currTable = currTable -> parentSymtable;
 		return 0;
 
@@ -895,7 +1099,6 @@ int generate_symtable(TreeNode *root)
 int symTable_Maker(TreeNode *root)
 {
 	globTable -> tableType = tableType::GLOBAL;
-	tableRecord* record = NULL;
 	initTypes();
 	return generate_symtable(root);
 }
@@ -911,6 +1114,8 @@ inline int isValidType(string type1)
 
 string isCompatible(string type1, string type2)
 {
+	if(type1 == type2)
+		return type1;
 
 	if (!(type1.compare("float") || type2.compare("int")))
 		return type1;
@@ -927,26 +1132,154 @@ string isCompatible(string type1, string type2)
 	return "";
 }
 
-bool isNumberType(string type)
+
+bool checkDeclaration(TreeNode* root, int recordType, vector<tableRecord*> *params)
 {
-
-	if (type == "float")
+	if (root -> type != "IDENTIFIER")
 		return true;
 
-	if (type == "float")
-		return true;
+	tableRecord* entry = currTable->lookup(root->name, recordType, params);
+	if (!entry)
+	{
+		raise_error(ERR::UNDECLARED, root);
+		return false;
+	}
+	cout << 1 << endl;
+	return true;
+}
 
-	return false;
+int handle_operators(TreeNode* root)
+{
+	assert((root->children).size() > 0);
+	string category = root->dataType;
+	TreeNode* left = (root -> children)[0];
+	bool returnVal = checkDeclaration(left);
+	if(!returnVal) 
+		return -1;
+	tableRecord* record1 = new tableRecord(left->dataType, left->dataType, left->lineno, left->column);
+	string type1 = left->dataType;
+	string final = type1; 
+	
+	assert((root -> type).compare(0, 2, "OP") == 0 );
+	assert((root->children).size() == 2 || (root->children).size() == 1);
+
+	if ((root -> children).size() == 2)
+	{
+		TreeNode* right = (root -> children)[1];
+		returnVal = checkDeclaration(right);
+		if(!returnVal)
+			return -1;
+
+		string type2 = right->dataType;
+		tableRecord* record2 = new tableRecord(right->dataType, right->dataType, right->lineno, right->column);
+
+		final = isCompatible(type1, type2);
+		if (final.length() == 0)
+		{
+			raise_error(ERR::TYPE_MISMATCH, root);
+			print_note(NOTE::PREV_DECL, record1);
+			print_note(NOTE::PREV_DECL, record2);
+			free(record1);
+			free(record2);
+			return -1;
+		}
+
+		if (category == "OP_ASSIGNMENT")
+		{
+			root -> dataType = final;
+			return 0;
+		}
+
+		if (category == "OP_RELATIONAL")
+		{
+
+			if (final.compare("str") && final.compare("bool") && final.compare("int") && final.compare("float"))
+			{
+				raise_error(ERR::OVERLOAD, root);
+				print_note(NOTE::PREV_DECL, record1);
+				print_note(NOTE::PREV_DECL, record2);
+				free(record1);
+				free(record2);
+				return -1;
+			}
+
+			root -> dataType = final;
+			return 0;
+		}
+
+		if (category == "OP_ARITHMETIC")
+		{
+			if (final.compare("int") && final.compare("float") && final.compare("bool"))
+			{
+				raise_error(ERR::OVERLOAD, root);
+				print_note(NOTE::PREV_DECL, record1);
+				print_note(NOTE::PREV_DECL, record2);
+				free(record1);
+				free(record2);
+				return -1;
+			}
+
+			root -> dataType = final;
+			return 0;
+		}
+
+		if (category == "OP_BITWISE" || category == "OP_LOGICAL")
+		{
+			if (final.compare("int") && final.compare("bool"))
+			{
+				raise_error(ERR::OVERLOAD, root);
+				print_note(NOTE::PREV_DECL, record1);
+				print_note(NOTE::PREV_DECL, record2);
+				free(record1);
+				free(record2);
+				return -1;
+			}
+
+			root -> dataType = final;
+			return 0;
+		}
+
+		free(record2);
+		return 0;
+	}
+
+	// unary operators
+	assert ((root -> name).compare("-") == 0 || (root -> name).compare("+") == 0 || (root -> name).compare("not") == 0 );
+
+	if((root->name).compare("not"))
+	{
+		final = isCompatible("int", left -> dataType);
+		if (final.length() == 0)
+		{
+			raise_error(ERR::OVERLOAD, root);
+			print_note(NOTE::PREV_DECL, record1);
+			free(record1);
+			return -1;
+		}
+		root -> dataType = final;
+		return 0;
+	}
+
+	// handle not
+	final = isCompatible("bool", left -> dataType);
+	if (final.length() == 0)
+	{
+		raise_error(ERR::OVERLOAD, root);
+		print_note(NOTE::PREV_DECL, record1);
+		free(record1);
+		return -1;
+	}
+	root -> dataType = final;
+
+	free(record1);
+
+
+	return 0;
+
 }
 
 // int checkListAccess(TreeNode* root)
 // {
-// 	if ((root->children).size() == 3)
-// 	{
-// 		if (! (((root->children)[0]->name).compare("[")) 
-// 							|| (((root->children)[2]->name).compare("]")))
-// 		{
-// 			if (root -> children)
-// 		}
-// 	}
+// 	assert (root ->type == "IDENTIFIER");
+// 	// if ()
 // }
