@@ -953,14 +953,14 @@ int symTable_Maker(TreeNode *root)
 	return generate_symtable(root);
 }
 
-// inline int isValidType(string type1)
-// {
+inline int isValidType(string type1)
+{
 
-// 	if (typeMap.find(type1) == typeMap.end())
-// 		return 0;
+	if (typeMap.find(type1) == typeMap.end())
+		return 0;
 
-// 	return 1;
-// }
+	return 1;
+}
 
 string isCompatible(string type1, string type2)
 {
