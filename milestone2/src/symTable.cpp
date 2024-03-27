@@ -371,156 +371,6 @@ void formatString(string &name, string &type)
 	return;
 }
 
-void print_name(ofstream &MD, string temp)
-{
-	size_t pos = 0;
-    while((pos = temp.find("\\\r\n", pos)) != string::npos)
-	{
-        temp.replace(pos, 4, "\\\\<br>");
-		pos++;
-    }
-
-	pos = 0;
-    while((pos = temp.find("\\\r", pos)) != string::npos)
-	{
-        temp.replace(pos, 3, "\\\\<br>");
-		pos++;
-    }
-
-	pos = 0;
-    while((pos = temp.find("\\\n", pos)) != string::npos)
-	{
-        temp.replace(pos, 3, "\\\\<br>");
-		pos++;
-    }
-
-	pos = 0;
-    while((pos = temp.find("\n", pos)) != string::npos)
-	{
-        temp.replace(pos, 2, "<br>");
-		pos++;
-    }
-
-	pos = 0;
-    while((pos = temp.find("_", pos)) != string::npos)
-	{
-        temp.replace(pos, 1, "\\_");
-		pos+=2;
-    }
-
-	MD << temp;
-}
-
-void tableRecord::dumpMD(ofstream &MD)
-{
-	MD << "| ";
-	MD << index;
-	MD << "  |  ";
-	print_name(MD, name);
-	MD << "  |  " << type;
-	MD << "  |  " << recordTypeMap[recordType];
-	MD << "  |  " << offset;
-	MD << "  |  " << size;
-	MD << "  |  " << lineno;
-	MD << "  |" << endl;
-
-	return;
-}
-
-
-void symbolTable::dumpMD(ofstream &MD)
-{
-	MD << "## Table Name: ";
-	print_name(MD, name);
-	if (parentSymtable)
-	{
-		MD << " &emsp;&emsp;&emsp;&emsp; Parent Table: ";
-		print_name(MD, parentSymtable -> name);
-	}
-	
-	MD << " <br>";
-	MD << endl;
-
-	int index = 0;
-
-	if (tableType == tableType::FUNCTION)
-	{
-		MD << "\n### Incoming Parameters: \n";
-		MD << "|  index";
-		MD << "  |  name";
-		MD << "  |  type";
-		MD << "  |  recordType";
-		MD << "  |  offset";
-		MD << "  |  size";
-		MD << "  |  line no. |\n";
-		MD << "|-|-|-|-|-|-|-|\n";
-		for (; index < numParams; index++)
-			(entries[index]) -> dumpMD(MD);
-	}
-
-	MD << "\n### Local Variables: \n";
-	MD << "|  index";
-	MD << "  |  name";
-	MD << "  |  type";
-	MD << "  |  recordType";
-	MD << "  |  offset";
-	MD << "  |  size";
-	MD << "  |  line no. |\n";
-	MD << "|-|-|-|-|-|-|-|\n";
-	for (; index < currentIndex; index++)
-		(entries[index]) -> dumpMD(MD);
-
-	for(auto child : childIndices) 
-	{
-		MD << "\n\n\n";
-		assert(entries[child] -> symTab);
-		((entries[child]) -> symTab) -> dumpMD(MD);
-	}
-
-	return;
-}
-
-void tableRecord::dumpCSV(ofstream &CSV)
-{
-	CSV << index << ", " << name << ", " << type << ", " << recordTypeMap[recordType] << ", " << offset << ", " << size << ", " << lineno << endl;
-	return;
-}
-
-
-void symbolTable::dumpCSV(ofstream &CSV)
-{
-	CSV << "# File Name: " << inputFile << endl;
-	CSV << "# Table Name: " << name;
-	if (parentSymtable)
-		CSV << ", Parent Table: " << parentSymtable -> name;
-	
-	CSV << endl;
-
-	int index = 0;
-
-	if (tableType == tableType::FUNCTION)
-	{
-		CSV << "\n# Incoming Parameters: \n";
-		CSV << "index, name, type, recordType, offset, size, line no. \n";
-		for (; index < numParams; index++)
-			(entries[index]) -> dumpCSV(CSV);
-	}
-
-	CSV << "\n# Local Variables: \n";
-	CSV << "index, name, type, recordType, offset, size, line no. \n";
-	for (; index < currentIndex; index++)
-		(entries[index]) -> dumpCSV(CSV);
-
-	for(auto child : childIndices) 
-	{
-		CSV << ",\n,\n,\n";
-		assert(entries[child] -> symTab);
-		((entries[child]) -> symTab) -> dumpCSV(CSV);
-	}
-
-	return;
-}
-
 // root is function def here
 int handle_function_declaration(TreeNode* root)
 {
@@ -835,30 +685,30 @@ int generate_symtable(TreeNode *root)
 			return ret;
 	}
 
-	if (isOperator(root))
-	{
-		if ((root -> type).compare("OP_ARITHMATIC") == 0)
-		{
-			if (root->name != "-")
-				assert((root -> children).size() == 2);
-			else assert ((root -> children).size() == 2 || (root -> children).size() == 1);
+	// if (isOperator(root))
+	// {
+	// 	if ((root -> type).compare("OP_ARITHMATIC") == 0)
+	// 	{
+	// 		if (root->name != "-")
+	// 			assert((root -> children).size() == 2);
+	// 		else assert ((root -> children).size() == 2 || (root -> children).size() == 1);
 
-			if ((root -> children).size() == 2)
-			{
-				string type1 = (root->children)[0]->dataType;
-				string type2 = (root->children)[1]->dataType;
-				string myType = isCompatible(type1, type2);
-				if (! myType.length())
-				{
-					raise_error(ERR::TYPE_MISMATCH, (root->children)[1]);
-					return -1;
-				}
+	// 		if ((root -> children).size() == 2)
+	// 		{
+	// 			string type1 = (root->children)[0]->dataType;
+	// 			string type2 = (root->children)[1]->dataType;
+	// 			string myType = isCompatible(type1, type2);
+	// 			if (! myType.length())
+	// 			{
+	// 				raise_error(ERR::TYPE_MISMATCH, (root->children)[1]);
+	// 				return -1;
+	// 			}
 
-				if (! isNumberType(type1) && isNumberType(type2));
+	// 			if (! isNumberType(type1) && isNumberType(type2));
 
-			}
-		}
-	}
+	// 		}
+	// 	}
+	// }
 
 	// dealing with functions again, after completing the function symbol table
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("function_def") == 0)
@@ -900,44 +750,44 @@ int symTable_Maker(TreeNode *root)
 	return generate_symtable(root);
 }
 
-inline int isValidType(string type1)
-{
+// inline int isValidType(string type1)
+// {
 
-	if (typeMap.find(type1) == typeMap.end())
-		return 0;
+// 	if (typeMap.find(type1) == typeMap.end())
+// 		return 0;
 
-	return 1;
-}
+// 	return 1;
+// }
 
-string isCompatible(string type1, string type2)
-{
+// string isCompatible(string type1, string type2)
+// {
 
-	if (!(type1.compare("float") || type2.compare("int")))
-		return type1;
+// 	if (!(type1.compare("float") || type2.compare("int")))
+// 		return type1;
 
-	if (!(type1.compare("int") || type2.compare("float")))
-		return type2;
+// 	if (!(type1.compare("int") || type2.compare("float")))
+// 		return type2;
 
-	if (!(type1.compare("int") || type2.compare("bool")))
-		return type1;
+// 	if (!(type1.compare("int") || type2.compare("bool")))
+// 		return type1;
 
-	if (!(type1.compare("bool") || type2.compare("int")))
-		return type2;
+// 	if (!(type1.compare("bool") || type2.compare("int")))
+// 		return type2;
 
-	return "";
-}
+// 	return "";
+// }
 
-bool isNumberType(string type)
-{
+// bool isNumberType(string type)
+// {
 
-	if (type == "float")
-		return true;
+// 	if (type == "float")
+// 		return true;
 
-	if (type == "float")
-		return true;
+// 	if (type == "float")
+// 		return true;
 
-	return false;
-}
+// 	return false;
+// }
 
 // int checkListAccess(TreeNode* root)
 // {

@@ -9,7 +9,7 @@ typedef struct node{
 	string dataType = "";
 	vector <struct node*> children;
 	node(string __name, int __lineno = 0, int __column = 0, string __type = "NON_TERMINAL");
-	static void make_dot(string out);
+	void make_dot(string out);
 } TreeNode;
 
 
