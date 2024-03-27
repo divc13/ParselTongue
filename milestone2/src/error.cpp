@@ -38,6 +38,7 @@ void init_error()
 	ErrorMap[ERR::CLASS_ATTRIBUTE_DECL_CTOR] 	=		"attribute declaration of self class allowed only within constructor";
 	ErrorMap[ERR::CLASS_CTOR] 					=		"constructor function \"__init__\" can only be defined inside a class";
 	ErrorMap[ERR::ILL_PARENT] 					=		"a class can only be inherited from a class";
+	ErrorMap[ERR::DUPLICATE_SELF] 				=		"Duplicate argument \'self\' in function definition";
 	ErrorMap[ERR::CLASS_NOT_GLOBAL] 			=		"a class can only be declared in a global scope";
 	ErrorMap[ERR::NOT_NUMBER] 					=		"Operation is not supported for the given type";
 	ErrorMap[ERR::OVERLOAD] 					=		"Operation cannot be overloaded for the given types";

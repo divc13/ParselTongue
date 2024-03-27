@@ -26,6 +26,7 @@ enum recordType{
 	CONST_BOOL,
 	CLASS_ATTRIBUTE,
 	CLASS_OBJECT,
+	CLASS_SELF,
 	CLASS_CONSTRUCTOR,
 	OBJECT_ATTRIBUTE,
 	VARIABLE,
@@ -106,6 +107,8 @@ int checkFunctionArgs(TreeNode* root, symbolTable* table);
 bool checkDeclaration(TreeNode* root, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
 
 int handle_operators(TreeNode* root);
+string handle_function_call(TreeNode* root);
+string handle_list_access(TreeNode* root);
 
 ////////////////////////////////////// do in normal dfs ///////////////////////////////////////
 // operators check
