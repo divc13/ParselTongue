@@ -138,6 +138,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 
+    	MD << "<span style=\"font-size: 25px;\">__File Name: " << inputFile << "__</span>\n";
 		globTable->dumpMD(MD);
 	}
 
