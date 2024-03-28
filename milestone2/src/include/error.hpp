@@ -40,10 +40,11 @@ enum ERR {
 	NESTED_LIST,
 	FUNC_OVERLOAD,
 	OP_OVERLOAD,
+	EMPTY_LIST,
 
 
 	// root- -> type printed
-	INTEGER_EXECTED,
+	INTEGER_EXPECTED,
 	
 };
 

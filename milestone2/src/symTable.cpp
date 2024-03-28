@@ -46,7 +46,6 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			}
 		}
 
-
 		for (auto &i: indices)
 		{
 
@@ -66,7 +65,10 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 					if ((*params)[num] -> type != ((table -> entries)[num]) -> type)
 						break;
 				}
-				if (num == params -> size()) return entry;
+				if (num == params -> size()) 
+				{
+					return entry;
+				}
 			}
 		}
 
@@ -200,15 +202,26 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		staticIndices.insert(currentIndex);
 		size += SIZE_PTR - __size; 			// only one pointer needs to be stored
 	}
+
+	currentIndex++;
 	
 	if (!isValidType(record -> type) && (record -> recordType == recordType::TYPE_CLASS))
 	{
 		typeMap[record -> type] = type_offset++;
 		string list_type = "list[" + record->type + "]";
 		typeMap[list_type] = type_offset++;
+
+		// set up table for len
+		symTable* lenTable = new symTable("len", globTable);
+		lenTable -> numParams = 1;
+		lenTable -> tableType = tableType::FUNCTION;
+		tableRecord* lenParam = new tableRecord("#len", list_type, SIZE_PTR);
+		tableRecord* lenFunc = new tableRecord("len", "int", SIZE_PTR, 0, 0, recordType::TYPE_FUNCTION);
+		lenTable -> insert(lenParam);
+		globTable -> insert(lenFunc, lenTable);
+
 	}
 
-	currentIndex++;
 	return 0;
 }
 
@@ -419,7 +432,7 @@ int handle_function_declaration(TreeNode* root)
 	TreeNode* node = ((root -> children)[0]);
 	string type = "None";
 	if (((root -> children)[0] -> name).compare("main") && ((root -> children)[0] -> name).compare("__init__"))
-		type = (((root -> children)[4]) -> children)[0] -> name;
+		type = (((root -> children)[4]) -> children)[0] -> dataType;
 	node -> dataType = type;
 
 	tableRecord* record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
@@ -466,21 +479,17 @@ int handle_class_declaration(TreeNode* root)
 		if((node -> type).compare("IDENTIFIER") == 0)
 		{
 			tableRecord* entry = currTable -> lookup(node -> name, recordType::TYPE_CLASS);
-			TreeNode *tempNode = new TreeNode(entry -> name, entry->lineno, entry->column);
 			if(entry)
 			{
 				if (entry -> recordType != recordType::TYPE_CLASS)
 				{
-					raise_error(ERR::ILL_PARENT, tempNode);
-					free (tempNode);
+					raise_error(ERR::ILL_PARENT, node);
 					return -1;
 				}	
 			}
 
 			assert(entry -> symTab);
 			parent = entry -> symTab;
-			free (tempNode);
-			tempNode = NULL;
 		}
 	}
 
@@ -574,28 +583,47 @@ int handle_const_bool(TreeNode* root)
 int set_record_fields(TreeNode* root, tableRecord* record)
 {
 	assert((root->children).size() == 2);
-	TreeNode* node = (root->children)[1];
-	node -> type = "DATATYPE";
+	record -> type = validateType((root -> children)[1]);
+	if ((record -> type).length() == 0)
+		return -1;
 
-	string type = node -> name;
+	if ((record -> type).compare(0,4, "list") == 0)
+		record -> size = SIZE_PTR;
+
+	else 
+	{
+		tableRecord* entry = globTable -> lookup_table(record -> type, recordType::TYPE_CLASS);
+		// ofstream MD("../output/test2.md");
+		// globTable -> dumpMD(MD);
+		assert (entry);
+		record -> size = entry -> size;
+	}
+
+	return 0;
+}
+
+// root is head of the type
+string validateType(TreeNode* root)
+{
+	root -> type = "DATATYPE";
+
+	string type = root -> name;
 
 	// type of list constructed here
-	if ((node -> name).compare("list_access") == 0)
+	if ((root -> name).compare("list_access") == 0)
 	{
-		assert((node -> children).size() > 3);
-		type = (node -> children)[0] -> name + "[" + (node -> children)[2] -> name + "]";
+		assert((root -> children).size() > 3);
+		type = (root -> children)[0] -> name + "[" + (root -> children)[2] -> name + "]";
 	}
 
 	if (!isValidType(type))
 	{
-		raise_error(ERR::UNKNOWN_TYPE, node);
-		return -1;
+		raise_error(ERR::UNKNOWN_TYPE, root);
+		return "";
 	}
 
-	node -> dataType = type; 
-	record -> type = type;
-
-	return 0;
+	root -> dataType = type;
+	return type;
 }
 
 // root is colon here
@@ -713,10 +741,15 @@ int handle_in(TreeNode* root)
 int handle_list(TreeNode* root)
 {
 	vector<TreeNode*>children = root -> children;
+	if (children[1] -> name =="]")
+	{
+		raise_error(ERR::EMPTY_LIST, children[0]);
+		return -1;
+	}
 	string type1 = children[1] -> dataType;
 	if (type1.compare(0, 4, "list") == 0)
 	{
-		raise_error(ERR::NESTED_LIST, root);
+		raise_error(ERR::NESTED_LIST, children[1]);
 		return -1;
 	}
 	
@@ -725,7 +758,7 @@ int handle_list(TreeNode* root)
 		string type2 = children[i] -> dataType;
 		if (isCompatible(type1, type2).length() == 0)
 		{
-			raise_error(ERR::MIXED_LIST, root);
+			raise_error(ERR::MIXED_LIST, children[i]);
 			return -1;
 		}
 		else
@@ -932,12 +965,10 @@ string handle_list_access(TreeNode* root)
 	string final = isCompatible((root->children)[2]->dataType, "bool");
 	if (final.length() == 0)
 	{
-		raise_error(ERR::INTEGER_EXECTED, (root->children)[1]);
+		raise_error(ERR::INTEGER_EXPECTED, (root->children)[1]);
 		return "";
 	}
-	string type = (root->children)[0] -> dataType;
-	cout << type << endl;
-	type = (type).substr(5, (type).length() - 6);
+	string type = (root->children)[2] -> dataType;
 	root -> dataType = type;
 	return type;
 }
@@ -968,6 +999,20 @@ string handle_function_call(TreeNode* root)
 
 	root -> dataType = funcEntry -> type;
 	return root -> type;
+
+}
+
+// root is -> here
+int handle_to(TreeNode* root)
+{
+	assert(root -> name == "->");
+	assert ((root -> children).size() == 1);
+	
+	string type = validateType((root -> children)[0]);
+	if (!type.length())
+		return -1;
+	
+	return 0;
 
 }
 
@@ -1039,6 +1084,12 @@ int generate_symtable(TreeNode *root)
 		return ret;
 	}
 
+	if ((root -> type).compare("DELIMITER") == 0 && (root -> name).compare("->") == 0)
+	{
+		int ret = handle_to(root);
+		return ret;
+	}
+
 	if (root->type == "NON_TERMINAL" && (root->name).compare("list_access") == 0)
 	{
 		string ret = handle_list_access(root);
@@ -1071,7 +1122,10 @@ int generate_symtable(TreeNode *root)
 	{
 		tableRecord* entry = currTable -> lookup(root -> name);
 		if (!entry)
+		{
+			raise_error(ERR::UNDECLARED, root);
 			return -1;
+		}
 
 		root -> dataType = entry -> type;
 		return 0;

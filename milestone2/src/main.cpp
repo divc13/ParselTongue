@@ -125,8 +125,8 @@ int main(int argc, char **argv)
 
 	// REMOVE VEFORE SUBMISSION //
 	
-	// if (ast_flag)
-	// 	root->make_dot_debug(noExtentionOutputFile + "_ast.dot");
+	if (ast_flag)
+		root->make_dot_debug(noExtentionOutputFile + "_ast.dot");
 
 	// if (rtnval < 0) {
 	// 	fclose(yyin);
@@ -159,7 +159,6 @@ int main(int argc, char **argv)
 		globTable->dumpMD(MD);
 		MD.close();
 	}
-
 
 	fclose(yyin);
 

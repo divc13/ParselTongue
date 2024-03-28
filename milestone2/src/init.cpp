@@ -21,7 +21,7 @@ void init_error()
 	ErrorMap[ERR::NOT_ITERABLE] 				=		"object not iterable ";
 	ErrorMap[ERR::NOT_ITERATOR] 				=		"iterator cannot be made from object ";
 	ErrorMap[ERR::TYPE_NOT_DECL_PARAM] 			=		"Type was not declared for the parameter ";
-	ErrorMap[ERR::KEYWORD_DECL] 						=		"Variable cannot be declared with the name as keyword ";
+	ErrorMap[ERR::KEYWORD_DECL] 				=		"Variable cannot be declared with the name as keyword ";
 
 
 	// root- -> name not printed
@@ -36,10 +36,11 @@ void init_error()
 	ErrorMap[ERR::NESTED_LIST] 					=		"Nested List is not supported for this compiler";
 	ErrorMap[ERR::FUNC_OVERLOAD] 				=		"Function cannot be overloaded for the given types";
 	ErrorMap[ERR::OP_OVERLOAD] 					=		"Operator cannot be overloaded for the given types";
+	ErrorMap[ERR::EMPTY_LIST] 					=		"Empty lists are not supported";
 
 
 	// root- -> type printed
-	ErrorMap[ERR::INTEGER_EXECTED]				=		"expected an integer, received ";
+	ErrorMap[ERR::INTEGER_EXPECTED]				=		"expected an integer, received ";
 }
 
 void init_note()
@@ -54,6 +55,10 @@ void init_note()
 
 void initTypes()
 {
+	typeMap["None"]			= 0;
+
+
+
 	recordTypeMap[recordType::TYPE_FUNCTION]		=		 "TYPE_FUNCTION";
 	recordTypeMap[recordType::TYPE_CLASS]		 	=		 "TYPE_CLASS";
 	recordTypeMap[recordType::CONST_STRING]		 	=		 "CONST_STRING";
@@ -68,35 +73,7 @@ void initTypes()
 	recordTypeMap[recordType::KEYWORD]		 		=		 "KEYWORD";
 
 
-
-	typeMap["None"]			= 0;
-
-
-
-	tableRecord* tempRecord = new tableRecord("int", "int", SIZE_INT, 0, 0, recordType::TYPE_CLASS);
-	globTable -> insert(tempRecord, globTable);
-	free(tempRecord);
-	tempRecord = NULL;
-	tempRecord = new tableRecord("float", "float", SIZE_FLOAT, 0, 0, recordType::TYPE_CLASS);
-	globTable -> insert(tempRecord, globTable);
-	free(tempRecord);
-	tempRecord = NULL;
-	tempRecord = new tableRecord("bool", "bool", SIZE_BOOL, 0, 0, recordType::TYPE_CLASS);
-	globTable -> insert(tempRecord, globTable);
-	free(tempRecord);
-	tempRecord = NULL;
-	tempRecord = new tableRecord("str", "str", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
-	globTable -> insert(tempRecord, globTable);
-	free(tempRecord);
-	tempRecord = NULL;
-	tempRecord = new tableRecord("list", "list", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
-	globTable -> insert(tempRecord, globTable);
-	free(tempRecord);
-	tempRecord = NULL;
-
-
-
-	tempRecord = new tableRecord("False", "", 0, 0, 0, recordType::KEYWORD);
+	tableRecord* tempRecord = new tableRecord("False", "", 0, 0, 0, recordType::KEYWORD);
 	globTable -> insert(tempRecord, globTable);
 	tempRecord -> name = "await";
 	globTable -> insert(tempRecord, globTable);
@@ -156,6 +133,80 @@ void initTypes()
 	globTable -> insert(tempRecord, globTable);
     tempRecord -> name = "yield";
 	globTable -> insert(tempRecord, globTable);
+	free(tempRecord);
+
+
+
+	
+	tableRecord* tempRecord_int = new tableRecord("int", "int", SIZE_INT, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord_int, globTable);
+	tableRecord* tempRecord_float = new tableRecord("float", "float", SIZE_FLOAT, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord_float, globTable);
+	tableRecord* tempRecord_bool = new tableRecord("bool", "bool", SIZE_BOOL, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord_bool, globTable);
+	tableRecord* tempRecord_str = new tableRecord("str", "str", SIZE_PTR, 0, 0, recordType::TYPE_CLASS);
+	globTable -> insert(tempRecord_str, globTable);
+
+
+	tempRecord_int -> name = "#var1";
+	tempRecord_float -> name = "#var1";
+	tempRecord_bool -> name = "#var1";
+	tempRecord_str -> name = "#var1";
+	symbolTable* print_int = new symbolTable("print", globTable);
+	print_int -> numParams = 1;
+	print_int -> tableType = tableType::FUNCTION;
+	tempRecord = new tableRecord("print", "None", SIZE_INT, 0, 0, recordType::TYPE_FUNCTION);
+	tempRecord_int -> recordType = recordType::VARIABLE;
+	print_int->insert(tempRecord_int);
+	globTable -> insert(tempRecord, print_int);
+
+	symbolTable* print_float = new symbolTable("print", globTable);
+	print_float -> numParams = 1;
+	print_float -> tableType = tableType::FUNCTION;
+	tempRecord -> size = SIZE_FLOAT;
+	tempRecord_float -> recordType = recordType::VARIABLE;
+	print_float -> insert(tempRecord_float);
+	globTable -> insert(tempRecord, print_float);
+
+	symbolTable* print_bool = new symbolTable("print", globTable);
+	print_bool -> numParams = 1;
+	print_bool -> tableType = tableType::FUNCTION;
+	tempRecord -> size = SIZE_BOOL;
+	tempRecord_bool -> recordType = recordType::VARIABLE;
+	print_bool -> insert(tempRecord_bool);
+	globTable -> insert(tempRecord, print_bool);
+
+	symbolTable* print_str = new symbolTable("print", globTable);
+	print_str -> numParams = 1;
+	print_str -> tableType = tableType::FUNCTION;
+	tempRecord -> size = SIZE_PTR;
+	tempRecord_str -> recordType = recordType::VARIABLE;
+	print_str -> insert(tempRecord_str);
+	globTable -> insert(tempRecord, print_str);
+
+
+	tempRecord -> name = "range";
+	tempRecord -> type = "list[int]";
+	tempRecord -> size = SIZE_INT;
+
+	symbolTable* range_two_args = new symbolTable("range", globTable);
+	range_two_args -> numParams = 2;
+	range_two_args -> tableType = tableType::FUNCTION;
+	range_two_args -> insert(tempRecord_int);
+	tempRecord_int -> name = "#var2";
+	range_two_args -> insert(tempRecord_int);
+	globTable -> insert(tempRecord, range_two_args);
+
+	symbolTable* range_one_args = new symbolTable("range", globTable);
+	range_one_args -> numParams = 1;
+	range_one_args -> tableType = tableType::FUNCTION;
+	range_one_args -> insert(tempRecord_int);
+	globTable -> insert(tempRecord, range_one_args);
+
+	free(tempRecord_int);
+	free(tempRecord_float);
+	free(tempRecord_bool);
+	free(tempRecord_str);
 	free(tempRecord);
 	
 }

@@ -136,3 +136,5 @@ string handle_list_access(TreeNode* root);
 string handle_function_call(TreeNode* root);
 
 void formatString(string &name, string &type);
+
+string validateType(TreeNode* root);

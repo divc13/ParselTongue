@@ -144,13 +144,21 @@ void symbolTable::dumpCSV(ofstream &CSV)
 		CSV << "\n# Incoming Parameters: \n";
 		CSV << "index, name, type, recordType, offset, size, line no. \n";
 		for (; index < numParams; index++)
+		{
+			assert(entries[index]);
 			(entries[index]) -> dumpCSV(CSV);
+		}
 	}
 
 	CSV << "\n# Local Variables: \n";
 	CSV << "index, name, type, recordType, offset, size, line no. \n";
+
+
 	for (; index < currentIndex; index++)
+	{
+		assert(entries[index]);
 		(entries[index]) -> dumpCSV(CSV);
+	}
 
 	for(auto child : childIndices) 
 	{
