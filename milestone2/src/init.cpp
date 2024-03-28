@@ -26,6 +26,9 @@ void init_error()
 	ErrorMap[ERR::NOT_ITERATOR] 				=		"iterator cannot be made from object ";
 	ErrorMap[ERR::TYPE_NOT_DECL_PARAM] 			=		"Type was not declared for the parameter ";
 	ErrorMap[ERR::KEYWORD_DECL] 				=		"Variable cannot be declared with the name as keyword ";
+	ErrorMap[ERR::NOT_GLOBAL]	 				=		"No global declaration found for ";
+	ErrorMap[ERR::CANDIDATE]	 				=		"ambiguity found in call of overloaded ";
+	ErrorMap[ERR::RETURN_TYPE_MISMATCH]	 		=		"return type does not match the function definition ";
 
 
 	// root- -> name not printed
@@ -44,15 +47,13 @@ void init_error()
 
 
 	// root- -> type printed
-	ErrorMap[ERR::EXPECTED_INT]				=		"expected an integer, received ";
-	ErrorMap[ERR::EXPECTED_BOOL]			=		"expected a boolean expression, received ";
+	ErrorMap[ERR::EXPECTED_INT]					=		"expected an integer, received ";
+	ErrorMap[ERR::EXPECTED_BOOL]				=		"expected a boolean expression, received ";
 }
 
 void init_note()
 {
-	NoteMap[NOTE::PREV_DECL] 					= 		"previous declaration of ";
-	
-	
+	NoteMap[NOTE::PREV_DECL] 					= 		"previous declaration of ";	
 	NoteMap[NOTE::SHOW_TYPE] 					= 		"found one operand of type ";
 }
 

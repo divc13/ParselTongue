@@ -37,7 +37,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		for (auto &i: indices)
 		{
 			// return any matching entry with type other than function or class
-			if (entries[i] -> recordType != recordType::TYPE_CLASS && entries[i] -> recordType != recordType::TYPE_FUNCTION)
+			if (entries[i] -> recordType != recordType::TYPE_FUNCTION)
 			{
 				if (entries[i] -> recordType == recordType::CONST_STRING)
 					continue;
@@ -46,13 +46,15 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			}
 		}
 
+		// count of matched functions after typecasting
+		int cnt = 0;
+		vector<int> index;
 		for (auto &i: indices)
 		{
-
 			// the type must now be class or function
 			if (entries[i] -> recordType == recordType::TYPE_FUNCTION && params)
 			{
-
+				bool match = true;
 				tableRecord* entry = entries[i];
 				symbolTable* table = entry -> symTab;
 
@@ -62,30 +64,63 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 				for (num = 0; num < params -> size(); num++)
 				{
 					if ((*params)[num] -> type != ((table -> entries)[num]) -> type)
+						match = false;
+
+					string final = isCompatible((*params)[num] -> type, ((table -> entries)[num]) -> type);
+					if (!final.length())
 						break;
+					
 				}
 				if (num == params -> size()) 
 				{
+					if (!match)
+					{
+						index.push_back(i);
+						cnt++;
+						continue;
+					}
 					return entry;
 				}
+			}
+		}
+
+		if (cnt > 1)
+		{
+			TreeNode* node = new TreeNode("");
+			for (auto&i: index)
+			{
+				node -> name = entries[i] -> name;
+				node -> lineno = entries[i] -> lineno;
+				node -> column = entries[i] -> column;
+				raise_error(ERR::CANDIDATE, node);
 			}
 		}
 
 		return NULL;
 	}
 
+	if (recordType == recordType::CLASS_CONSTRUCTOR)
+	{
+		for (auto &i: indices)
+		{
+			if (entries[i] -> recordType == recordType::TYPE_CLASS)
+				continue;
+				
+			if (entries[i] -> recordType == recordType::CONST_STRING)
+				continue;
+
+			return entries[i];
+		}
+	}
+
 	if (recordType == recordType::TYPE_CLASS)
 	{
 		for (auto &i: indices)
 		{
-			// return any matching entry with type other than function or class
-			if (entries[i] -> recordType != recordType::TYPE_FUNCTION )
-			{
-				if (entries[i] -> recordType == recordType::CONST_STRING)
-					continue;
+			if (entries[i] -> recordType == recordType::CONST_STRING)
+				continue;
 
-				return entries[i];
-			}
+			return entries[i];
 		}
 
 		return NULL;
@@ -379,8 +414,10 @@ int handle_bool_expressions(TreeNode* root)
 	string type = root -> dataType;
 	if (!isCompatible(type, "bool").length())
 	{
-		raise_error(ERR::EXPECTED_BOOL, );
+		raise_error(ERR::EXPECTED_BOOL, root);
+		return -1;
 	}
+	return 0;
 }
 
 // root is function def here
@@ -600,11 +637,12 @@ int set_record_fields(TreeNode* root, tableRecord* record)
 	if ((record -> type).compare(0,4, "list") == 0)
 		record -> size = SIZE_PTR;
 
+	else if ((record -> type).compare("None") == 0)
+		record -> size = 0;
+
 	else 
 	{
 		tableRecord* entry = globTable -> lookup_table(record -> type, recordType::TYPE_CLASS);
-		// ofstream MD("../output/test2.md");
-		// globTable -> dumpMD(MD);
 		assert (entry);
 		record -> size = entry -> size;
 	}
@@ -616,7 +654,6 @@ int set_record_fields(TreeNode* root, tableRecord* record)
 string validateType(TreeNode* root)
 {
 	root -> type = "DATATYPE";
-
 	string type = root -> name;
 
 	// type of list constructed here
@@ -710,13 +747,6 @@ int handle_in(TreeNode* root)
 	TreeNode* right = (root -> children)[1];
 	assert (left -> type == "IDENTIFIER" || left -> name == "." || left -> name == "list_access");
 	assert (right -> type == "IDENTIFIER" || right -> name == "." || right -> name == "function_call");
-
-	// tableRecord* entry1 = currTable -> lookup(left -> name);
-	// assert(entry1);
-	// tableRecord* entry2 = currTable -> lookup(right -> name);
-
-	
-	// assert(entry2);
 
 	if ((right->dataType).compare(0, 4, "list") && (right->dataType).compare("string"))
 	{
@@ -1098,6 +1128,61 @@ int generate_symtable(TreeNode *root)
 		return ret;
 	}
 
+	if (root->type == "NON_TERMINAL" && ((root->name) == "while_stmt" || (root->name) == "elif_stmt" || (root->name) == "if_stmt"))
+	{
+		assert ((root ->children).size() >= 1);
+		int ret = handle_bool_expressions((root -> children)[0]);
+		return ret;
+	}
+
+	if (root->type == "NON_TERMINAL" && (root->name).compare("group") == 0)
+	{
+		assert((root ->children).size() == 1);
+		root -> dataType = ((root -> children)[0])->dataType;
+		return 0;
+	}
+
+	if (root->type == "KEYWORD" && (root->name).compare("global") == 0)
+	{
+		assert((root ->children).size() == 1);
+		tableRecord* entry = globTable -> lookup_table((root -> children)[0] -> name);
+		if (!entry)
+		{
+			raise_error(ERR::NOT_GLOBAL, (root->children)[0]);
+			return -1;
+		}
+		return 0;
+	}
+
+	if (root->type == "KEYWORD" && (root->name).compare("return") == 0)
+	{
+		int size = (root ->children).size();
+		assert(size <= 1);
+		assert (currTable -> parentSymtable);
+		tableRecord* record1 = currTable -> parentSymtable->lookup(currTable -> name);
+		assert(record1 && record1 -> recordType == recordType::TYPE_FUNCTION);
+		string type1 = record1 -> type;
+		if (size == 0)
+		{
+			if (type1.length() == 0 || type1 == "None")
+				return 0;
+			
+			raise_error(ERR::RETURN_TYPE_MISMATCH, root);
+			return -1;
+		}
+
+		string type2 = (root->children)[0]->dataType;
+		string final = isCompatible(type1, type2);
+		if(!final.length())
+		{
+			raise_error(ERR::RETURN_TYPE_MISMATCH, root);
+			return -1;
+		}
+
+		return 0;
+	}
+
+
 	if (root->type == "NON_TERMINAL" && (root->name).compare("list_access") == 0)
 	{
 		string ret = handle_list_access(root);
@@ -1162,7 +1247,7 @@ int generate_symtable(TreeNode *root)
 		if(entry -> name == "__init__")
 		{
 			string name = entry -> symTab -> parentSymtable -> name;
-			tableRecord* record = new tableRecord(name, name, entry -> size, entry -> lineno, entry -> column, recordType::TYPE_FUNCTION);
+			tableRecord* record = new tableRecord(name, name, entry -> size, entry -> lineno, entry -> column, recordType::CLASS_CONSTRUCTOR);
 			int ret = globTable -> insert(record, entry -> symTab);
 			if (ret < 0)
 				return -1;
