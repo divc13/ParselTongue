@@ -2,4 +2,4 @@
 # a:str = "hello"
 a:list[int] = [1, 2, 3]
 print(len(a))
-b:int =  1*4 + 2*6 /5.0 -4
+b:int =  2 + print(3)

@@ -203,6 +203,19 @@ void initTypes()
 	range_one_args -> insert(tempRecord_int);
 	globTable -> insert(tempRecord, range_one_args);
 
+
+	tempRecord -> name = "len";
+	tempRecord -> type = "int";
+	tempRecord -> size = SIZE_INT;
+
+	symbolTable* lenTable = new symbolTable("len", globTable);
+	lenTable -> numParams = 1;
+	lenTable -> tableType = tableType::FUNCTION;
+	lenTable -> insert(tempRecord_str);
+	globTable -> insert(tempRecord, lenTable);
+
+
+
 	free(tempRecord_int);
 	free(tempRecord_float);
 	free(tempRecord_bool);

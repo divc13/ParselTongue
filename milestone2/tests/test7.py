@@ -7,7 +7,7 @@ def func2(param1:int = 10, param2:str = "default") -> None:
 	return "hi";
 
 def func3(param1:str,  param2:int = 10, param3: list[bool] = [False, False], ) -> None:
-
+	
 	return -1 + len("ehriwu") and not 1;	
 	print("this should not be printed")
 

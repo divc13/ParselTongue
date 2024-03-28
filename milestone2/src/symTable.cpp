@@ -42,7 +42,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 				if (entries[i] -> recordType == recordType::CONST_STRING)
 					continue;
 
-				return NULL;
+				return entries[i];
 			}
 		}
 
@@ -173,6 +173,10 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 			free(tempNode);
 			return -1;
 		}
+
+		raise_error(ERR::TYPE_REDECLARATION, tempNode);
+		free(tempNode);
+		return -1;
 
 	}
 
