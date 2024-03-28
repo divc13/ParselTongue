@@ -1,3 +1,3 @@
-while 2*3:
+def a() -> None:
     print(1)
-
+    

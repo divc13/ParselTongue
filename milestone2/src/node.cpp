@@ -12,7 +12,7 @@ TreeNode *root;
 extern map<string, string> opType;
 
 set<string> SkipToken2({
-	// "arguments",
+	"arguments",
 	"statement",
 	"block",
 	"slices",
@@ -24,6 +24,10 @@ set<string> SkipToken2({
 // Non-Terminals to remove from parse tree to form AST
 set<string> SkipToken1({
 
+	// typedecl
+	// list_access 
+	// function_call
+	// args
 	// "->",
 	// ":",
 	// "in",
@@ -39,21 +43,20 @@ set<string> SkipToken1({
 	// "bitwise_operators",
 	// "slices",
 	// "list",
-	// "arguments",
 	// "kwargs",
+	// "expression",
 
 	// "for_stmt",
-
 	// "if_stmt",
 	// "elif_stmt",
 	// "else_block",
 	// "while_stmt",
-	// "expression",
 	// "group",
-	// "if_expression",
 	// "global_stmt",
 	// "return_stmt", 
 
+
+	"arguments",
 	",",
 	";",
 	"NEWLINE",

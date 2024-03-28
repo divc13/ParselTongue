@@ -22,10 +22,10 @@ void printErrorLine(int line, int column)
 
 void raise_error(int err, TreeNode* root)
 {
-	if (err < ERR::CLASS_ATTRIBUTE_DECL_SELF)
+	if (err < ERR::ERR_MIN1)
 		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << CYAN << root->name << RESET << RED << ":" << RESET;
 
-	else if (err < ERR::EXPECTED_INT)
+	else if (err < ERR::ERR_MIN2)
 		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << ":" << RESET;
 
 	else
