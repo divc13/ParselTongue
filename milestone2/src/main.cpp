@@ -10,7 +10,7 @@ map<string, string> TokenNameToString;
 map<string, string> opType;
 
 
-#include "include/token_map.hpp"
+// #include "include/token_map.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	// yydebug = 1;
 	argv++, argc--;
 	indent_stack.push(0);
-	init_symbol_name_tables();
+	init_token_map();
 	init_error();
 	init_note();
 

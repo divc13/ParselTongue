@@ -138,3 +138,5 @@ string handle_function_call(TreeNode* root);
 void formatString(string &name, string &type);
 
 string validateType(TreeNode* root);
+
+int handle_to(TreeNode* root);

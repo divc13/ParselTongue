@@ -5,6 +5,7 @@ var4: list[float] = [4.4, 1.2]
 b:int =4
 
 def a() -> None:
+	b:int = 2
 	return
 
 def change_global() -> None:
@@ -18,10 +19,10 @@ def change_global() -> None:
 print(var)
 print(var2)
 print(var3)
-print(var4)
-change_global()
-print(var);	print(var2);print(var3);\
-print(var4)
+# print(var4)
+# change_global()
+print(var);	print(var2);print(var3);
+# print(var4)
 
 def outer() -> None:
 	x: int = 5

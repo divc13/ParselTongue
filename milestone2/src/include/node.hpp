@@ -30,3 +30,5 @@ void ConstrainedExchange(TreeNode* root, int &nchild, int args);
 void AST_Maker(TreeNode* root);
 
 bool isOperator(TreeNode* root);
+
+void init_token_map();

@@ -437,7 +437,12 @@ int handle_function_declaration(TreeNode* root)
 	TreeNode* node = ((root -> children)[0]);
 	string type = "None";
 	if (((root -> children)[0] -> name).compare("main") && ((root -> children)[0] -> name).compare("__init__"))
+	{
+		int ret = handle_to(((root -> children)[4]));
+		if (ret < 0)
+			return ret;
 		type = (((root -> children)[4]) -> children)[0] -> dataType;
+	}
 	node -> dataType = type;
 
 	tableRecord* record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
@@ -1044,19 +1049,13 @@ int generate_symtable(TreeNode *root)
 
 	if ((root -> name ).compare(".") == 0)
 	{
-		return pre_handle_dot(root);
+		int ret = pre_handle_dot(root);
 	}
 
 
 	if ((root -> type).compare("DELIMITER") == 0 && (root -> name).compare(":") == 0)
 	{
 		int ret = handle_type_declarations(root);
-		return ret;
-	}
-
-	if ((root -> type).compare("DELIMITER") == 0 && (root -> name).compare("->") == 0)
-	{
-		int ret = handle_to(root);
 		return ret;
 	}
 
