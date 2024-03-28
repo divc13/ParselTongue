@@ -125,7 +125,6 @@ void tableRecord::dumpCSV(ofstream &CSV)
 
 void symbolTable::dumpCSV(ofstream &CSV)
 {
-	CSV << "# File Name: " << inputFile << endl;
 	CSV << "# Table Name: " << name;
 	if (parentSymtable)
 		CSV << ", Parent Table: " << parentSymtable -> name;

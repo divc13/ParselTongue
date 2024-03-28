@@ -114,10 +114,10 @@ int main(int argc, char **argv)
 
 
 	rtnval = symTable_Maker(root);
-	// if(rtnval < 0) {
-	// 	fclose(yyin);
-	// 	return -1;
-	// } 
+	if (rtnval < 0) {
+		fclose(yyin);
+		return -1;
+	} 
 
 	if (csv_flag)
 	{
@@ -126,6 +126,8 @@ int main(int argc, char **argv)
 			cout << RED << "Error: Unable to open file " << noExtentionOutputFile << ".csv" << RESET << endl;
 			return 0;
 		}
+		
+		CSV << "# File Name: " << inputFile << endl;
 
 		globTable->dumpCSV(CSV);
 	}

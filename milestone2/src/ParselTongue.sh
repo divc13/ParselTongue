@@ -77,7 +77,7 @@ for ((i=1; i<=$#; i++)); do
 		md_flag=1
 		;;
 	--* )
-		echo -e "\e[31mUnknown flag: -${arg:j:1}\e[0m"
+		echo -e "\e[31mUnknown flag: ${arg}\e[0m"
 		exit 1
 		;;
 	-* )

@@ -1,9 +1,9 @@
-class A:
-  # a:int
-  def __init__(self):
-    # a:int = 1
-    self.        \
-                                  x: int = 1
+# class A:
+#   # a:int
+#   def __init__(self):
+#     # a:int = 1
+#     self.        \
+#                                   x: int = 1
   #   self.y: float = 3.14
   #   self.t: float = - self.y
   #   self.t += self.y
@@ -63,3 +63,9 @@ class A:
 
 # if __name__ == '__main__':
 #   main()
+
+b: list[int]
+a: str = "a"
+
+for a in b:
+    print(a)

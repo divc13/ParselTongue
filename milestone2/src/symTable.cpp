@@ -613,12 +613,12 @@ void set_record_size(TreeNode* root, tableRecord* record)
 	TreeNode* node = (root->children)[1];
 
 	// type of list constructed here
-	if ((node -> name).compare("list") == 0)
+	if ((node -> name).compare("list_access") == 0)
 	{
 		// some explicit type inside list 
 		assert((node -> children).size() > 2);
 
-		string type = node -> name + "[" + (node -> children)[1] -> name + "]";
+		string type = (node -> children)[0] -> name + "[" + (node -> children)[2] -> name + "]";
 		record -> type = type;
 		record -> size = SIZE_PTR;
 	}
@@ -826,14 +826,43 @@ int generate_symtable(TreeNode *root)
 		assert ((root -> children).size() == 2);
 		TreeNode* left = (root -> children)[0];
 		TreeNode* right = (root -> children)[1];
-		assert (left -> type == "IDENTIFIER" || left -> name == ".");
-		assert (right -> type == "IDENTIFIER" || right -> name == ".");
+		assert (left -> type == "IDENTIFIER" || left -> name == "." || left -> name == "list_access");
+		assert (right -> type == "IDENTIFIER" || right -> name == "." || right -> name == "function_call");
 
-		if (left -> dataType != right -> dataType)
+		tableRecord* entry1 = currTable -> lookup(left -> name);
+		assert(entry1);
+		tableRecord* entry2 = currTable -> lookup(right -> name);
+		assert(entry2);
+
+		if ((entry2->type).compare(0, 4, "list") && (entry2->type).compare("string"))
 		{
 			raise_error(ERR::TYPE_MISMATCH, root);
+			print_note(NOTE::PREV_DECL, entry1);
+			print_note(NOTE::PREV_DECL, entry2);
 			return -1;
 		}
+		else if ((entry2->type).compare(0, 4, "list") == 0)
+		{
+			if ((entry2 -> type).compare(5, (entry1 ->type).length(), entry1 ->type))
+			{
+				raise_error(ERR::TYPE_MISMATCH, root);
+				print_note(NOTE::PREV_DECL, entry1);
+				print_note(NOTE::PREV_DECL, entry2);
+				return -1;
+			}
+		}
+		else
+		{
+			if (entry1 -> type != entry2->type)
+			{
+				raise_error(ERR::TYPE_MISMATCH, root);
+				print_note(NOTE::PREV_DECL, entry1);
+				print_note(NOTE::PREV_DECL, entry2);
+				return -1;
+			}
+		}
+
+		return 0;
 
 	}
 
@@ -958,7 +987,7 @@ int handle_operators(TreeNode* root)
 	{
 		TreeNode* right = (root -> children)[1];
 		returnVal = checkDeclaration(right);
-		if(!returnVal)
+		if (!returnVal)
 			return -1;
 
 		string type2 = right->dataType;
