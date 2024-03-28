@@ -40,7 +40,8 @@ void init_error()
 
 
 	// root- -> type printed
-	ErrorMap[ERR::INTEGER_EXPECTED]				=		"expected an integer, received ";
+	ErrorMap[ERR::EXPECTED_INT]				=		"expected an integer, received ";
+	ErrorMap[ERR::EXPECTED_BOOL]			=		"expected a boolean expression, received ";
 }
 
 void init_note()

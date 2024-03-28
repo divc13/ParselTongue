@@ -44,7 +44,8 @@ enum ERR {
 
 
 	// root- -> type printed
-	INTEGER_EXPECTED,
+	EXPECTED_INT,
+	EXPECTED_BOOL,
 	
 };
 

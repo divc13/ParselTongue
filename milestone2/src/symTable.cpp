@@ -84,9 +84,6 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 				if (entries[i] -> recordType == recordType::CONST_STRING)
 					continue;
 
-				if (entries[i] -> recordType != recordType::TYPE_CLASS)
-					return NULL;
-
 				return entries[i];
 			}
 		}
@@ -173,11 +170,6 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 			free(tempNode);
 			return -1;
 		}
-
-		raise_error(ERR::TYPE_REDECLARATION, tempNode);
-		free(tempNode);
-		return -1;
-
 	}
 
 	tableRecord* record = new tableRecord(name, type, __size, lineno, column, recordType);
@@ -379,6 +371,16 @@ void formatString(string &name, string &type)
 	}
 	name = tmp;
 	return;
+}
+
+// root is the expression here
+int handle_bool_expressions(TreeNode* root)
+{
+	string type = root -> dataType;
+	if (!isCompatible(type, "bool").length())
+	{
+		raise_error(ERR::EXPECTED_BOOL, );
+	}
 }
 
 // root is function def here
@@ -972,7 +974,7 @@ string handle_list_access(TreeNode* root)
 	string final = isCompatible((root->children)[2]->dataType, "bool");
 	if (final.length() == 0)
 	{
-		raise_error(ERR::INTEGER_EXPECTED, (root->children)[1]);
+		raise_error(ERR::EXPECTED_INT, (root->children)[1]);
 		return "";
 	}
 	string type = (root->children)[2] -> dataType;

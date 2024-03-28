@@ -42,12 +42,12 @@ set<string> SkipToken1({
 	// "arguments",
 	// "kwargs",
 
+	// "for_stmt",
 
 	// "if_stmt",
 	// "elif_stmt",
 	// "else_block",
 	// "while_stmt",
-	// "for_stmt",
 	// "expression",
 	// "group",
 	// "if_expression",
