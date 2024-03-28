@@ -9,7 +9,7 @@ class country:
   def population_density(self) -> float:
     return self.population / self.area
 
-  def is_larger_than(self, other: 'country') -> bool:
+  def is_larger_than(self, other: country) -> bool:
     return self.area > other.area
     
 

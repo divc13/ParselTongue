@@ -1,6 +1,6 @@
 #include "../parser.tab.h"
 
-void init_symbol_name_tables()
+void init_token_map()
 {
 	// symbol to name 
 	StringToToken["+"] = OP_ATH_ADD;
