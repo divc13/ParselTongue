@@ -8,6 +8,13 @@
 #define MAGENTA "\033[1;35m"
 #define CYAN "\033[1;36m"
 
+#define SIZE_INT 4
+#define SIZE_PTR 8
+#define SIZE_FLOAT 8
+#define SIZE_BOOL 1
+#define SIZE_STRING(x) (1 + (x))
+#define SIZE_LIST(x) (8 * ((x)-2))
+
 enum tableType{
 	
 	FUNCTION,
@@ -30,6 +37,7 @@ enum recordType{
 	CLASS_CONSTRUCTOR,
 	OBJECT_ATTRIBUTE,
 	VARIABLE,
+	KEYWORD,
 };
 
 struct symTable;
@@ -95,21 +103,36 @@ int isValidType(string type);
 returns the higher of the 2 types if the types match */
 string isCompatible(string type1, string type2);
 
-/* array access check 
-returns 0 if not any list 
-returns 1 if the access is correct 
-returns -1 if the access is incorrect */ 
-int checkListAccess(TreeNode* root);
+void initTypes();
 
-// function call arguments check
-int checkFunctionArgs(TreeNode* root, symbolTable* table);
+int handle_function_declaration(TreeNode* root);
 
-bool checkDeclaration(TreeNode* root, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
+int handle_class_declaration(TreeNode* root);
+
+int handle_const_strings(TreeNode* root);
+
+int handle_const_int(TreeNode* root);
+
+int handle_const_float(TreeNode* root);
+
+int handle_const_bool(TreeNode* root);
+
+int set_record_fields(TreeNode* root, tableRecord* record);
+
+int handle_type_declarations(TreeNode* root);
+
+int handle_in(TreeNode* root);
+
+int handle_list(TreeNode* root);
+
+int post_handle_dot(TreeNode* root);
+
+int pre_handle_dot(TreeNode* root);
 
 int handle_operators(TreeNode* root);
-string handle_function_call(TreeNode* root);
+
 string handle_list_access(TreeNode* root);
 
-////////////////////////////////////// do in normal dfs ///////////////////////////////////////
-// operators check
-// use before declarations check
+string handle_function_call(TreeNode* root);
+
+void formatString(string &name, string &type);

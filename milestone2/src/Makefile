@@ -1,7 +1,7 @@
 all: runner 
 
-runner: lex.yy.c parser.tab.c main.cpp parser.tab.h error.cpp output.cpp include/parsing_error.hpp include/error.hpp include/token_map.hpp include/node.hpp node.cpp include/error.hpp symTable.cpp include/symtable.hpp
-	g++ main.cpp lex.yy.c parser.tab.c node.cpp symTable.cpp error.cpp output.cpp -o runner
+runner: lex.yy.c parser.tab.c main.cpp parser.tab.h error.cpp output.cpp init.cpp include/parsing_error.hpp include/error.hpp include/token_map.hpp include/node.hpp node.cpp include/error.hpp symTable.cpp include/symtable.hpp
+	g++ main.cpp lex.yy.c parser.tab.c node.cpp symTable.cpp error.cpp output.cpp init.cpp -o runner
 
 lex.yy.c: lexer.l
 	flex lexer.l

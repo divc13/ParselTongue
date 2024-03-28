@@ -1,9 +1,17 @@
-# class A:
-#   # a:int
+# class B():
+
 #   def __init__(self):
 #     # a:int = 1
-#     self.        \
-#                                   x: int = 1
+#     self.x:int = 1
+#     # self.y:float = 3.14
+#     # self.z:str = """I am \
+#     # \n new hekk"""
+class A:
+  # a:int
+  def __init__(self):
+    # a:int = 1
+    self.x : list[int] = [1, 2, 3, 4]
+                          
   #   self.y: float = 3.14
   #   self.t: float = - self.y
   #   self.t += self.y
@@ -17,19 +25,13 @@
   #   self.w: int = -self.z[2]
   # a:int = 1
   # def b(c: int)->None:
-  #   def d(self, c: int)->None:
-
+  #   def d(self: B, c: int)->None:
+      
   #     b:int = 5
+  #   l: B = B()
+  #   d(l, 4)
   #   b:int = 5
 
-# class B(A):
-
-#   def __init__(self):
-#     # a:int = 1
-#     self.x:int = 1
-#     # self.y:float = 3.14
-#     # self.z:str = """I am \
-#     # \n new hekk"""
 
 # class C(B):
 
@@ -58,14 +60,15 @@
 
 # def main():
 #   a: A = A()
-#   # b: B = B()
+#   print(a.x[2], 1, 2)
+#   b: B = B()
 
 
 # if __name__ == '__main__':
 #   main()
 
-b: list[int]
-a: str = "a"
+# b: list[int]
+# a: str = "a"
 
-for a in b:
-    print(a)
+# for a in b:
+    # print(a)

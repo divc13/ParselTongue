@@ -109,15 +109,29 @@ int main(int argc, char **argv)
 
 	AST_Maker(root);
 
-	if (ast_flag)
-		root->make_dot(noExtentionOutputFile + "_ast.dot");
+	// UNCOMMENT BEFORE SUBMISSION //
 
+	// if (ast_flag)
+	// 	root->make_dot(noExtentionOutputFile + "_ast.dot");
+
+	
+	initTypes();
 
 	rtnval = symTable_Maker(root);
-	if (rtnval < 0) {
-		fclose(yyin);
-		return -1;
-	} 
+	// if (rtnval < 0) {
+	// 	fclose(yyin);
+	// 	return -1;
+	// } 
+
+	// REMOVE VEFORE SUBMISSION //
+	
+	// if (ast_flag)
+	// 	root->make_dot_debug(noExtentionOutputFile + "_ast.dot");
+
+	// if (rtnval < 0) {
+	// 	fclose(yyin);
+	// 	return -1;
+	// } 
 
 	if (csv_flag)
 	{
@@ -130,6 +144,7 @@ int main(int argc, char **argv)
 		CSV << "# File Name: " << inputFile << endl;
 
 		globTable->dumpCSV(CSV);
+		CSV.close();
 	}
 
 	if (md_flag)
@@ -142,7 +157,9 @@ int main(int argc, char **argv)
 
     	MD << "<span style=\"font-size: 25px;\">__File Name: " << inputFile << "__</span>\n";
 		globTable->dumpMD(MD);
+		MD.close();
 	}
+
 
 	fclose(yyin);
 
