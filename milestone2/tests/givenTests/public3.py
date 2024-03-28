@@ -24,7 +24,7 @@ class LALRParser(CLRParser):
     self.lalrname: str = myname_
     CLRParser.__init__(self, clrname_, srname_)
 
-  def print_name(self):
+  def print_name(self) -> None:
     print("SLR name:")
     print(self.srname)
     print("CLR name:")
@@ -40,3 +40,4 @@ def main():
 
 if __name__ == "__main__":
   main()
+  

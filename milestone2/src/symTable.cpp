@@ -58,7 +58,6 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 
 				if (params -> size() != table -> numParams) continue;
 
-
 				int num;
 				for (num = 0; num < params -> size(); num++)
 				{
@@ -701,38 +700,41 @@ int handle_in(TreeNode* root)
 	assert (left -> type == "IDENTIFIER" || left -> name == "." || left -> name == "list_access");
 	assert (right -> type == "IDENTIFIER" || right -> name == "." || right -> name == "function_call");
 
-	tableRecord* entry1 = currTable -> lookup(left -> name);
-	assert(entry1);
-	tableRecord* entry2 = currTable -> lookup(right -> name);
-	assert(entry2);
+	// tableRecord* entry1 = currTable -> lookup(left -> name);
+	// assert(entry1);
+	// tableRecord* entry2 = currTable -> lookup(right -> name);
 
-	if ((entry2->type).compare(0, 4, "list") && (entry2->type).compare("string"))
+	
+	// assert(entry2);
+
+	if ((right->dataType).compare(0, 4, "list") && (right->dataType).compare("string"))
 	{
 		raise_error(ERR::NOT_ITERABLE, root);
-		print_note(NOTE::PREV_DECL, entry2);
+		// print_note(NOTE::PREV_DECL, entry2);
 		return -1;
 	}
 
-	else if ((entry2->type).compare(0, 4, "list") == 0)
+	else if ((right->dataType).compare(0, 4, "list") == 0)
 	{
-		if (isCompatible( (entry2 -> type).substr(5, (entry1 -> type).length()), entry1 ->type).length() == 0)
+		if (isCompatible( (right -> dataType).substr(5, (left -> dataType).length()), left ->dataType).length() == 0)
 		{
 			raise_error(ERR::TYPE_MISMATCH, root);
-			print_note(NOTE::PREV_DECL, entry1);
-			print_note(NOTE::PREV_DECL, entry2);
+			// print_note(NOTE::PREV_DECL, entry1);
+			// print_note(NOTE::PREV_DECL, entry2);
 			return -1;
 		}
 	}
 	else
 	{
-		if (entry1 -> type != entry2->type)
+		if (left -> dataType != right->dataType)
 		{
 			raise_error(ERR::TYPE_MISMATCH, root);
-			print_note(NOTE::PREV_DECL, entry1);
-			print_note(NOTE::PREV_DECL, entry2);
+			// print_note(NOTE::PREV_DECL, entry1);
+			// print_note(NOTE::PREV_DECL, entry2);
 			return -1;
 		}
 	}
+
 
 	return 0;
 
@@ -836,7 +838,7 @@ string isCompatible(string type1, string type2)
 int handle_operators(TreeNode* root)
 {
 	assert((root->children).size() > 0);
-	string category = root->dataType;
+	string category = root->type;
 	TreeNode* left = (root -> children)[0];
 	tableRecord* record1 = new tableRecord(left->dataType, left->dataType, left->lineno, left->column);
 	string type1 = left->dataType;
@@ -864,6 +866,7 @@ int handle_operators(TreeNode* root)
 
 		if (category == "OP_ASSIGNMENT")
 		{
+
 			root -> dataType = final;
 			return 0;
 		}
@@ -978,11 +981,11 @@ string handle_function_call(TreeNode* root)
 	assert(root -> name == "function_call");
 	assert(root -> type == "NON_TERMINAL");
 
-	int nparams = (root -> children).size() - 3;
+	int nparams = ((root -> children)[2]->children).size();
 	vector<tableRecord*> params;
-	for(int i = 2; i < nparams - 1; i++)
+	for(int i = 0; i < nparams; i++)
 	{
-		TreeNode* node = (root -> children)[i];
+		TreeNode* node = ((root -> children)[2]->children)[i];
 		tableRecord* record = new tableRecord(node -> dataType, node -> dataType);
 		params.push_back(record);
 	}
@@ -998,7 +1001,7 @@ string handle_function_call(TreeNode* root)
 	}
 
 	root -> dataType = funcEntry -> type;
-	return root -> type;
+	return root -> dataType;
 
 }
 
@@ -1045,6 +1048,12 @@ int generate_symtable(TreeNode *root)
 		return ret;
 	}
 
+	if ((root -> type).compare("DELIMITER") == 0 && (root -> name).compare("->") == 0)
+	{
+		int ret = handle_to(root);
+		return ret;
+	}
+
 	// dfs //
 	vector<TreeNode *> &children = root -> children;
 	for (int nchild = 0; nchild < (root -> children).size(); nchild++)
@@ -1081,12 +1090,6 @@ int generate_symtable(TreeNode *root)
 	if ((root -> name ).compare(".") == 0)
 	{
 		int ret = post_handle_dot(root);
-		return ret;
-	}
-
-	if ((root -> type).compare("DELIMITER") == 0 && (root -> name).compare("->") == 0)
-	{
-		int ret = handle_to(root);
 		return ret;
 	}
 

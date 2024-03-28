@@ -12,7 +12,7 @@ TreeNode *root;
 extern map<string, string> opType;
 
 set<string> SkipToken2({
-	"arguments", // what to do in function
+	// "arguments",
 	"statement",
 	"block",
 	"slices",

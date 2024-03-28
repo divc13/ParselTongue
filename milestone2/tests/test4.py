@@ -1,9 +1,9 @@
 def generate_permutations(nums: list[int]) -> list[int]:
-    permutations: list[int] = []
+    permutations: list[int] = [1, 2, 3]
 
     # function inside a function
     def backtrack(rem_nums: list[int], curr_permutation: list[int]) -> None:
-        if not rem_nums:
+        if  rem_nums:
             permutations.extend(curr_permutation)
             return
         

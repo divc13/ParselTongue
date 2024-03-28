@@ -1,5 +1,5 @@
 def func1() -> None:
-	quit("ur4jf3wr049j")
+	return
 
 def func2(param1:int = 10, param2:str = "default") -> None:
 	print(param1)
