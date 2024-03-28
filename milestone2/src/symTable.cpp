@@ -105,7 +105,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		{
 			if (entries[i] -> recordType == recordType::TYPE_CLASS)
 				continue;
-				
+
 			if (entries[i] -> recordType == recordType::CONST_STRING)
 				continue;
 
@@ -1138,8 +1138,8 @@ int generate_symtable(TreeNode *root)
 
 	if (root->type == "NON_TERMINAL" && (root->name).compare("group") == 0)
 	{
-		assert((root ->children).size() == 1);
-		root -> dataType = ((root -> children)[0])->dataType;
+		assert((root ->children).size() == 3);
+		root -> dataType = ((root -> children)[1])->dataType;
 		return 0;
 	}
 
