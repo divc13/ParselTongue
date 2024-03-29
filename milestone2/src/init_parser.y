@@ -1,7 +1,7 @@
 %{
 #include <bits/stdc++.h>
 using namespace std;
-#include "include/node.hpp"
+#include "include/symtable.hpp"
 
 void yyerror (string s);
 int yylex();
