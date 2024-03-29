@@ -1,4 +1,5 @@
-#include "node.hpp"
+#include<bits/stdc++.h>
+using namespace std;
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -43,6 +44,7 @@ enum recordType{
 struct symTable;
 
 typedef struct symRecord {
+
 	string name;
 	string type;
 	int size;
@@ -93,6 +95,8 @@ typedef struct symTable {
 	void dumpMD(ofstream &MD);
 
 } symbolTable;
+
+#include "node.hpp"
 
 /* genrates the symbol table */
 int symTable_Maker(TreeNode *root);

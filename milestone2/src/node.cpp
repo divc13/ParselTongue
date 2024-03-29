@@ -1,4 +1,4 @@
-#include "include/node.hpp"
+#include "include/symtable.hpp"
 
 bool isOperator(TreeNode* root)
 {

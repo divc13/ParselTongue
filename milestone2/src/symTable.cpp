@@ -1143,6 +1143,7 @@ int generate_symtable(TreeNode *root)
 	vector<TreeNode *> &children = root -> children;
 	for (int nchild = 0; nchild < (root -> children).size(); nchild++)
 	{
+		children[nchild] -> scope = currTable;
 		int ret = generate_symtable(children[nchild]);
 		if (ret < 0)
 			return ret;
