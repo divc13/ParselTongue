@@ -30,6 +30,7 @@ extern string text;
 stack<int> indent_stack;
 string inputFile = "";
 extern TreeNode *root;
+extern ParasiticNode *parasite;
 extern symbolTable* currTable;
 extern symbolTable* globTable;
 vector<string> lines;
@@ -106,6 +107,8 @@ int main(int argc, char **argv)
 
 	if (ptree_flag)
 		root->make_dot(noExtentionOutputFile + "_ptree.dot");
+
+	parasite = root -> make_tree();
 
 	AST_Maker(root);
 

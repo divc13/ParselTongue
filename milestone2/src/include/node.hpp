@@ -1,6 +1,17 @@
 #include<bits/stdc++.h>
 using namespace std;
 
+
+struct node;
+
+typedef struct parasite{
+	struct node* host;
+	vector <struct parasite*> children;
+	parasite(struct node* __host);
+} ParasiticNode;
+
+
+
 typedef struct node{
 	string name;
 	string type;
@@ -11,6 +22,7 @@ typedef struct node{
 	node(string __name, int __lineno = 0, int __column = 0, string __type = "NON_TERMINAL");
 	void make_dot(string out);
 	void make_dot_debug(string out);
+	ParasiticNode* make_tree();
 } TreeNode;
 
 
