@@ -9,6 +9,7 @@ bool isOperator(TreeNode* root)
 
 // root of the parse tree / AST
 TreeNode *root;
+ParasiticNode *parasite;
 extern map<string, string> opType;
 
 set<string> SkipToken2({
@@ -313,4 +314,25 @@ void AST_Maker(TreeNode *root)
 	generateAST(root, 3);
 	generateAST(root, 4);
 	return;
+}
+
+
+
+
+ParasiticNode::parasite(struct node* __host)
+{
+	host = __host;
+}
+
+
+
+ParasiticNode* TreeNode::make_tree()
+{
+	ParasiticNode* root = new ParasiticNode(this);
+	for (auto child : children)
+	{
+		ParasiticNode* parasitic_child = child -> make_tree();
+		(root -> children).push_back(parasitic_child);
+	}
+	return root;
 }
