@@ -2,6 +2,7 @@
 #include "include/error.hpp"
 
 extern map<int, string> recordTypeMap;
+extern vector<code> threeAC;
 
 map<symbolTable*, int> visitedMD;
 map<symbolTable*, int> visitedCSV;
@@ -387,4 +388,130 @@ void TreeNode::make_dot_debug(string out)
 
 	DOT << "}";
 	DOT.close();
+}
+
+
+
+
+void Parasite::make_ptree_debug(string out)
+{
+	ofstream DOT(out);
+
+	if (!DOT.is_open())
+	{
+		cerr << "Error: Unable to open file " << out << endl;
+		return;
+	}
+
+	DOT << "digraph Tree {\nnode [style = radial]\nedge [arrowhead=onormal]\nnodesep=2;\nranksep=5;\n";
+
+	queue<pair<int, Parasite *>> NodeQueue;
+	NodeQueue.push({0, this});
+	int index = 1;
+
+	while (!NodeQueue.empty())
+	{
+		int current_index = NodeQueue.front().first;
+		Parasite *node = NodeQueue.front().second;
+		NodeQueue.pop();
+		for (int i = 0; i < (node->children).size(); i++, index++)
+		{
+			DOT << current_index << " -> " << index << ";\n";
+			NodeQueue.push({index, (node->children)[i]});
+		}
+	}
+
+	NodeQueue.push({0, this});
+	index = 1;
+	while (!NodeQueue.empty())
+	{
+		int current_index = NodeQueue.front().first;
+		Parasite *node = NodeQueue.front().second;
+		NodeQueue.pop();
+		string tmp;
+
+		if (node->type == "NON_TERMINAL")
+			tmp = node->name;
+		else if (node->type == "DEDENT" || node->type == "EOF" || node->type == "NEWLINE" || node->type == "INDENT")
+			tmp = node->type;
+		else
+			tmp = node->type + "\n" + "(" + node->name + ")";
+
+		DOT << current_index << " [ label = \"" << node->tmp << "\n";
+
+		if (node->type == "NON_TERMINAL")
+			DOT << tmp << "\", fillcolor=\"white:bisque";
+		else if (node->type == "STRING_LITERAL")
+		{
+			DOT << node->type + "\n(";
+			for (char c : node->name)
+			{
+				if (c == '"')
+				{
+					DOT << '\\' << '\"';
+				}
+				else if (c == '\\')
+				{
+					DOT << '\\' << '\\';
+				}
+				else
+				{
+					DOT << c;
+				}
+			}
+			DOT << ")\", shape = rectangle, fillcolor=\"white:lightgreen";
+		}
+		else
+		{
+			DOT << tmp << "\", shape = rectangle, fillcolor=\"white:";
+
+			if (node->type == "DEDENT")
+				DOT << "pink";
+			else if (node->type == "EOF")
+				DOT << "pink";
+			else if (node->type == "NEWLINE")
+				DOT << "pink";
+			else if (node->type == "INDENT")
+				DOT << "pink";
+			else if (node->type == "KEYWORD")
+				DOT << "orchid1";
+			else if ((node->type).compare(0, 3, "OP_") == 0)
+				DOT << "lightcoral";
+			else if (node->type == "IDENTIFIER")
+				DOT << "slategray1";
+			else if (node->type == "INT_LITERAL")
+				DOT << "lightgreen";
+			else if (node->type == "FLOAT_LITERAL")
+				DOT << "lightgreen";
+			else if (node->type == "DELIMITER")
+				DOT << "pink";
+		}
+
+		DOT << "\" ];\n";
+
+		for (int i = 0; i < (node->children).size(); i++, index++)
+		{
+			NodeQueue.push({index, (node->children)[i]});
+		}
+	}
+
+	DOT << "}";
+	DOT.close();
+}
+
+void dumpAC(string file)
+{
+	ofstream TAC(file);
+	if (!TAC.is_open()) {
+		cout << RED << "Error: Unable to open file " << file << RESET << endl;
+		return;
+	}
+	for (auto child : threeAC)
+	{
+
+		TAC << setw(16) << child.label << child.field_1;
+		TAC << " " << child.field_2 << " " << child.field_3 << " " << child.field_4 << " " << child.field_5 << endl;
+	}
+	TAC.close();
+	return;
 }

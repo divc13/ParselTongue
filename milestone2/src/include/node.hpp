@@ -5,12 +5,31 @@ using namespace std;
 struct node;
 
 typedef struct parasite{
+
+	string trueL = "";
+	string falseL = "";
+	string next = "";
+	string name = "";
+	string type = "";
+	string tmp = "";
 	struct node* host;
 	vector <struct parasite*> children;
+	void genAC();
 	parasite(struct node* __host);
-} ParasiticNode;
+	void make_ptree_debug(string out);
 
+} Parasite;
 
+typedef struct address_code {
+
+	string label = "";
+	string field_1 = "";
+	string field_2 = "";
+	string field_3 = "";
+	string field_4 = "";
+	string field_5 = "";
+
+} code;
 
 typedef struct node{
 	string name;
@@ -23,7 +42,7 @@ typedef struct node{
 	node(string __name, int __lineno = 0, int __column = 0, string __type = "NON_TERMINAL");
 	void make_dot(string out);
 	void make_dot_debug(string out);
-	ParasiticNode* make_tree();
+	Parasite* make_tree();
 } TreeNode;
 
 

@@ -9,7 +9,7 @@ bool isOperator(TreeNode* root)
 
 // root of the parse tree / AST
 TreeNode *root;
-ParasiticNode *parasite;
+Parasite *parasiticRoot;
 extern map<string, string> opType;
 
 set<string> SkipToken2({
@@ -20,6 +20,7 @@ set<string> SkipToken2({
 	"bitwise_operators",
 	"kwargs",
 	"expression",
+	"list_expr",
 });
 
 // Non-Terminals to remove from parse tree to form AST
@@ -55,8 +56,9 @@ set<string> SkipToken1({
 	// "group",
 	// "global_stmt",
 	// "return_stmt", 
-
-
+	
+	"for_expr",
+	"list_expr",
 	"arguments",
 	",",
 	";",
@@ -319,19 +321,23 @@ void AST_Maker(TreeNode *root)
 
 
 
-ParasiticNode::parasite(struct node* __host)
+Parasite::parasite(struct node* __host)
 {
 	host = __host;
+	name = __host -> name;
+	type = __host -> type;
+	string trueL = "";
+	string falseL = "";
+	string next = "";
+	string tmp = "";
 }
 
-
-
-ParasiticNode* TreeNode::make_tree()
+Parasite* TreeNode::make_tree()
 {
-	ParasiticNode* root = new ParasiticNode(this);
+	Parasite* root = new Parasite(this);
 	for (auto child : children)
 	{
-		ParasiticNode* parasitic_child = child -> make_tree();
+		Parasite* parasitic_child = child -> make_tree();
 		(root -> children).push_back(parasitic_child);
 	}
 	return root;

@@ -53,6 +53,7 @@ typedef struct symRecord {
 	int index;
 	int recordType;
 	int offset;
+	string tmp = "";
 	struct symTable* symTab;
 	symRecord(string __name = "", string __type = "", int __size = 0, int __lineno = 0, int __column = 0, int recordType = recordType::VARIABLE);
 	void dumpCSV(ofstream &CSV);

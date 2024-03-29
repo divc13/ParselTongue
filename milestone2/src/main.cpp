@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #include "parser.tab.h"
-#include "include/symtable.hpp"
+#include "include/threeAC.hpp"
 #include "include/error.hpp"
 
 
@@ -30,7 +30,7 @@ extern string text;
 stack<int> indent_stack;
 string inputFile = "";
 extern TreeNode *root;
-extern ParasiticNode *parasite;
+extern Parasite *parasiticRoot;
 extern symbolTable* currTable;
 extern symbolTable* globTable;
 vector<string> lines;
@@ -40,7 +40,7 @@ string tokenString = "";
 vector<string> verbose_stack;
 ofstream VERBOSE;
 
-//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <csv_flag> <md_flag>
+//<input file> <output file> <output file option template> <verbose_flag> <ast_flag> <ptree_flag> <csv_flag> <md_flag> <tac_flag>
 int main(int argc, char **argv)
 {
 	// yydebug = 1;
@@ -58,6 +58,7 @@ int main(int argc, char **argv)
 	int ptree_flag = atoi(argv[5]);
 	int csv_flag = atoi(argv[6]);
 	int md_flag = atoi(argv[7]);
+	int tac_flag = atoi(argv[6]);
 
 	// yyin = fopen(inputFile.c_str(), "r");
 	FILE* file = fopen(inputFile.c_str(), "r");
@@ -105,10 +106,14 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	if (ptree_flag)
-		root->make_dot(noExtentionOutputFile + "_ptree.dot");
+	// if (ptree_flag)
+	// 	root->make_dot(noExtentionOutputFile + "_ptree.dot");
 
-	parasite = root -> make_tree();
+	parasiticRoot = root -> make_tree();
+	parasiticRoot -> genAC();
+
+	if (ptree_flag)
+		parasiticRoot->make_ptree_debug(noExtentionOutputFile + "_ptree.dot");
 
 	AST_Maker(root);
 
@@ -161,6 +166,11 @@ int main(int argc, char **argv)
     	MD << "<span style=\"font-size: 25px;\">__File Name: " << inputFile << "__</span>\n";
 		globTable->dumpMD(MD);
 		MD.close();
+	}
+
+	if (tac_flag)
+	{
+		dumpAC(noExtentionOutputFile + ".tac");
 	}
 
 	fclose(yyin);
