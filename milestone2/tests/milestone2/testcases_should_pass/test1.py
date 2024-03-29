@@ -1,13 +1,8 @@
-if("abc"):
-  print("foaid")
-
 var1: int = 3
 var2: int = 1
 var3:int = 5
 
 def func1() -> None:  #recursion
-  global var1
-  global var2
   var1 -= 1;
   var2 *= 2
   var3 = 10
@@ -56,3 +51,4 @@ def main():
 
 if __name__ == "__main__":
   main()
+  

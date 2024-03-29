@@ -29,7 +29,7 @@ void raise_error(int err, TreeNode* root)
 		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << ":" << RESET;
 
 	else
-		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << CYAN << root->type << RESET << RED << ":" << RESET;
+		cout << BLUE << UNDERLINE << inputFile << ":" << root->lineno << ":" << root->column << ":" << RESET << " " << RED << "Error: " << ErrorMap[err] << CYAN << root->dataType << RESET << RED << ":" << RESET;
 	
 	cout << endl;
 

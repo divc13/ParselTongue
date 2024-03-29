@@ -46,7 +46,7 @@ void log_reduce(const int rule_line, vector<string> tokens);
 
 %token<info> DLM_LFT_PRN DLM_RGT_PRN DLM_LFT_SQ DLM_RGT_SQ DLM_LFT_CRLY DLM_RGT_CRLY DLM_COMMA DLM_COLON DLM_DOT DLM_SM_COL DLM_AT DLM_TO INT_LITERAL FLOAT_LITERAL STRING_LITERAL NAME NEWLINE DEDENT INDENT KW_False KW_await KW_else KW_import KW_None KW_break KW_except KW_in KW_raise KW_True KW_class KW_finally KW_is KW_return KW_continue KW_for KW_lambda KW_tryas KW_def KW_from KW_nonlocal KW_while KW_assert KW_del KW_global KW_with KW_async KW_elif KW_if KW_yield OP_ATH_ADD OP_ATH_SUB OP_ATH_MUL OP_ATH_DIV OP_ATH_FDIV OP_ATH_MOD OP_ATH_POW OP_REL_EQ OP_REL_NEQ OP_REL_GT OP_REL_LT OP_REL_GTE OP_REL_LTE OP_LOG_AND OP_LOG_OR OP_LOG_NOT OP_BIT_AND OP_BIT_OR OP_BIT_XOR OP_BIT_NEG OP_BIT_LS OP_BIT_RS OP_ASN_ASN OP_ASN_ADD OP_ASN_SUB OP_ASN_MUL OP_ASN_DIV OP_ASN_FDIV OP_ASN_MOD OP_ASN_POW OP_ASN_AND OP_ASN_OR OP_ASN_XOR OP_ASN_LS OP_ASN_RS
 %token<info> ENDMARK 0
-%type<Node> args list_access function_call bitwise_operators operand typedecl bitwise_operator file statements statement simple_stmts simple_stmt compound_stmt simple1 simple2 assignment return_stmt raise_stmt assert_stmt global_stmt nonlocal_stmt multi_targets_assgn augassign names block class_def function_def is_arguments is_fn_expression params param_nd param_wd  param_no_default param_with_default param annotation param_default if_stmt elif_stmt else_block while_stmt for_stmt expressions expressions_comma expression disjunction conjunction inversion comparison  bitwise_xor bitwise_or bitwise_and shift_expr sum term factor power primary atom group string strings list arguments
+%type<Node> args list_access function_call bitwise_operators operand typedecl bitwise_operator file statements statement simple_stmts simple_stmt compound_stmt simple1 simple2 assignment return_stmt multi_targets_assgn augassign block class_def function_def is_arguments is_fn_expression params param_nd  param_no_default param annotation if_stmt elif_stmt else_block while_stmt for_stmt expressions expressions_comma expression disjunction conjunction inversion comparison  bitwise_xor bitwise_or bitwise_and shift_expr sum term factor power primary atom group string strings list arguments
 
 %define parse.error custom
 %locations
@@ -76,12 +76,8 @@ simple2:
 simple_stmt: assignment
 	| expressions 
 	| return_stmt
-	| raise_stmt
-	| assert_stmt
 	| KW_break 
 	| KW_continue 
-	| global_stmt
-	| nonlocal_stmt
 
 compound_stmt: function_def
 	| if_stmt
@@ -115,20 +111,6 @@ augassign: OP_ASN_ADD
 return_stmt: KW_return expressions
 	| KW_return 
 
-raise_stmt: KW_raise expression
-	| KW_raise expression KW_from expression
-	| KW_raise 
-
-global_stmt: KW_global names
-
-nonlocal_stmt: KW_nonlocal names
-
-names: NAME
-	| names DLM_COMMA NAME
-
-assert_stmt: KW_assert expression
-	| KW_assert expression DLM_COMMA expression
-
 block: NEWLINE INDENT statements DEDENT 
 	| simple_stmts
 
@@ -145,26 +127,17 @@ is_fn_expression:
 
 params: 
 	| param param_nd 
-	| param_default param_wd
 
 param_nd: 
 	| param_no_default param_nd
-	| param_with_default param_wd
 	| DLM_COMMA
-
-param_wd: 
-	| param_with_default param_wd
-	| DLM_COMMA 
 
 param_no_default: DLM_COMMA param 
 
-param_with_default: DLM_COMMA param_default  
-
 param: NAME 
 	| annotation
-annotation: NAME DLM_COLON expression 
-param_default:param OP_ASN_ASN expression
 
+annotation: NAME DLM_COLON expression 
 
 if_stmt: KW_if expression DLM_COLON block elif_stmt 
 	| KW_if expression DLM_COLON block 
@@ -199,7 +172,6 @@ conjunction: inversion
 inversion: OP_LOG_NOT inversion 
 	| comparison
 
-
 comparison: bitwise_or
 	| comparison bitwise_operator bitwise_or
 
@@ -215,7 +187,6 @@ bitwise_operator: OP_REL_EQ
 
 bitwise_operators: OP_LOG_NOT KW_in
 	| KW_is OP_LOG_NOT
-
 
 bitwise_or: bitwise_or OP_BIT_OR bitwise_xor 
 	| bitwise_xor

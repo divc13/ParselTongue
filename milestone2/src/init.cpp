@@ -29,6 +29,7 @@ void init_error()
 	ErrorMap[ERR::NOT_GLOBAL]	 				=		"No global declaration found for ";
 	ErrorMap[ERR::CANDIDATE]	 				=		"ambiguity found in call of overloaded ";
 	ErrorMap[ERR::RETURN_TYPE_MISMATCH]	 		=		"return type does not match the function definition ";
+	ErrorMap[ERR::NO_RET_TYPE]	 				=		"no return type specified for the function ";
 
 
 	// root- -> name not printed

@@ -3,6 +3,7 @@
 
 extern TreeNode *root;
 symbolTable *currTable = new symbolTable("__GLOBAL__", NULL);
+symbolTable *tempDotTable = NULL;
 symbolTable *globTable = currTable;
 map<int, string> recordTypeMap;
 map<string, int> typeMap;
@@ -111,6 +112,8 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 
 			return entries[i];
 		}
+
+		return NULL;
 	}
 
 	if (recordType == recordType::TYPE_CLASS)
@@ -426,7 +429,15 @@ int handle_function_declaration(TreeNode* root)
 	// a function definition has 6 children
 	if (((root -> children)[0] -> name).compare("main")
 					 && ((root -> children)[0] -> name).compare("__init__"))
-		assert((root -> children).size() == 6);
+
+	{
+
+		if ((root -> children).size() == 5)
+		{
+			raise_error (ERR::NO_RET_TYPE, (root ->children)[0]);
+			return -1;
+		}
+	}
 
 	else 
 		assert((root -> children).size() == 5 || (root -> children).size() == 6);
@@ -504,6 +515,7 @@ int handle_function_declaration(TreeNode* root)
 
 	if (err < 0)
 		return err;
+
 
 	return 0;
 }
@@ -661,6 +673,8 @@ string validateType(TreeNode* root)
 	{
 		assert((root -> children).size() > 3);
 		type = (root -> children)[0] -> name + "[" + (root -> children)[2] -> name + "]";
+		assert((root -> children)[0] -> name == "list"); 
+		(root -> children)[0] -> type = "LIST";
 	}
 
 	if (!isValidType(type))
@@ -823,19 +837,9 @@ int handle_list(TreeNode* root)
 int post_handle_dot(TreeNode* root)
 {
 	assert((root->children).size() == 2);
-
-	tableRecord* classRecord = globTable->lookup_table((root->children)[0] -> dataType, recordType::TYPE_CLASS);
-	assert(classRecord);
-
-	tableRecord* entry = (classRecord->symTab)->lookup_table((root->children)[1]->name);
-	if(!entry)
-	{
-		raise_error(ERR::CLASS_NO_MATCH_ATTR, (root->children)[1]);
-		return -1;
-	}
-
-	(root -> children)[1] -> dataType = entry -> type;
 	root -> dataType = (root->children)[1]->dataType;
+	currTable = tempDotTable;
+	tempDotTable = NULL;
 	
 	return 0;
 }
@@ -843,7 +847,31 @@ int post_handle_dot(TreeNode* root)
 int pre_handle_dot(TreeNode* root)
 {
 	assert((root->children).size() == 2);
-	(root -> children)[1] -> type = "ATTRIBUTE"; 
+
+	int ret = handle_identifier((root->children)[0]);
+	if (ret < 0)
+		return ret;
+
+	if (((root->children)[0] -> dataType).compare(0, 4, "list") == 0)
+	{
+		raise_error(ERR::CLASS_NO_MATCH_ATTR, (root->children)[1]);
+		return -1;
+	}
+
+	tableRecord* classRecord = globTable->lookup_table((root->children)[0] -> dataType, recordType::TYPE_CLASS);
+	
+	// in cases of dot
+	if (!classRecord)
+	{
+		raise_error(ERR::CLASS_NO_MATCH_ATTR, (root->children)[1]);
+		return -1;
+	}
+	
+	assert(classRecord);
+
+	tempDotTable = currTable;
+	currTable = classRecord -> symTab;
+
 	return 0;
 }
 
@@ -872,6 +900,9 @@ string isCompatible(string type1, string type2)
 
 	if (!(type1.compare("bool") || type2.compare("int")))
 		return type2;
+
+	if (type1.compare(0, 4, "list") == 0 && type2.compare(0, 4, "list") == 0)
+		return isCompatible(type1.substr(5, type1.length() - 6), type2.substr(5, type2.length() - 6));
 
 	return "";
 }
@@ -925,7 +956,7 @@ int handle_operators(TreeNode* root)
 				return -1;
 			}
 
-			root -> dataType = final;
+			root -> dataType = "bool";
 			return 0;
 		}
 
@@ -957,7 +988,10 @@ int handle_operators(TreeNode* root)
 				return -1;
 			}
 
+
 			root -> dataType = final;
+			if(category == "OP_LOGICAL") root -> dataType = "bool";
+
 			return 0;
 		}
 
@@ -1032,6 +1066,7 @@ string handle_function_call(TreeNode* root)
 	}
 
 	tableRecord* funcEntry = currTable -> lookup((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
+	if (tempDotTable) funcEntry = currTable -> lookup_table((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
 	for (auto &i: params)
 		free(i);
 		
@@ -1058,6 +1093,21 @@ int handle_to(TreeNode* root)
 	
 	return 0;
 
+}
+
+int handle_identifier(TreeNode* root)
+{
+	tableRecord* entry = currTable -> lookup(root -> name);
+	if (tempDotTable) entry = currTable -> lookup_table(root -> name);
+
+	if (!entry)
+	{
+		raise_error(ERR::UNDECLARED, root);
+		return -1;
+	}
+
+	root -> dataType = entry -> type;
+	return 0;
 }
 
 int generate_symtable(TreeNode *root)
@@ -1142,18 +1192,6 @@ int generate_symtable(TreeNode *root)
 		return 0;
 	}
 
-	if (root->type == "KEYWORD" && (root->name).compare("global") == 0)
-	{
-		assert((root ->children).size() == 1);
-		tableRecord* entry = globTable -> lookup_table((root -> children)[0] -> name);
-		if (!entry)
-		{
-			raise_error(ERR::NOT_GLOBAL, (root->children)[0]);
-			return -1;
-		}
-		return 0;
-	}
-
 	if (root->type == "KEYWORD" && (root->name).compare("return") == 0)
 	{
 		int size = (root ->children).size();
@@ -1213,18 +1251,11 @@ int generate_symtable(TreeNode *root)
 
 	if (root -> type == "IDENTIFIER")
 	{
-		tableRecord* entry = currTable -> lookup(root -> name);
-		if (!entry)
-		{
-			raise_error(ERR::UNDECLARED, root);
-			return -1;
-		}
-
-		root -> dataType = entry -> type;
-		return 0;
+		int ret = handle_identifier(root);
+		return ret;
 	}
 
-	if (root -> name == "list")
+	if (root -> name == "list" && root->type == "NON_TERMINAL")
 	{
 		int ret = handle_list(root);
 		return ret;

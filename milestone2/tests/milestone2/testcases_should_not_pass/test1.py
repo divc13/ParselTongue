@@ -1,14 +1,14 @@
-def class1():
-    print("function")
+# def class1() -> None:
+#     print("function")
 
-class class1:   # function and class have same name
+# class class1:   # function and class have same name
 
-    def __init__(self):
-        print("class")
+#     def __init__(self):
+#         print("class")
     
 var1: int = 10
 
-func1: float = 23. # same function and var name
+# func1: float = 23. # same function and var name
 
 def func1() -> None:
     global var1     # changing the type of global var

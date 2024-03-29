@@ -1,3 +1,2 @@
-def a() -> None:
-    print(1)
-    
+def generate_permutations() -> list[int]:
+    a:int = 10

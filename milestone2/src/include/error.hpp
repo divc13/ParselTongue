@@ -28,6 +28,7 @@ enum ERR {
 	TYPE_NOT_DECL_PARAM,
 	KEYWORD_DECL,
 	RETURN_TYPE_MISMATCH,
+	NO_RET_TYPE,
 
 
 	// root- -> name not printed
