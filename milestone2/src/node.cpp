@@ -56,7 +56,7 @@ set<string> SkipToken1({
 	// "group",
 	// "global_stmt",
 	// "return_stmt", 
-	
+
 	"for_expr",
 	"list_expr",
 	"arguments",
@@ -329,6 +329,7 @@ Parasite::parasite(struct node* __host)
 	string trueL = "";
 	string falseL = "";
 	string next = "";
+	string current = "";
 	string tmp = "";
 }
 

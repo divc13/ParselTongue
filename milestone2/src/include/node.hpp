@@ -9,6 +9,7 @@ typedef struct parasite{
 	string trueL = "";
 	string falseL = "";
 	string next = "";
+	string current = "";
 	string name = "";
 	string type = "";
 	string tmp = "";
