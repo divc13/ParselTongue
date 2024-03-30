@@ -7,7 +7,9 @@ int label = 0;
 int tmp = 0;
 
 string state = "#$" + inputFile + "#$";
+string UseState = "#$" + inputFile + "#$";
 symbolTable* table = globTable;
+symbolTable* dotTable = NULL;
 stack<pair<string, string>> labelStack;
 vector<code> threeAC;
 
@@ -404,6 +406,8 @@ void Parasite::genAC()
 		inst.field_2 = "funcName";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
+
+
 
 	}
 
@@ -1112,7 +1116,7 @@ void Parasite::genAC()
 		children[2] -> next = next;
 		children[2] -> current = newLabel();
 
-		int nparams = (children[2] -> children).size();
+		int nparams = ((host -> children)[2] -> children).size();
 		vector<tableRecord*> params;
 
 		code inst;
@@ -1134,7 +1138,19 @@ void Parasite::genAC()
 		for (auto &i: params)
 			free(i);
 		
-		// string 
+		string funcName = UseState;
+		symbolTable* funcTable = funcEntry -> symTab;
+
+		for (int i = 0; i < nparams; i++)
+		{
+			funcName += (funcTable -> entries)[i] -> type + "%@";
+		}
+
+		inst.field_1 = "call";
+		inst.field_2 = funcName;
+		inst.label = current;
+		threeAC.push_back(inst);
+
 
 	}
 
@@ -1178,8 +1194,6 @@ void Parasite::genAC()
 		/*
 
 			l_primary:  NAME DLM_DOT NAME 
-				| list_access DLM_DOT NAME
-				| NAME DLM_DOT list_access
 				| list_access 
 				| atom
 
@@ -1212,7 +1226,6 @@ void Parasite::genAC()
 		/*
 
 			primary: l_primary
-				| list_access DLM_DOT function_call
 				| NAME DLM_DOT function_call
 				| function_call
 
@@ -1342,24 +1355,12 @@ void Parasite::genAC()
 
 	}
 
-	if (name == "list_expr")
-	{
-					
-		/*
-			list_expr: expressions 
-		*/
-
-		children[0] -> next = next;
-		children[0] -> current = newLabel();
-
-	}
-
 	if (name == "list")
 	{
 					
 		/*
 
-			list: DLM_LFT_SQ list_expr DLM_RGT_SQ 
+			list: DLM_LFT_SQ expressions DLM_RGT_SQ 
 
 		*/
 
@@ -1547,7 +1548,6 @@ void Parasite::genAC()
 
 		tmp = children[0] -> tmp;
 
-		/* nothing to do */
 
 	}
 
@@ -1791,8 +1791,10 @@ void Parasite::genAC()
 		if (children[0] -> type == "IDENTIFIER")
 		{
 			code inst;
+
 			inst.field_1 = "popparam";
-			inst.field_2 = children[0] -> name;
+			inst.field_2 = children[0] -> tmp;
+			inst.field_3 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst); 
 		}
@@ -1807,9 +1809,18 @@ void Parasite::genAC()
 			annotation: NAME DLM_COLON expression 
 		*/
 
+		children[0] -> tmp = newTmp();
+		tmp = children[0] -> tmp;
+		code inst;
+		inst.field_1 = tmp;
+		inst.field_2 = "=";
+		inst.field_3 = children[0] -> name;
+		inst.label = current;
+		threeAC.push_back(inst);
+
 		code inst;
 		inst.field_1 = "popparam";
-		inst.field_2 = children[0] -> name;
+		inst.field_2 = children[0] -> tmp;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -1943,6 +1954,9 @@ void Parasite::genAC()
 			else_block: KW_else DLM_COLON block 
 
 		*/
+
+		/* do nothing */
+
 	}
 
 
@@ -2458,7 +2472,7 @@ void Parasite::genAC()
 
 		*/
 
-
+		/* do nothing */
 
 	}
 
@@ -2472,6 +2486,8 @@ void Parasite::genAC()
 				| expressions
 
 		*/
+
+		/* do nothing */
 	}
 
 
@@ -2484,7 +2500,19 @@ void Parasite::genAC()
 
 		*/
 
+		tableRecord* entry = table -> lookup(children[0] -> name);
+		assert (entry);
+		assert ((entry -> type).substr(0, 4) == "list");
+		string store = entry -> tmp;
 
+		code inst;
+		tmp = newTmp();
+		inst.field_1 = tmp;
+		inst.field_2 = "=";
+		inst.field_3 = children[0] -> name;
+		inst.field_4 = "[" + children[2] -> tmp + "]";
+		inst.label = current;
+		threeAC.push_back(inst);
 
 	}
 
@@ -2494,12 +2522,13 @@ void Parasite::genAC()
 		/*
 
 			l_primary:  NAME DLM_DOT NAME 
-				| list_access DLM_DOT NAME
-				| NAME DLM_DOT list_access
 				| list_access 
 				| atom
 
 		*/
+
+
+
 	}
 
 	if (name == "primary")
@@ -2508,13 +2537,21 @@ void Parasite::genAC()
 		/*
 
 			primary: l_primary
-				| list_access DLM_DOT function_call
 				| NAME DLM_DOT function_call
 				| function_call
 
 		*/
-	
-		tmp = children[0]->tmp;
+
+
+		if (children[0] -> name == "l_primary")
+		{
+			tmp = children[0]->tmp;
+		}
+
+		if (children.size() == 3 && children[1] -> name == ".")
+		{
+
+		}
 
 	}
 
@@ -2541,13 +2578,22 @@ void Parasite::genAC()
 			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
-			inst.field_2 = children[0] -> name;
+			inst.field_2 = "=";
+			inst.field_3 = children[0] -> name;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 		else
 		{
+			children[0] -> tmp = newTmp();
 			tmp = children[0] -> tmp;
+			code inst;
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = children[0] -> name;
+			inst.label = current;
+			threeAC.push_back(inst);
 		}
 
 	}
@@ -2573,12 +2619,14 @@ void Parasite::genAC()
 		/*
 
 			string: STRING_LITERAL              
-			*/
+		*/
 
 		tmp = newTmp();
 		code inst;
 		inst.field_1 = tmp;
-		inst.field_2 = children[0] -> name;
+		inst.field_2 = "=";
+		inst.field_3 = children[0] -> name;
+		inst.label = current;
 		threeAC.push_back(inst);
 
 	}
@@ -2601,32 +2649,37 @@ void Parasite::genAC()
 
 		else 
 		{
-			tmp = children[0] -> tmp + children[1] -> tmp;
+			tmp = newTmp();
+			code inst;
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = children[0] -> tmp;
+			inst.field_4 = "+";
+			inst.field_5 = children[1] -> tmp;
 		}
 
 	}
-
-	if (name == "list_expr")
-	{
-					
-		/*
-
-			list_expr: expressions 
-
-		*/
-	}
-
 
 	if (name == "list")
 	{
 					
 		/*
 
-			list: DLM_LFT_SQ list_expr DLM_RGT_SQ 
+			list: DLM_LFT_SQ expressions DLM_RGT_SQ 
 
 		*/
 
-		
+	}
+
+	if (type == "IDENTIFIER")
+	{
+		tmp = newTmp();
+		code inst;
+		inst.field_1 = tmp;
+		inst.field_2 = "=";
+		inst.field_3 = name;
+		inst.label = current;
+		threeAC.push_back(inst);
 
 	}
 

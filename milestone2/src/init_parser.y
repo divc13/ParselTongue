@@ -46,7 +46,7 @@ void log_reduce(const int rule_line, vector<string> tokens);
 
 %token<info> DLM_LFT_PRN DLM_RGT_PRN DLM_LFT_SQ DLM_RGT_SQ DLM_LFT_CRLY DLM_RGT_CRLY DLM_COMMA DLM_COLON DLM_DOT DLM_SM_COL DLM_AT DLM_TO INT_LITERAL FLOAT_LITERAL STRING_LITERAL NAME NEWLINE DEDENT INDENT KW_False KW_await KW_else KW_import KW_None KW_break KW_except KW_in KW_raise KW_True KW_class KW_finally KW_is KW_return KW_continue KW_for KW_lambda KW_tryas KW_def KW_from KW_nonlocal KW_while KW_assert KW_del KW_global KW_with KW_async KW_elif KW_if KW_yield OP_ATH_ADD OP_ATH_SUB OP_ATH_MUL OP_ATH_DIV OP_ATH_FDIV OP_ATH_MOD OP_ATH_POW OP_REL_EQ OP_REL_NEQ OP_REL_GT OP_REL_LT OP_REL_GTE OP_REL_LTE OP_LOG_AND OP_LOG_OR OP_LOG_NOT OP_BIT_AND OP_BIT_OR OP_BIT_XOR OP_BIT_NEG OP_BIT_LS OP_BIT_RS OP_ASN_ASN OP_ASN_ADD OP_ASN_SUB OP_ASN_MUL OP_ASN_DIV OP_ASN_FDIV OP_ASN_MOD OP_ASN_POW OP_ASN_AND OP_ASN_OR OP_ASN_XOR OP_ASN_LS OP_ASN_RS
 %token<info> ENDMARK 0
-%type<Node> for_expr l_primary list_expr args list_access function_call typedecl bitwise_operator file statements statement simple_stmts simple_stmt compound_stmt simple1 simple2 assignment return_stmt multi_targets_assgn augassign block class_def function_def is_arguments is_fn_expression params param_nd  param_no_default param annotation if_stmt elif_stmt else_block while_stmt for_stmt expressions expression disjunction conjunction inversion comparison  bitwise_xor bitwise_or bitwise_and shift_expr sum term factor power primary atom group string strings list
+%type<Node> for_expr l_primary args list_access function_call typedecl bitwise_operator file statements statement simple_stmts simple_stmt compound_stmt simple1 simple2 assignment return_stmt multi_targets_assgn augassign block class_def function_def is_arguments is_fn_expression params param_nd  param_no_default param annotation if_stmt elif_stmt else_block while_stmt for_stmt expressions expression disjunction conjunction inversion comparison  bitwise_xor bitwise_or bitwise_and shift_expr sum term factor power primary atom group string strings list
 
 %define parse.error custom
 %locations
@@ -222,14 +222,11 @@ args:
 
 list_access: NAME DLM_LFT_SQ expression DLM_RGT_SQ
 
-l_primary:  NAME DLM_DOT NAME 
-	| list_access DLM_DOT NAME
-	| NAME DLM_DOT list_access
+l_primary: NAME DLM_DOT NAME 
 	| list_access 
 	| atom
 
 primary: l_primary
-	| list_access DLM_DOT function_call
 	| NAME DLM_DOT function_call
 	| function_call
 
@@ -250,9 +247,7 @@ string: STRING_LITERAL
 strings: strings string
 	| string
 
-list_expr: expressions
-
-list: DLM_LFT_SQ list_expr DLM_RGT_SQ 
+list: DLM_LFT_SQ expressions DLM_RGT_SQ 
 
 
 
