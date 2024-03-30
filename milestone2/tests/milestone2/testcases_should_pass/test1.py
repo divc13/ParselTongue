@@ -1,17 +1,17 @@
+var3:int = 5
 var1: int = 3
 var2: int = 1
-var3:int = 5
 
-def func1() -> None:  #recursion
+def func1(var1:int, var2:int) -> None:  #recursion
+  # global removed
   var1 -= 1;
   var2 *= 2
-  var3 = 10
 
   if(var1 == 0):
     print(var2)
   if(var1):
     print("ieofem")
-    func1()
+    func1(var1, var2)
   
 if(var1 == 3):
   print(var1)
@@ -44,7 +44,7 @@ def main():
     if(b != 'd'):
       print("fjiefmk")
 
-  func1()
+  func1(3, 5)
   obj1:class1 = class1(3.00)
   obj1.add()
 
