@@ -9,8 +9,8 @@ def a() -> None:
 	return
 
 def change_global() -> None:
-	global var
-	global var2, var3, var4
+	# global var
+	# global var2, var3, var4
 	var = 5.5
 	var2 = False
 	var3 = "world"
@@ -30,8 +30,8 @@ def outer() -> None:
 	z: str = "abc"
 
 	def inner() -> None:
-		nonlocal x
-		nonlocal y, z
+		# nonlocal x
+		# nonlocal y, z
 		x = 10
 		y = [False]
 		z = 'idfje\

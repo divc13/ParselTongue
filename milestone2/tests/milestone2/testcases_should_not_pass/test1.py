@@ -11,7 +11,9 @@ var1: int = 10
 # func1: float = 23. # same function and var name
 
 def func1() -> None:
-    global var1     # changing the type of global var
+    # changing the type of global var
+    # global var1
+    
     var1: str = "hello"
     print(var1)
 

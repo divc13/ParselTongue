@@ -5,21 +5,18 @@ class class1:
     d:float
     ans:int
 
-    def __init__(self, var1:int, var2:float = 10.00E-1):
+    def __init__(self, var1:int, var2:float):
         self.c = var1
         self.d = var2
         # c = var1
         # d = var2
     
     def divide_(self) -> None:
-        ans = self.c // self.d
-        print(ans)
-
         self.ans = self.c // self.d
         print(self.ans)
 
 
-def divide_(var1:int, var2:float = 1.) -> None: # function name same as class method
+def divide_(var1:int, var2:float) -> None: # function name same as class method
     ans:int = var1 // var2
     print(ans)
     print(var1 // var2)
