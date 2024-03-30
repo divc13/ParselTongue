@@ -8,6 +8,9 @@ symbolTable *globTable = currTable;
 map<int, string> recordTypeMap;
 map<string, int> typeMap;
 int type_offset = 1;
+vector<int> in_loop(1, 0);
+int in_function = 0;
+int self_ind =  -1;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -64,6 +67,19 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 				int num;
 				for (num = 0; num < params -> size(); num++)
 				{
+					if (self_ind != -1)
+					{
+						if(num == self_ind && (*params)[num]->name == "self" && (*params)[num]->recordType == recordType::CLASS_SELF)
+						{
+							continue;
+						}
+						else if(! ((*params)[num]->name == "self" && (*params)[num]->recordType == recordType::CLASS_SELF))
+						{
+							match = false;
+							break;
+						}
+					}
+					if (name == "__init__") cout << params->size() << endl << ((table -> entries)[num]) -> name << endl;
 					if ((*params)[num] -> type != ((table -> entries)[num]) -> type)
 						match = false;
 
@@ -160,6 +176,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	int column = inputRecord -> column;
 	int __size = inputRecord -> size;
 	int recordType = inputRecord -> recordType;
+	// cout << name << " " << lineno << " " << column << " " << " " << type << " " << recordTypeMap[recordType] << " " << __size << endl; 
 	TreeNode *tempNode = new TreeNode(name, lineno, column);
 
 	if (recordType != recordType::TYPE_FUNCTION)
@@ -182,6 +199,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	else
 	{
+		// cout << name << " " << lineno << " " << column << " " << " " << type << " " << recordTypeMap[recordType] << " " << __size << endl; 
 		assert(funcTable);
 		vector<tableRecord*> params;
 		for (int i = 0; i < funcTable -> numParams; i++)
@@ -467,6 +485,7 @@ int handle_function_declaration(TreeNode* root)
 		else if ((currTable -> tableType == tableType::CLASS && (itr -> name).compare("self") == 0))
 		{
 			cntSelf++;
+			numParam++;
 			last_pos = index;
 		}
 
@@ -500,7 +519,7 @@ int handle_function_declaration(TreeNode* root)
 
 	free(record);
 	record = NULL;
-	
+
 	if (err < 0)
 		return err;
 
@@ -517,7 +536,40 @@ int handle_function_declaration(TreeNode* root)
 		return err;
 
 
+	in_loop.push_back(0);
+	in_function++;
+
 	return 0;
+}
+
+int fillTables(symbolTable* Table, symbolTable* parentTable)
+{
+	int err = 0;
+
+	for (int entry = 0, child = 0; entry < parentTable->currentIndex; entry++)
+	{
+		if(!((parentTable->entries)[entry] -> name == "self" && (parentTable->entries)[entry] -> recordType == recordType::CLASS_SELF))
+		{
+			if (child < (parentTable->childIndices).size() && parentTable->childIndices[child] == entry && !((parentTable->entries)[entry]->name == "__init__"))
+			{
+				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry] -> symTab);
+				// cout << (newTable->entries)[0] -> name << endl;
+				child++;
+				// cout << newTable->currentIndex << endl;
+			}
+			else if (!((parentTable->entries)[entry]->name == "__init__"))
+			{
+				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry]->symTab);
+			}
+		}
+		if (err < 0)
+		{
+			raise_error(ERR::IMPOSSIBLE, root);
+			return err;
+		}
+	}
+	return err;
+
 }
 
 // root is class def here
@@ -531,7 +583,7 @@ int handle_class_declaration(TreeNode* root)
 	}
 	
 	symbolTable* parent = globTable;
-	if((root -> children.size() > 2))
+	if ((root -> children.size() > 2))
 	{
 		// find parent first
 		node = (root -> children)[2];
@@ -573,6 +625,14 @@ int handle_class_declaration(TreeNode* root)
 	record = NULL;
 	if (err < 0)
 		return err;
+
+	
+	if (parent != globTable)
+	{
+		err = fillTables(currTable, parent);
+		if (err < 0)
+			return err;
+	}
 
 	return 0;
 }
@@ -790,6 +850,7 @@ int handle_in(TreeNode* root)
 		}
 	}
 
+	root -> dataType = left -> dataType;
 
 	return 0;
 
@@ -838,7 +899,8 @@ int post_handle_dot(TreeNode* root)
 {
 	assert((root->children).size() == 2);
 	root -> dataType = (root->children)[1]->dataType;
-	currTable = tempDotTable;
+	if(tempDotTable)
+		currTable = tempDotTable;
 	tempDotTable = NULL;
 	
 	return 0;
@@ -868,9 +930,19 @@ int pre_handle_dot(TreeNode* root)
 	}
 	
 	assert(classRecord);
-
+	// cout << currTable->name << endl << classRecord->symTab->name << endl << classRecord->symTab->parentSymtable->name << endl;
 	tempDotTable = currTable;
 	currTable = classRecord -> symTab;
+
+	// if ((root->children)[0] -> dataType == (root->children)[0] -> name)
+	// {
+	// 	(root->children)[0] -> type = "self";
+	// 	(root->children)[0] -> dataType = "self";
+	// 	return 0;
+	// }
+
+	(root->children)[0] -> type = "CLASS_OBJ";
+	(root->children)[0] -> dataType = classRecord -> type;
 
 	return 0;
 }
@@ -938,7 +1010,11 @@ int handle_operators(TreeNode* root)
 
 		if (category == "OP_ASSIGNMENT")
 		{
-
+			if (left -> type != "IDENTIFIER" && left -> name != "." && left -> name != ":")
+			{
+				raise_error(ERR::BAD_LVAL, left);
+				return -1;
+			}
 			root -> dataType = final;
 			return 0;
 		}
@@ -1040,14 +1116,26 @@ string handle_list_access(TreeNode* root)
 	assert(root -> type == "NON_TERMINAL");
 	assert((root -> children).size() == 4);
 
+	if((root->dataType).compare(0, 4, "list") == 0)
+		return root->dataType;
+
 	string final = isCompatible((root->children)[2]->dataType, "bool");
 	if (final.length() == 0)
 	{
-		raise_error(ERR::EXPECTED_INT, (root->children)[1]);
+		raise_error(ERR::EXPECTED_INT, (root->children)[2]);
 		return "";
 	}
-	string type = (root->children)[2] -> dataType;
-	root -> dataType = type;
+	string type = (root->children)[0] -> dataType;
+	if (type.compare(0, 4, "list") == 0)
+		root -> dataType = type.substr(5, type.length() - 6);
+	else if (type.compare(0, 3, "str") == 0)
+		root -> dataType = type;
+	else
+	{
+		raise_error(ERR::BAD_LIST, (root->children)[0]);
+		return "";
+	}
+	
 	return type;
 }
 
@@ -1062,11 +1150,20 @@ string handle_function_call(TreeNode* root)
 	{
 		TreeNode* node = ((root -> children)[2]->children)[i];
 		tableRecord* record = new tableRecord(node -> dataType, node -> dataType);
+		if(record->name == "self" && record -> recordType == recordType::CLASS_SELF)
+		{
+			self_ind = i;
+			continue;
+		}
 		params.push_back(record);
 	}
 
 	tableRecord* funcEntry = currTable -> lookup((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
 	if (tempDotTable) funcEntry = currTable -> lookup_table((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
+	// cout << (root -> children)[0] -> name << " " << currTable->parentSymtable->name << endl;
+	// if(tempDotTable)
+	// 	currTable = tempDotTable;
+	// tempDotTable = NULL;
 	for (auto &i: params)
 		free(i);
 		
@@ -1099,6 +1196,9 @@ int handle_identifier(TreeNode* root)
 {
 	tableRecord* entry = currTable -> lookup(root -> name);
 	if (tempDotTable) entry = currTable -> lookup_table(root -> name);
+	// if(tempDotTable)
+	// 	currTable = tempDotTable;
+	// tempDotTable = NULL;
 
 	if (!entry)
 	{
@@ -1127,6 +1227,11 @@ int generate_symtable(TreeNode *root)
 			return ret;
 	}
 
+	if ((root -> type).compare("NON_TERMINAL") == 0 && ((root -> name).compare("for_stmt") == 0 || (root -> name).compare("while_stmt") == 0))
+	{
+		in_loop.back()++;
+	}
+
 	if ((root -> name ).compare(".") == 0)
 	{
 		int ret = pre_handle_dot(root);
@@ -1147,6 +1252,26 @@ int generate_symtable(TreeNode *root)
 		int ret = generate_symtable(children[nchild]);
 		if (ret < 0)
 			return ret;
+	}
+
+	if ((root -> type).compare("NON_TERMINAL") == 0 && ((root -> name).compare("for_stmt") == 0 || (root -> name).compare("while_stmt") == 0))
+	{
+		if (in_loop.back() == 0)
+		{
+			raise_error(ERR::IMPOSSIBLE, root);
+			assert(false);
+			return -1;
+		}
+		in_loop.back()--;
+	}
+
+	if ((root -> type).compare("KEYWORD") == 0 && ((root -> name).compare("break") == 0 || (root -> name).compare("continue") == 0))
+	{
+		if (in_loop.back() == 0)
+		{
+			raise_error(ERR::LOOP, root);
+			return -1;
+		}
 	}
 
 	if ((root -> type).compare("STRING_LITERAL") == 0)
@@ -1193,7 +1318,7 @@ int generate_symtable(TreeNode *root)
 		return 0;
 	}
 
-	if (root->type == "KEYWORD" && (root->name).compare("return") == 0)
+	if (root->type == "NON_TERMINAL" && (root->name).compare("return_stmt") == 0)
 	{
 		int size = (root ->children).size();
 		assert(size <= 1);
@@ -1286,6 +1411,18 @@ int generate_symtable(TreeNode *root)
 		}
 		
 		currTable = currTable -> parentSymtable;
+		if (in_loop.back() > 0)
+		{
+			raise_error(ERR::IMPOSSIBLE, root);
+			assert (false);
+		}
+		in_loop.pop_back();
+		if (in_function == 0)
+		{
+			raise_error(ERR::IMPOSSIBLE, root);
+			assert (false);
+		}
+		in_function--;
 		return 0;
 	}
 

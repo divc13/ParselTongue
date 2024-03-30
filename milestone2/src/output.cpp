@@ -10,39 +10,39 @@ map<symbolTable*, int> visitedCSV;
 void print_name(ofstream &MD, string temp)
 {
 	size_t pos = 0;
-    while((pos = temp.find("\\\r\n", pos)) != string::npos)
+	while((pos = temp.find("\\\r\n", pos)) != string::npos)
 	{
-        temp.replace(pos, 4, "\\\\<br>");
+		temp.replace(pos, 4, "\\\\<br>");
 		pos++;
-    }
+	}
 
 	pos = 0;
-    while((pos = temp.find("\\\r", pos)) != string::npos)
+	while((pos = temp.find("\\\r", pos)) != string::npos)
 	{
-        temp.replace(pos, 3, "\\\\<br>");
+		temp.replace(pos, 3, "\\\\<br>");
 		pos++;
-    }
+	}
 
 	pos = 0;
-    while((pos = temp.find("\\\n", pos)) != string::npos)
+	while((pos = temp.find("\\\n", pos)) != string::npos)
 	{
-        temp.replace(pos, 3, "\\\\<br>");
+		temp.replace(pos, 3, "\\\\<br>");
 		pos++;
-    }
+	}
 
 	pos = 0;
-    while((pos = temp.find("\n", pos)) != string::npos)
+	while((pos = temp.find("\n", pos)) != string::npos)
 	{
-        temp.replace(pos, 2, "<br>");
+		temp.replace(pos, 2, "<br>");
 		pos++;
-    }
+	}
 
 	pos = 0;
-    while((pos = temp.find("_", pos)) != string::npos)
+	while((pos = temp.find("_", pos)) != string::npos)
 	{
-        temp.replace(pos, 1, "\\_");
+		temp.replace(pos, 1, "\\_");
 		pos+=2;
-    }
+	}
 
 	MD << temp;
 }
@@ -67,19 +67,19 @@ void tableRecord::dumpMD(ofstream &MD)
 void symbolTable::dumpMD(ofstream &MD)
 {
 	visitedMD[this] = 1;
-    MD << "\n<br /><br />\n<span style=\"font-size: 25px;\">__Table Name: ";
-    if (tableType == tableType::CLASS)
-        MD << "Class ";
-    if (tableType == tableType::FUNCTION)
-        MD << "Function ";
-    print_name(MD, name);
+	MD << "\n<br /><br />\n<span style=\"font-size: 25px;\">__Table Name: ";
+	if (tableType == tableType::CLASS)
+		MD << "Class ";
+	if (tableType == tableType::FUNCTION)
+		MD << "Function ";
+	print_name(MD, name);
 	MD << "__</span>\n";
 	if (parentSymtable)
 	{
 		MD << " \n<span style=\"font-size: 20px;\">__Parent Table: ";
 		print_name(MD, parentSymtable -> name);
-        MD << "__</span>";
-    }
+		MD << "__</span>";
+	}
 	MD << endl;
 
 	int index = 0;
@@ -509,7 +509,7 @@ void dumpAC(string file)
 	for (auto child : threeAC)
 	{
 
-		TAC << setw(16) << child.label << child.field_1;
+		TAC << setw(16) << left << child.label << child.field_1;
 		TAC << " " << child.field_2 << " " << child.field_3 << " " << child.field_4 << " " << child.field_5 << endl;
 	}
 	TAC.close();

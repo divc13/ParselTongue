@@ -1,1 +1,2 @@
-1 + 2
+b: str = b"hello"
+print(b[4])

@@ -30,6 +30,7 @@ void init_error()
 	ErrorMap[ERR::CANDIDATE]	 				=		"ambiguity found in call of overloaded ";
 	ErrorMap[ERR::RETURN_TYPE_MISMATCH]	 		=		"return type does not match the function definition ";
 	ErrorMap[ERR::NO_RET_TYPE]	 				=		"no return type specified for the function ";
+	ErrorMap[ERR::BAD_LVAL]	 					=		"value cannot be assigned to ";
 
 
 	// root- -> name not printed
@@ -45,6 +46,10 @@ void init_error()
 	ErrorMap[ERR::FUNC_OVERLOAD] 				=		"Function cannot be overloaded for the given types";
 	ErrorMap[ERR::OP_OVERLOAD] 					=		"Operator cannot be overloaded for the given types";
 	ErrorMap[ERR::EMPTY_LIST] 					=		"Empty lists are not supported";
+	ErrorMap[ERR::LOOP] 						=		"break and continue can only be used when inside a loop";
+	ErrorMap[ERR::IMPOSSIBLE] 					=		"you somehow achieved what I thought was impossible";
+	ErrorMap[ERR::RETURN_NO_FUNC] 				=		"return can only be used when inside the function and you are not in one";
+	ErrorMap[ERR::BAD_LIST] 					=		"cannot dereference an element of a variable which is not a list or a string";
 
 
 	// root- -> type printed

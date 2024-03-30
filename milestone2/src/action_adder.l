@@ -55,9 +55,21 @@ void action_printer(string builder)
 			itr++;
 		}
 		OUT << "});\n";
+		if (builder[0] == 'n')
+		{
+			OUT << "\t\t\t($$) -> lineno = ($1) -> lineno;\n";
+			OUT << "\t\t\t($$) -> column = ($1) -> column;\n";
+		}
+		else
+		{
+			OUT << "\t\t\t($$) -> lineno = ($1).lineno;\n";
+			OUT << "\t\t\t($$) -> column = ($1).colno;\n";
+		}
 	}
 	else 
+	{
 		OUT << "\t\t\tlog_reduce(__LINE__, {($$)->name});\n";
+	}
 	
 	OUT << "\t\t}\n\n";
 

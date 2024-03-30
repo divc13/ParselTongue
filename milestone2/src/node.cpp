@@ -21,6 +21,8 @@ set<string> SkipToken2({
 	"kwargs",
 	"expression",
 	"list_expr",
+	"l_primary",
+	"class_access",
 });
 
 // Non-Terminals to remove from parse tree to form AST
@@ -128,6 +130,8 @@ set<string> SkipToken1({
 	"elif",
 	"operand",
 	"param_default",
+	"l_primary",
+	"class_access",
 });
 
 TreeNode::node(string __name, int __lineno, int __column, string __type)
@@ -202,6 +206,17 @@ void SkipNode(TreeNode *root, int nchild)
 	return;
 }
 
+TreeNode* copyTree(TreeNode* root)
+{
+	TreeNode* newNode = new TreeNode(root->name, root->lineno, root->column, root->type);
+	for (auto child : root->children)
+	{
+		TreeNode* childNode = copyTree(child);
+		(newNode->children).push_back(childNode);
+	}
+	return newNode;
+}
+
 void handle_augAssign(TreeNode* child)
 {
 	int len = (child->name).length();
@@ -212,7 +227,7 @@ void handle_augAssign(TreeNode* child)
 
 	string newOpName = (child->name).substr(0, len - 1);
 	TreeNode* newOperator = new TreeNode(newOpName, child->lineno, child->column, opType[newOpName]);
-	TreeNode* newOperand = new TreeNode((child->children)[0]->name, (child->children)[0]->lineno, (child->children)[0]->column, (child->children)[0]->type);
+	TreeNode* newOperand = copyTree(node1);
 	
 	(newOperator -> children).push_back(newOperand);
 	(newOperator -> children).push_back((child->children)[1]);

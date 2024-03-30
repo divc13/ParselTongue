@@ -44,9 +44,11 @@ void print_note(int note, tableRecord* record)
 
 	if ( record->lineno <= 0 )
 		return;
+	if (note < NOTE::SHOW_TYPE)
+		cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << "Note: " << NoteMap[note] << CYAN << record->name << RESET;
+	else
+		cout << BLUE << "Note: " << NoteMap[note] << CYAN << record->name << RESET;
 
-	cout << BLUE << UNDERLINE << inputFile << ":" << record->lineno << ":" << record->column << ":" << RESET << " " << BLUE << "Note: " << NoteMap[note] << CYAN << record->name  << RESET << BLUE << " :" << RESET;
-	
 	cout << endl;
 	
 	if (note < NOTE::SHOW_TYPE)

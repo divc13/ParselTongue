@@ -110,7 +110,6 @@ int main(int argc, char **argv)
 	// 	root->make_dot(noExtentionOutputFile + "_ptree.dot");
 
 	parasiticRoot = root -> make_tree();
-	parasiticRoot -> genAC();
 
 	if (ptree_flag)
 		parasiticRoot->make_ptree_debug(noExtentionOutputFile + "_ptree.dot");
@@ -167,6 +166,8 @@ int main(int argc, char **argv)
 		globTable->dumpMD(MD);
 		MD.close();
 	}
+
+	parasiticRoot -> genAC();
 
 	if (tac_flag)
 	{

@@ -1,7 +1,7 @@
 class cl1:
 
     def __init__(self, name:str):
-        self.name = name;
+        self.name: str = name;
 
     def print(self) -> None:
         print(self.name)
@@ -35,8 +35,10 @@ def main():
     obj1.print()
 
     obj2:list[cl1] = create_objs()
-    obj2[0].print()
-    print(obj2[1].name)
+    a: cl1 = obj2[0]
+    b: cl1 = obj2[1]
+    a.print()
+    print(b.name)
 
 
     

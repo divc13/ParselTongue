@@ -27,7 +27,7 @@ def main():
     obj1: class1 = class1(5, 2)
     obj1.divide_();
 
-    divide_(5, 2);
+    divide_(5, 2.0);
 
     i:int
     for i in range(0, 2):
@@ -49,8 +49,9 @@ def main():
     if(0 < True):
         print("fie")
 
-    var1:int = (True + True) * True - False + 10.0
+    var1:int = (True + True) * True - False + 10
     print(var1)        
 
 if __name__ == "__main__":
   main()
+  

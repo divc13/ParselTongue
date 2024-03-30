@@ -29,7 +29,7 @@ enum ERR {
 	KEYWORD_DECL,
 	RETURN_TYPE_MISMATCH,
 	NO_RET_TYPE,
-
+	BAD_LVAL,
 
 	// root- -> name not printed
 	ERR_MIN1,
@@ -46,6 +46,10 @@ enum ERR {
 	FUNC_OVERLOAD,
 	OP_OVERLOAD,
 	EMPTY_LIST,
+	LOOP,
+	IMPOSSIBLE,
+	RETURN_NO_FUNC,
+	BAD_LIST,
 
 
 	// root- -> type printed
