@@ -11,7 +11,11 @@ def create_obj() -> cl1:
     return obj1
 
 def create_objs() -> list[cl1]:
-    x:list[cl1] = [cl1("fei"), cl1("ifej")]
+    obj1:cl1 = cl1("fhe");
+    obj2:cl1 = cl1("fjie")
+    
+    # x:list[cl1] = [cl1("fei"), cl1("ifej")]
+    x:list[cl1] = [obj1, obj2]
     return x
 
 def func1() -> None:

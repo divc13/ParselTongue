@@ -3,7 +3,12 @@ class class1:
     def __init__(self, value: int):
         self.value1:int = value
 
-x:list[class1] = [class1(1), class1(2), class1(3)]
+obj1:class1 = class1(1)
+obj2:class1 = class1(2)
+obj3:class1 = class1(3)
+
+# x:list[class1] = [class1(1), class1(2), class1(3)]
+x:list[class1] = [obj1, obj2, obj3]
 
 i:int
 for i in range(len(x)):

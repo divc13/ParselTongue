@@ -12,9 +12,6 @@ class class1:
         # d = var2
     
     def divide_(self) -> None:
-        ans = self.c // self.d
-        print(ans)
-
         self.ans = self.c // self.d
         print(self.ans)
 

@@ -26,7 +26,7 @@ class cl1:
     self.name:int = 5
   
   def func1(self) -> None:
-    global var1
+    # global var1
     var2: int = var1 + self.name
     print(var2)
 
