@@ -16,6 +16,7 @@ string MemRg = "";
 bool allocate = false;
 vector<string> tempExprs;
 string isReturn = "";
+vector<pair<string, string>> filler;
 
 string newLabel()
 {
@@ -58,6 +59,7 @@ void allocate_mem(string size)
 
 	inst.field_1 = "call";
 	inst.field_2 = "alloc_mem";
+	inst.field_3 = "1";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
@@ -72,6 +74,11 @@ void allocate_mem(string size)
 void Parasite::genAC()
 {
 
+	if (type == "NON_TERMINAL")
+	{
+		if (threeAC.size())
+			first = threeAC[threeAC.size() - 1].label;
+	}
 
 	if (type != "IDENTIFIER" && name == "file")
 	{
@@ -84,14 +91,6 @@ void Parasite::genAC()
 
 		*/
 
-		next = newLabel();
-		current = newLabel();
-
-		if (children[0] -> name == "statements")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
 
 		/* range (int x) */
 		
@@ -447,21 +446,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 2)
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-
-			children[1] -> next = next;
-			children[1] -> current = children[0] -> next;
-		}
-
-		else 
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
 	}
 
 
@@ -474,9 +458,6 @@ void Parasite::genAC()
 				| simple_stmts
 
 		*/
-
-		children[0] -> next = next;
-		children[0] -> current = newLabel();
 
 		/* nothing to do */
 
@@ -491,11 +472,6 @@ void Parasite::genAC()
 			simple_stmts: simple1 simple2 NEWLINE
 
 		*/
-
-		children[0] -> next = newLabel();
-		children[0] -> current = newLabel();
-		children[1] -> next = next;
-		children[1] -> current = children[0] -> next;
 	
 	}
 
@@ -509,19 +485,6 @@ void Parasite::genAC()
 				| simple1 DLM_SM_COL simple_stmt
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-		else
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;
-			children[2] -> current = children[0] -> next;
-		}
 
 	}
 
@@ -554,23 +517,6 @@ void Parasite::genAC()
 
 		*/
 
-		children[0] -> next = next;
-		children[0] -> current = newLabel();
-
-		if (children[0] -> name == "continue")
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-		}
-
-		if (children[0] -> name == "break")
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-		}
-
-
-
 	}
 
 
@@ -586,10 +532,6 @@ void Parasite::genAC()
 				| while_stmt
 
 		*/
-
-		children[0] -> next = next;
-		children[0] -> current = newLabel();
-
 	}
 
 
@@ -601,11 +543,6 @@ void Parasite::genAC()
 			typedecl: l_primary DLM_COLON expression
 
 		*/
-
-		children[0] -> next = newLabel();
-		children[0] -> current = newLabel();
-		children[2] -> next = next;
-		children[2] -> current = children[0] -> next;
 		
 	}
 
@@ -622,20 +559,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-		}
-
-		else
-		{
-			children[0] -> current = newLabel();
-			children[0] -> next = newLabel();
-			children[2] -> next = next;
-			children[2] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -648,11 +571,6 @@ void Parasite::genAC()
 				| l_primary OP_ASN_ASN multi_targets_assgn
 
 		*/
-
-		children[0] -> next = newLabel();
-		children[0] -> current = newLabel();
-		children[2] -> next = next;
-		children[2] -> current = children[0] -> next;
 
 	}
 
@@ -692,20 +610,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[1] -> next = next;
-			children[1] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -719,18 +623,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[1] -> next = next;
-			children[1] -> current = newLabel();
-		}
-
 	}
 
 
@@ -742,11 +634,6 @@ void Parasite::genAC()
 			class_def: KW_class NAME is_arguments DLM_COLON block
 
 		*/
-
-		children[2] -> next = newLabel();
-		children[2] -> current = newLabel();
-		children[4] -> next = next;
-		children[4] -> current = children[2] -> next;
 
 		tableRecord* entry = table -> lookup(children[1] -> name, recordType::TYPE_CLASS);
 		assert (entry);
@@ -764,13 +651,6 @@ void Parasite::genAC()
 			function_def: KW_def NAME DLM_LFT_PRN params DLM_RGT_PRN is_fn_expression DLM_COLON block
 
 		*/
-
-		children[3] -> next = newLabel();
-		children[3] -> current = newLabel();
-		children[5] -> next = newLabel();
-		children[5] -> current = children[3] -> next;
-		children[7] -> next = next;
-		children[7] -> current = children[5] -> next;
 
 		/* class constructors are not an issue here */
 		string funcName = tableHash(table) + children[1] -> name + "%@";
@@ -806,12 +686,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 3)
-		{
-			children[1] -> next = next;
-			children[1] -> current = newLabel();
-		}
-
 	}
 
 
@@ -825,12 +699,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 2)
-		{
-			children[1] -> next = next;
-			children[1] -> current = newLabel();
-		}
-
 	}
 
 
@@ -843,15 +711,6 @@ void Parasite::genAC()
 				| param param_nd 
 
 		*/
-
-		if (children.size() == 2)
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[1] -> next = next;
-			children[1] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -866,14 +725,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 2)
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[1] -> next = next;
-			children[1] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -885,9 +736,6 @@ void Parasite::genAC()
 			param_no_default: DLM_COMMA param 
 
 		*/
-
-		children[1] -> next = next;
-		children[1] -> current = newLabel();
 	}
 
 
@@ -901,12 +749,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children[0] -> name == "annotation")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
 	}
 
 
@@ -918,9 +760,6 @@ void Parasite::genAC()
 			annotation: NAME DLM_COLON expression 
 
 		*/
-
-		children[2] -> next = next;
-		children[2] -> current = newLabel();
 
 	}
 
@@ -935,28 +774,6 @@ void Parasite::genAC()
 				| KW_if expression DLM_COLON block else_block 
 
 		*/
-
-		if (children.size() == 4)
-		{
-			children[1] -> trueL = newLabel();
-			children[1] -> falseL = next;
-			children[1] -> current = newLabel();
-			children[3] -> next = next;
-			children[3] -> current = children[1] -> trueL;
-		}
-
-		else
-		{
-			children[1] -> trueL = newLabel(); 
-			children[1] -> falseL = newLabel();
-			children[1] -> current = newLabel();
-			children[3] -> next = next; 
-			children[3] -> current = children[1] -> trueL; 
-			children[4] -> next = next; 
-			children[4] -> current = children[1] -> falseL; 
-		}
-
-
 	}
 
 
@@ -970,26 +787,6 @@ void Parasite::genAC()
 				| KW_elif expression DLM_COLON block else_block 
 
 		*/
-
-		if (children.size() == 4)
-		{
-			children[1] -> trueL = newLabel();
-			children[1] -> falseL = next;
-			children[1] -> current = newLabel();
-			children[3] -> next = next;
-			children[3] -> current = children[1] -> trueL;
-		}
-
-		else
-		{
-			children[1] -> trueL = newLabel(); 
-			children[1] -> falseL = newLabel();
-			children[1] -> current = newLabel();
-			children[3] -> next = next; 
-			children[3] -> current = children[1] -> trueL; 
-			children[4] -> next = next; 
-			children[4] -> current = children[1] -> falseL; 
-		}
 	}
 
 
@@ -1001,9 +798,6 @@ void Parasite::genAC()
 			else_block: KW_else DLM_COLON block 
 
 		*/
-
-		children[2] -> next = next;
-		children[2] -> current = newLabel();
 
 	}
 
@@ -1018,27 +812,7 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 4)
-		{
-			children[1] -> trueL = newLabel();
-			children[1] -> falseL = next;
-			children[1] -> current = newLabel();
-			children[3] -> next = next;
-			children[3] -> current = children[1] -> trueL;
-		}
-
-		else
-		{
-			children[1] -> trueL = newLabel(); 
-			children[1] -> falseL = newLabel();
-			children[1] -> current = newLabel();
-			children[3] -> next = next; 
-			children[3] -> current = children[1] -> trueL; 
-			children[4] -> next = next; 
-			children[4] -> current = children[1] -> falseL; 
-		}
-
-		labelStack.push({current, next});
+		// labelStack.push({current, next});
 
 	}
 
@@ -1053,27 +827,7 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 4)
-		{
-			children[1] -> trueL = newLabel();
-			children[1] -> falseL = next;
-			children[1] -> current = newLabel();
-			children[3] -> next = next;
-			children[3] -> current = children[1] -> trueL;
-		}
-
-		else
-		{
-			children[1] -> trueL = newLabel(); 
-			children[1] -> falseL = newLabel();
-			children[1] -> current = newLabel();
-			children[3] -> next = next; 
-			children[3] -> current = children[1] -> trueL; 
-			children[4] -> next = next; 
-			children[4] -> current = children[1] -> falseL; 
-		}
-
-		labelStack.push({current, next});
+		// labelStack.push({current, next});
 		
 	}
 
@@ -1083,11 +837,6 @@ void Parasite::genAC()
 		/*
 			for_expr: l_primary KW_in expression
 		*/
-
-		children[0] -> next = newLabel();
-		children[0] -> current = newLabel();
-		children[2] -> next = next;
-		children[2] -> current = children[0] -> next;
 
 	}
 
@@ -1103,27 +852,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		if (children.size() == 2)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		if (children.size() == 3)
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
-
 	}
 
 
@@ -1133,10 +861,6 @@ void Parasite::genAC()
 		/*
 			expression: disjunction             
 		*/
-
-
-		children[0] -> next = next;
-		children[0] -> current = newLabel();
 	}
 
 
@@ -1149,21 +873,6 @@ void Parasite::genAC()
 				| disjunction OP_LOG_OR conjunction
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
 
 	}
 
@@ -1178,20 +887,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -1205,20 +900,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[1] -> next = next;		
-			children[1] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -1231,21 +912,6 @@ void Parasite::genAC()
 				| comparison bitwise_operator bitwise_or
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -1280,21 +946,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
-
 	}
 
 
@@ -1308,20 +959,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -1334,20 +971,6 @@ void Parasite::genAC()
 				| shift_expr
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
 	}
 
 
@@ -1361,20 +984,6 @@ void Parasite::genAC()
 				| sum
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
 	}
 
 
@@ -1388,20 +997,6 @@ void Parasite::genAC()
 				| term
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
 	}
 
 
@@ -1417,20 +1012,6 @@ void Parasite::genAC()
 				| factor
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
 	}
 
 
@@ -1445,21 +1026,6 @@ void Parasite::genAC()
 				| power
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[1] -> next = next;		
-			children[1] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -1472,21 +1038,6 @@ void Parasite::genAC()
 				| primary
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else 
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[2] -> next = next;		
-			children[2] -> current = children[0] -> next;
-		}
-
 	}
 
 
@@ -1496,9 +1047,6 @@ void Parasite::genAC()
 		/*
 			function_call: NAME DLM_LFT_PRN args DLM_RGT_PRN
 		*/
-
-		children[2] -> next = next;
-		children[2] -> current = newLabel();
 
 		int nparams = ((host -> children)[2] -> children).size();
 		vector<tableRecord*> params;
@@ -1561,7 +1109,8 @@ void Parasite::genAC()
 
 		inst.field_1 = "call";
 		inst.field_2 = funcName;
-		inst.label = current;
+		inst.field_3 = to_string(nparams);
+		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		if(local_size)
@@ -1584,12 +1133,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
 	}
 
 
@@ -1601,9 +1144,6 @@ void Parasite::genAC()
 			list_access: NAME DLM_LFT_SQ expression DLM_RGT_SQ
 
 		*/
-
-		children[2] -> next = next;
-		children[2] -> current = newLabel();
 	}
 
 
@@ -1617,19 +1157,6 @@ void Parasite::genAC()
 				| atom
 
 		*/
-
-		if (children[0] -> name == "list_access")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		if (children[0] -> name == "atom")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
 	}
 
 
@@ -1643,20 +1170,6 @@ void Parasite::genAC()
 				| function_call
 
 		*/
-
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		else
-		{
-
-			children[2] -> next = next;
-			children[2] -> current = newLabel();
-
-		} 
 
 	}
 
@@ -1678,24 +1191,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children[0] -> name == "group")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		if (children[0] -> name == "list")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		if (children[0] -> name == "strings")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
 	}
 
 
@@ -1708,12 +1203,6 @@ void Parasite::genAC()
 				| DLM_LFT_PRN DLM_RGT_PRN
 
 		*/
-
-		if (children.size() == 3)
-		{
-			children[1] -> next = next;
-			children[1] -> current = newLabel();
-		}
 
 	}
 
@@ -1740,20 +1229,6 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
-
-		if (children.size() == 2)
-		{
-			children[0] -> next = newLabel();
-			children[0] -> current = newLabel();
-			children[1] -> next = next;
-			children[1] -> current = children[0] -> next;
-		}
-
 	}
 
 	if (type != "IDENTIFIER" && name == "list")
@@ -1765,30 +1240,26 @@ void Parasite::genAC()
 
 		*/
 
-		children[2] -> next = next;
-		children[2] -> current = newLabel();
-
 		allocate = true;
 
 	}
 
 
 
-
-
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 
-	// cout << name << endl;
+	cout << name << endl;
 	for (auto &i : children)
 	{	
-		// cout << "children : " << i -> name << endl;	
+		cout << "children : " << i -> name << endl;	
 		i -> genAC();
 		
 	}
-	// cout << "return " << name << endl;
+
+	cout << "return " << name << endl;
 	
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
@@ -1908,7 +1379,7 @@ void Parasite::genAC()
 			code inst;
 			inst.field_1 = "goto";
 			inst.field_2 = (labelStack.top()).first;
-			inst.label = children[0] -> current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -1919,7 +1390,7 @@ void Parasite::genAC()
 			inst.field_1 = "goto";
 			inst.field_2 = (labelStack.top()).second;
 			// labelStack.pop();
-			inst.label = children[0] -> current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2263,9 +1734,10 @@ void Parasite::genAC()
 
 		code inst;
 		int loc = -1;
+		string label = newLabel();
 		for (int i = 0; i < threeAC.size(); i++)
 		{
-			if (threeAC[i].label == children[3]->current)
+			if (threeAC[i].label == children[3]->first)
 			{
 				loc = i;
 				break;
@@ -2277,18 +1749,21 @@ void Parasite::genAC()
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = children[3] -> next;
-		inst.label = current;
-		threeAC.insert(threeAC.begin() + loc, inst);
+		inst.field_4 = "";
+		inst.label = label;
+		threeAC.insert(threeAC.begin() + loc + 1, inst);
+
+		filler.push_back({label, children[3]->last});
 
 
 		if (children.size() == 5)
 		{
 
 			loc = -1;
+			label = newLabel();
 			for (int i = 0; i < threeAC.size(); i++)
 			{
-				if (threeAC[i].label == children[4]->current)
+				if (threeAC[i].label == children[4]->first)
 				{
 					loc = i;
 					break;
@@ -2300,10 +1775,11 @@ void Parasite::genAC()
 			inst.field_1 = "if";
 			inst.field_2 = children[1] -> tmp;
 			inst.field_3 = "goto";
-			inst.field_4 = children[4] -> next;
-			inst.label = newLabel();
+			inst.field_4 = "";
+			inst.label = label;
 
-			threeAC.insert(threeAC.begin() + loc, inst);
+			threeAC.insert(threeAC.begin() + loc + 1, inst);
+			filler.push_back({label, children[4]->last});
 		}
 		
 	}
@@ -2322,9 +1798,10 @@ void Parasite::genAC()
 
 		code inst;
 		int loc = -1;
+		string label = newLabel();
 		for (int i = 0; i < threeAC.size(); i++)
 		{
-			if (threeAC[i].label == children[3]->current)
+			if (threeAC[i].label == children[3]->first)
 			{
 				loc = i;
 				break;
@@ -2336,18 +1813,21 @@ void Parasite::genAC()
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = children[3] -> next;
-		inst.label = current;
-		threeAC.insert(threeAC.begin() + loc, inst);
+		inst.field_4 = "";
+		inst.label = label;
+		threeAC.insert(threeAC.begin() + loc + 1, inst);
+
+		filler.push_back({label, children[3]->last});
 
 
 		if (children.size() == 5)
 		{
 
 			loc = -1;
+			label = newLabel();
 			for (int i = 0; i < threeAC.size(); i++)
 			{
-				if (threeAC[i].label == children[4]->current)
+				if (threeAC[i].label == children[4]->first)
 				{
 					loc = i;
 					break;
@@ -2359,10 +1839,11 @@ void Parasite::genAC()
 			inst.field_1 = "if";
 			inst.field_2 = children[1] -> tmp;
 			inst.field_3 = "goto";
-			inst.field_4 = children[4] -> next;
-			inst.label = newLabel();
+			inst.field_4 = "";
+			inst.label = label;
 
-			threeAC.insert(threeAC.begin() + loc, inst);
+			threeAC.insert(threeAC.begin() + loc + 1, inst);
+			filler.push_back({label, children[4]->last});
 		}
 
 	}
@@ -2394,48 +1875,51 @@ void Parasite::genAC()
 
 		code inst;
 		int loc = -1;
+		int loc_2 = -1;
+		int loc_3 = -1;
+		string label = newLabel();
+		string const_label = label;
 		for (int i = 0; i < threeAC.size(); i++)
 		{
-			if (threeAC[i].label == children[3]->current)
+			if (threeAC[i].label == children[3]->first)
 			{
 				loc = i;
-				break;
+			}
+
+			if (threeAC[i].label == children[1]->first)
+			{
+				loc_2 = i;
+			}
+
+			if (threeAC[i].label == children[3]->last)
+			{
+				loc_3 = i;
 			}
 		}
 
 		assert (loc != -1);
+		assert (loc_2 != -1);
+		assert (loc_3 != -1);
 
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = children[3] -> next;
-		inst.label = current;
-		threeAC.insert(threeAC.begin() + loc, inst);
+		inst.field_4 = "";
+		inst.label = const_label;
+		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
+		string t2 = threeAC[loc_2 + 1].label;
+		label = newLabel();
 
-		if (children.size() == 5)
-		{
+		inst.field_1 = "goto";
+		inst.field_2 = t2;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = label;
+		threeAC.insert(threeAC.begin() + loc_3 + 1, inst);
 
-			loc = -1;
-			for (int i = 0; i < threeAC.size(); i++)
-			{
-				if (threeAC[i].label == children[4]->current)
-				{
-					loc = i;
-					break;
-				}
-			}
-
-			assert (loc != -1);
-
-			inst.field_1 = "if";
-			inst.field_2 = children[1] -> tmp;
-			inst.field_3 = "goto";
-			inst.field_4 = children[1] -> current;
-			inst.label = newLabel();
-
-			threeAC.insert(threeAC.begin() + loc, inst);
-		}
+		filler.push_back({const_label, label});
 
 	}
 
@@ -2452,48 +1936,51 @@ void Parasite::genAC()
 
 		code inst;
 		int loc = -1;
+		int loc_2 = -1;
+		int loc_3 = -1;
+		string label = newLabel();
+		string const_label = label;
 		for (int i = 0; i < threeAC.size(); i++)
 		{
-			if (threeAC[i].label == children[3]->current)
+			if (threeAC[i].label == children[3]->first)
 			{
 				loc = i;
-				break;
+			}
+
+			if (threeAC[i].label == children[1]->first)
+			{
+				loc_2 = i;
+			}
+
+			if (threeAC[i].label == children[3]->last)
+			{
+				loc_3 = i;
 			}
 		}
 
 		assert (loc != -1);
+		assert (loc_2 != -1);
+		assert (loc_3 != -1);
 
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = children[3] -> next;
-		inst.label = current;
-		threeAC.insert(threeAC.begin() + loc, inst);
+		inst.field_4 = "";
+		inst.label = const_label;
+		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
+		string t2 = threeAC[loc_2 + 1].label;
+		label = newLabel();
 
-		if (children.size() == 5)
-		{
+		inst.field_1 = "goto";
+		inst.field_2 = t2;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = label;
+		threeAC.insert(threeAC.begin() + loc_3 + 1, inst);
 
-			loc = -1;
-			for (int i = 0; i < threeAC.size(); i++)
-			{
-				if (threeAC[i].label == children[4]->current)
-				{
-					loc = i;
-					break;
-				}
-			}
-
-			assert (loc != -1);
-
-			inst.field_1 = "if";
-			inst.field_2 = children[1] -> tmp;
-			inst.field_3 = "goto";
-			inst.field_4 = children[1] -> current;
-			inst.label = newLabel();
-
-			threeAC.insert(threeAC.begin() + loc, inst);
-		}
+		filler.push_back({const_label, label});
 
 	}
 
@@ -2524,7 +2011,7 @@ void Parasite::genAC()
 		inst.field_3 = t3;
 		inst.field_4 = "+";
 		inst.field_5 = "1";
-		inst.label = current;
+		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		inst.field_1 = t1;
@@ -2538,7 +2025,7 @@ void Parasite::genAC()
 		inst.field_3 = t1;
 		inst.field_4 = "*";
 		inst.field_5 = "8";
-		inst.label = current;
+		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		inst.field_1 = children[0] -> tmp;
@@ -2627,7 +2114,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2659,7 +2146,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2689,7 +2176,7 @@ void Parasite::genAC()
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> name;
 			inst.field_4 = children[1] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2720,7 +2207,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2776,7 +2263,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2808,7 +2295,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2841,7 +2328,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2875,7 +2362,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2909,7 +2396,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 	}
@@ -2944,7 +2431,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -2976,7 +2463,7 @@ void Parasite::genAC()
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> name;
 			inst.field_4 = children[1] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -3010,7 +2497,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -3072,7 +2559,7 @@ void Parasite::genAC()
 			inst.field_3 = to_string(size);
 			inst.field_4 = "*";
 			inst.field_5 = children[2] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 			
 			tmp = "*(" + mangle(children[0] -> name) + " + " + tmpry + ")";
@@ -3260,7 +2747,7 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = "+";
 			inst.field_5 = children[1] -> tmp;
-			inst.label = current;
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
 
@@ -3317,6 +2804,11 @@ void Parasite::genAC()
 
 	}
 
+	if (type == "NON_TERMINAL")
+	{
+		last = threeAC[threeAC.size() - 1].label;
+	}
+
 }
 
 /* 
@@ -3328,10 +2820,43 @@ NEW VALUE IS NOW BEING USED IN ALL CASES, HOPING TO REWRITE ALL VALUES AFTER THE
 
 */
 
+
+void fillCode()
+{
+	for (int index = 0; index < filler.size(); index++)
+	{
+		int entry1 = -1, entry2 = -1;
+		for (int i = 0; i < threeAC.size(); i++)
+		{
+			if(entry1 < 0 && threeAC[i].label == filler[index].first)
+			{
+				entry1 = i;
+			}
+			if(entry2 < 0 && threeAC[i].label == filler[index].second)
+			{
+				entry2 = i + 1;
+			}
+		}
+
+		assert(entry1 < 0);
+		assert(entry2 < 0);
+		
+		if	(entry2 == threeAC.size())
+			threeAC[entry1].field_4 = "END";
+		else
+			threeAC[entry1].field_4 = threeAC[entry2].label;		
+	}
+
+	return;
+}
+
 void Parasite::genCode()
 {
 	map<string, string> labelMap;
+
 	genAC();
+	// fillCode();
+
 	for (int i=0; i<threeAC.size(); i++)
 	{
 		labelMap[threeAC[i].label] = to_string(i + 1);

@@ -6,10 +6,8 @@ struct node;
 
 typedef struct parasite{
 
-	string trueL = "";
-	string falseL = "";
-	string next = "";
-	string current = "";
+	string first = "";
+	string last = "";
 	string name = "";
 	string type = "";
 	string tmp = "";
