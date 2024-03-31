@@ -274,7 +274,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		lenTable -> numParams = 1;
 		lenTable -> tableType = tableType::FUNCTION;
 		tableRecord* lenParam = new tableRecord("#len", list_type, SIZE_PTR);
-		tableRecord* lenFunc = new tableRecord("len", "int", SIZE_PTR, 0, 0, recordType::TYPE_FUNCTION);
+		tableRecord* lenFunc = new tableRecord("len", "int", 0, 0, 0, recordType::TYPE_FUNCTION);
 		lenTable -> insert(lenParam);
 		globTable -> insert(lenFunc, lenTable);
 

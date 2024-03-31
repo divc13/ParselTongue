@@ -171,7 +171,7 @@ void initTypes()
 	symbolTable* print_int = new symbolTable("print", globTable);
 	print_int -> numParams = 1;
 	print_int -> tableType = tableType::FUNCTION;
-	tempRecord = new tableRecord("print", "None", SIZE_INT, 0, 0, recordType::TYPE_FUNCTION);
+	tempRecord = new tableRecord("print", "None", 0, 0, 0, recordType::TYPE_FUNCTION);
 	tempRecord_int -> recordType = recordType::VARIABLE;
 	print_int->insert(tempRecord_int);
 	globTable -> insert(tempRecord, print_int);
@@ -179,7 +179,6 @@ void initTypes()
 	symbolTable* print_float = new symbolTable("print", globTable);
 	print_float -> numParams = 1;
 	print_float -> tableType = tableType::FUNCTION;
-	tempRecord -> size = SIZE_FLOAT;
 	tempRecord_float -> recordType = recordType::VARIABLE;
 	print_float -> insert(tempRecord_float);
 	globTable -> insert(tempRecord, print_float);
@@ -187,7 +186,6 @@ void initTypes()
 	symbolTable* print_bool = new symbolTable("print", globTable);
 	print_bool -> numParams = 1;
 	print_bool -> tableType = tableType::FUNCTION;
-	tempRecord -> size = SIZE_BOOL;
 	tempRecord_bool -> recordType = recordType::VARIABLE;
 	print_bool -> insert(tempRecord_bool);
 	globTable -> insert(tempRecord, print_bool);
@@ -195,7 +193,6 @@ void initTypes()
 	symbolTable* print_str = new symbolTable("print", globTable);
 	print_str -> numParams = 1;
 	print_str -> tableType = tableType::FUNCTION;
-	tempRecord -> size = SIZE_PTR;
 	tempRecord_str -> recordType = recordType::VARIABLE;
 	print_str -> insert(tempRecord_str);
 	globTable -> insert(tempRecord, print_str);
@@ -235,7 +232,6 @@ void initTypes()
 
 	tempRecord -> name = "range";
 	tempRecord -> type = "list[int]";
-	tempRecord -> size = SIZE_INT;
 	tempRecord_int -> type = "int";
 
 	symbolTable* range_two_args = new symbolTable("range", globTable);
@@ -255,7 +251,6 @@ void initTypes()
 
 	tempRecord -> name = "len";
 	tempRecord -> type = "int";
-	tempRecord -> size = SIZE_INT;
 	tempRecord_str -> type = "str";
 
 	symbolTable* lenTable = new symbolTable("len", globTable);

@@ -66,7 +66,7 @@ void allocate_mem(string size)
 	MemRg = newTmp();
 	inst.field_1 = MemRg;
 	inst.field_2 = "=";
-	inst.field_3 = "#returnVal";
+	inst.field_3 = "popparam";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 }
@@ -1047,79 +1047,6 @@ void Parasite::genAC()
 		/*
 			function_call: NAME DLM_LFT_PRN args DLM_RGT_PRN
 		*/
-
-		int nparams = ((host -> children)[2] -> children).size();
-		vector<tableRecord*> params;
-
-		code inst;
-
-		if (dotRecord)
-		{
-			params.push_back(dotRecord);
-			inst.field_1 = "pushparam";
-			inst.field_2 = "self";
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-			dotRecord = NULL;
-		}
-
-		for(int i = 0; i < nparams; i++)
-		{
-			TreeNode* node = ((host -> children)[2] -> children)[i];
-			tableRecord* record = new tableRecord(node -> name, node -> dataType);
-			params.push_back(record);
-
-			inst.field_1 = "pushparam";
-			inst.field_2 = (children[2] -> children)[i] -> tmp;
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-		}
-
-
-		tableRecord* funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
-		assert (funcEntry);
-		for (auto &i: params)
-			free(i);
-		
-		int local_size = funcEntry -> symTab -> size;
-
-		if(local_size)
-		{
-			inst.field_1 = "shift_sp";
-			inst.field_2 = to_string(local_size * -1);
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-		}
-
-		string funcName = tableHash(table);
-
-		if (dotTable)
-		{
-			funcName = tableHash(dotTable);
-			dotTable = NULL;
-		}
-
-		funcName += children[0] -> name + "%@";
-
-		symbolTable* funcTable = funcEntry -> symTab;
-		for (int i = 0; i < nparams; i++)
-		{
-			funcName += (funcTable -> entries)[i] -> type + "%@";
-		}
-
-		inst.field_1 = "call";
-		inst.field_2 = funcName;
-		inst.field_3 = to_string(nparams);
-		inst.label = newLabel();
-		threeAC.push_back(inst);
-
-		if(local_size)
-		{
-			inst.field_1 = "shift_sp";
-			inst.field_2 = to_string(local_size);
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-		}
 	}
 
 
@@ -1372,6 +1299,11 @@ void Parasite::genAC()
 				| KW_continue 
 
 		*/
+
+		if (children[0] -> name == "expressions")
+		{
+			tempExprs.clear();
+		}
 
 		if (children[0] -> name == "continue")
 		{
@@ -2066,10 +1998,11 @@ void Parasite::genAC()
 
 		*/
 
-		if (allocate)
-		{
-			tempExprs.insert(tempExprs.begin(), children[0] -> tmp);
-		}
+
+		tempExprs.insert(tempExprs.begin(), children[0] -> tmp);
+
+
+
 
 		/* nothing to do */
 
@@ -2513,8 +2446,82 @@ void Parasite::genAC()
 
 		*/
 
-		tmp = newTmp();
+		int nparams = tempExprs.size();
+		vector<tableRecord*> params;
+
 		code inst;
+
+		if (dotRecord)
+		{
+			params.push_back(dotRecord);
+			inst.field_1 = "pushparam";
+			inst.field_2 = "self";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+			dotRecord = NULL;
+		}
+
+		for(int i = 0; i < nparams; i++)
+		{
+			TreeNode* node = ((host -> children)[2] -> children)[i];
+			tableRecord* record = new tableRecord(node -> name, node -> dataType);
+			params.push_back(record);
+
+			inst.field_1 = "pushparam";
+			inst.field_2 = tempExprs[i];
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
+
+		tempExprs.clear();
+
+
+		tableRecord* funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+		assert (funcEntry);
+		for (auto &i: params)
+			free(i);
+		
+		int local_size = funcEntry -> symTab -> size;
+
+		if(local_size)
+		{
+			inst.field_1 = "shift_sp";
+			inst.field_2 = to_string(local_size * -1);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
+
+		string funcName = tableHash(table);
+
+		if (dotTable)
+		{
+			funcName = tableHash(dotTable);
+			dotTable = NULL;
+		}
+
+		funcName += children[0] -> name + "%@";
+
+		symbolTable* funcTable = funcEntry -> symTab;
+		for (int i = 0; i < nparams; i++)
+		{
+			funcName += (funcTable -> entries)[i] -> type + "%@";
+		}
+
+		inst.field_1 = "call";
+		inst.field_2 = funcName;
+		inst.field_3 = to_string(nparams);
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		if(local_size)
+		{
+			inst.field_1 = "shift_sp";
+			inst.field_2 = to_string(local_size);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
+
+		tmp = newTmp();
 		inst.field_1 = tmp;
 		inst.field_2 = "=";
 		inst.field_3 = "popparam";
@@ -2531,6 +2538,11 @@ void Parasite::genAC()
 				| expressions
 
 		*/
+
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp;
+		}
 
 		/* do nothing */
 	}
