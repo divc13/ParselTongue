@@ -328,7 +328,6 @@ void generateAST(TreeNode *root, int flag)
 			}
 		}
 
-		cout << root -> name << endl;
 		generateAST(child, flag);
 		nchild++;
 	}

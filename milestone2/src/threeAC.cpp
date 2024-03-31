@@ -1,6 +1,7 @@
 #include "include/threeAC.hpp"
 
 extern symbolTable* globTable;
+extern map<string, int> typeMap;
 
 int label = 0;
 int tmp = 0;
@@ -14,8 +15,6 @@ map <string, string> Temporaries;
 string MemRg = "";
 bool allocate = false;
 vector<string> tempExprs;
-bool ListStore = false;
-vector<string> list_storage;
 
 string newLabel()
 {
@@ -107,7 +106,16 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		allocate_mem(val);
+		string tmpry = newTmp();
+		inst.field_1 = tmpry;
+		inst.field_2 = "=";
+		inst.field_3 = val;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		allocate_mem(tmpry);
 
 		string l1 = newLabel();
 		string t1 = newTmp();
@@ -116,9 +124,17 @@ void Parasite::genAC()
 		string t4 = newTmp();
 		t1 = MemRg;
 
+		inst.field_1 = "*(" + t1 + ")";
+		inst.field_2 = "=";
+		inst.field_3 = val;
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = t2;
 		inst.field_2 = "=";
-		inst.field_3 = "0";
+		inst.field_3 = "1";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
@@ -152,7 +168,7 @@ void Parasite::genAC()
 		inst.field_2 = "=";
 		inst.field_3 = t2;
 		inst.field_4 = "<";
-		inst.field_5 = val;
+		inst.field_5 = tmpry;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -192,6 +208,8 @@ void Parasite::genAC()
 		string val1 = newTmp();
 		string val2 = newTmp();
 		string val3 = newTmp();
+		string tmpry_2 = newTmp();
+		string tmpry_3 = newTmp();
 
 		inst.field_1 = "pop_param";
 		inst.field_2 = val1;
@@ -217,7 +235,13 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		allocate_mem(val3);
+		inst.field_1 = tmpry_2;
+		inst.field_2 = "=";
+		inst.field_3 = val3;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 
 		string l2 = newLabel();
 		string t5 = newTmp();
@@ -225,11 +249,21 @@ void Parasite::genAC()
 		string t7 = newTmp();
 		string t8 = newTmp();
 		string t9 = newTmp();
-		t1 = MemRg;
+
+		allocate_mem(tmpry_2);
+		t5 = MemRg;
 
 		inst.field_1 = t6;
 		inst.field_2 = "=";
 		inst.field_3 = val1;
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "*(" + t5 +  ")";
+		inst.field_2 = "=";
+		inst.field_3 = val3;
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
@@ -243,9 +277,17 @@ void Parasite::genAC()
 		inst.label = l2;
 		threeAC.push_back(inst);
 
-		inst.field_1 = t8;
+		inst.field_1 = tmpry_3;
 		inst.field_2 = "=";
 		inst.field_3 = t9;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = l2;
+		threeAC.push_back(inst);
+
+		inst.field_1 = t8;
+		inst.field_2 = "=";
+		inst.field_3 = tmpry_3;
 		inst.field_4 = "*";
 		inst.field_5 = "8";
 		inst.label = newLabel();
@@ -298,6 +340,98 @@ void Parasite::genAC()
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
+
+
+		/* len (str) */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "len%@str%@";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string val7 = newTmp();
+		string val4 = newTmp();
+
+		inst.field_1 = "pop_param";
+		inst.field_2 = val7;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = val4;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + val7 + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = val4;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		for(auto i: typeMap)
+		{
+			if((i.first).compare(0, 4, "list") == 0)
+			{
+				string type = i.first;
+
+				inst.field_1 = "begin_function";
+				inst.field_2 = tableHash(globTable) + "len%@" + type + "%@";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				string val5 = newTmp();
+				string val6 = newTmp();
+
+				inst.field_1 = "pop_param";
+				inst.field_2 = val5;
+				inst.field_3 = "";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				inst.field_1 = val6;
+				inst.field_2 = "=";
+				inst.field_3 = "*(" + val5 + ")";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				inst.field_1 = "return";
+				inst.field_2 = val4;
+				inst.field_3 = "";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				inst.field_1 = "end_function";
+				inst.field_2 = "";
+				inst.field_3 = "";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+			}
+		}
 	   
 	}
 
@@ -954,8 +1088,6 @@ void Parasite::genAC()
 		children[2] -> next = next;
 		children[2] -> current = children[0] -> next;
 
-		ListStore = true;
-
 	}
 
 
@@ -1402,10 +1534,14 @@ void Parasite::genAC()
 			free(i);
 		
 		int local_size = funcEntry -> symTab -> currentIndex - funcEntry -> symTab -> numParams;
-		inst.field_1 = "shift_sp";
-		inst.field_2 = to_string(local_size * SIZE_PTR * -1);
-		inst.label = newLabel();
-		threeAC.push_back(inst);
+
+		if(local_size)
+		{
+			inst.field_1 = "shift_sp";
+			inst.field_2 = to_string(local_size * SIZE_PTR * -1);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
 
 		string funcName = tableHash(table);
 
@@ -1426,10 +1562,13 @@ void Parasite::genAC()
 		inst.label = current;
 		threeAC.push_back(inst);
 
-		inst.field_1 = "shift_sp";
-		inst.field_2 = to_string(local_size * SIZE_PTR);
-		inst.label = newLabel();
-		threeAC.push_back(inst);
+		if(local_size)
+		{
+			inst.field_1 = "shift_sp";
+			inst.field_2 = to_string(local_size * SIZE_PTR);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
 	}
 
 
@@ -2359,17 +2498,31 @@ void Parasite::genAC()
 			for_expr: l_primary KW_in expression
 
 		*/
-
-		ListStore = false;
-		int loops = list_storage.size();
+		
 
 		string t1 = newTmp();
 		string t2 = newTmp();
+		string t3 = newTmp();
+		string t4 = newTmp();
 
 		code inst;
+		inst.field_1 = t3;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + children[2] -> tmp + ")";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t4;
+		inst.field_2 = "=";
+		inst.field_3 = t3;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = current;
+		threeAC.push_back(inst);
+
 		inst.field_1 = t1;
 		inst.field_2 = "=";
-		inst.field_3 = "0";
+		inst.field_3 = "1";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -2377,7 +2530,7 @@ void Parasite::genAC()
 		inst.field_2 = "=";
 		inst.field_3 = t1;
 		inst.field_4 = "*";
-		inst.field_5 = 8;
+		inst.field_5 = "8";
 		inst.label = current;
 		threeAC.push_back(inst);
 
@@ -2393,7 +2546,7 @@ void Parasite::genAC()
 		inst.field_2 = "=";
 		inst.field_3 = t1;
 		inst.field_4 = "<";
-		inst.field_5 = to_string(loops);
+		inst.field_5 = t4;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -2404,8 +2557,6 @@ void Parasite::genAC()
 		inst.field_5 = "1";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
-
-		list_storage.clear();
 
 	}
 
@@ -2424,11 +2575,6 @@ void Parasite::genAC()
 		if (allocate)
 		{
 			tempExprs.insert(tempExprs.begin(), children[0] -> tmp);
-		}
-
-		if (ListStore)
-		{
-			list_storage.insert(list_storage.begin(), children[0] -> tmp);
 		}
 
 		/* nothing to do */
@@ -3054,10 +3200,27 @@ void Parasite::genAC()
 			string: STRING_LITERAL              
 		*/
 
-		allocate_mem(to_string((children[0] -> name).length() - 1));
+		allocate_mem(to_string((children[0] -> name).length() - 1 + 8));
 		tmp = MemRg;
 		code inst;
+
 		inst.field_1 = "*(" + tmp + ")";
+		inst.field_2 = "=";
+		inst.field_3 = to_string((children[0] -> name).length() - 1);
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string t1 = newTmp();
+
+		inst.field_1 = t1;
+		inst.field_2 = "=";
+		inst.field_3 = tmp;
+		inst.field_4 = "+";
+		inst.field_5 = "8";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "*(" + t1 + ")";
 		inst.field_2 = "=";
 		inst.field_3 = (children[0] -> name);
 		inst.label = newLabel();
@@ -3108,7 +3271,7 @@ void Parasite::genAC()
 		string type = (host -> dataType).substr(5, (host -> dataType).length() - 6);
 		tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
 		assert(entry);
-		int size = tempExprs.size() * (entry -> size);
+		int size = tempExprs.size() * (entry -> size) + 8;
 		allocate = false;
 		allocate_mem(to_string(size));
 		tmp = MemRg;
@@ -3116,13 +3279,21 @@ void Parasite::genAC()
 		code inst;
 		string location = newTmp();
 
+		inst.field_1 = "*(" + tmp + ")";
+		inst.field_2 = "=";
+		inst.field_3 = to_string(tempExprs.size());
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		for (int i=0; i<tempExprs.size(); i++)
 		{
 			inst.field_1 = location;
 			inst.field_2 = "=";
 			inst.field_3 = tmp;
 			inst.field_4 = "+";
-			inst.field_5 = to_string(i * (entry -> size));
+			inst.field_5 = to_string((i+1) * (entry -> size));
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
