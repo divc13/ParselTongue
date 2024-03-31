@@ -12,9 +12,10 @@ stack<pair<string, string>> labelStack;
 vector<code> threeAC;
 map <string, string> Temporaries;
 string MemRg = "";
-int memberCnt = 0;
 bool allocate = false;
 vector<string> tempExprs;
+bool ListStore = false;
+vector<string> list_storage;
 
 string newLabel()
 {
@@ -47,11 +48,11 @@ string mangle(string name)
 	return temp;
 }
 
-void allocate_mem(int size)
+void allocate_mem(string size)
 {
 	code inst;
 	inst.field_1 = "pushparam";
-	inst.field_2 = to_string(size);
+	inst.field_2 = size;
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
@@ -83,8 +84,6 @@ void Parasite::genAC()
 
 		*/
 
-		/* nothing to do */
-
 		next = newLabel();
 		current = newLabel();
 
@@ -93,7 +92,212 @@ void Parasite::genAC()
 			children[0] -> next = next;
 			children[0] -> current = newLabel();
 		}
+
+		/* range (int x) */
 		
+		code inst;
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "range%@int%@";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = val;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		allocate_mem(val);
+
+		string l1 = newLabel();
+		string t1 = newTmp();
+		string t2 = newTmp();
+		string t3 = newTmp();
+		string t4 = newTmp();
+		t1 = MemRg;
+
+		inst.field_1 = t2;
+		inst.field_2 = "=";
+		inst.field_3 = "0";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t4;
+		inst.field_2 = "=";
+		inst.field_3 = t2;
+		inst.field_4 = "*";
+		inst.field_5 = "8";
+		inst.label = l1;
+		threeAC.push_back(inst);
+
+		inst.field_1 = "*(" + t1 + " + " + t4 + ")";
+		inst.field_2 = "=";
+		inst.field_3 = t2;
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t2;
+		inst.field_2 = "=";
+		inst.field_3 = t2;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t3;
+		inst.field_2 = "=";
+		inst.field_3 = t2;
+		inst.field_4 = "<";
+		inst.field_5 = val;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "if";
+		inst.field_2 = t3;
+		inst.field_3 = "goto";
+		inst.field_4 = l1;
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = t1;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+
+		/* range (int x, int y) */
+		
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "range%@int%@int%@";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string val1 = newTmp();
+		string val2 = newTmp();
+		string val3 = newTmp();
+
+		inst.field_1 = "pop_param";
+		inst.field_2 = val1;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "pop_param";
+		inst.field_2 = val2;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = val3;
+		inst.field_2 = "=";
+		inst.field_3 = val2;
+		inst.field_4 = "-";
+		inst.field_5 = val1;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		allocate_mem(val3);
+
+		string l2 = newLabel();
+		string t5 = newTmp();
+		string t6 = newTmp();
+		string t7 = newTmp();
+		string t8 = newTmp();
+		string t9 = newTmp();
+		t1 = MemRg;
+
+		inst.field_1 = t6;
+		inst.field_2 = "=";
+		inst.field_3 = val1;
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t9;
+		inst.field_2 = "=";
+		inst.field_3 = t6;
+		inst.field_4 = "-";
+		inst.field_5 = val1;
+		inst.label = l2;
+		threeAC.push_back(inst);
+
+		inst.field_1 = t8;
+		inst.field_2 = "=";
+		inst.field_3 = t9;
+		inst.field_4 = "*";
+		inst.field_5 = "8";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "*(" + t5 + " + " + t8 + ")";
+		inst.field_2 = "=";
+		inst.field_3 = t6;
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t6;
+		inst.field_2 = "=";
+		inst.field_3 = t6;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t7;
+		inst.field_2 = "=";
+		inst.field_3 = t6;
+		inst.field_4 = "<";
+		inst.field_5 = val2;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "if";
+		inst.field_2 = t7;
+		inst.field_3 = "goto";
+		inst.field_4 = l2;
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = t5;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 	   
 	}
 
@@ -750,6 +954,8 @@ void Parasite::genAC()
 		children[2] -> next = next;
 		children[2] -> current = children[0] -> next;
 
+		ListStore = true;
+
 	}
 
 
@@ -783,8 +989,6 @@ void Parasite::genAC()
 			children[2] -> next = next;		
 			children[2] -> current = children[0] -> next;
 		}
-
-		memberCnt++;
 
 
 	}
@@ -1625,7 +1829,7 @@ void Parasite::genAC()
 			tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
 			assert (entry);
 			int size = entry -> symTab -> size;
-			allocate_mem(size);
+			allocate_mem(to_string(size));
 			tmp = MemRg;
 		}
 
@@ -1873,7 +2077,7 @@ void Parasite::genAC()
 		{
 			code inst;
 
-			inst.field_1 = "popparam";
+			inst.field_1 = "pop_param";
 			inst.field_2 = mangle(children[0] -> name);
 			inst.field_3 = "";
 			inst.label = newLabel();
@@ -1891,7 +2095,7 @@ void Parasite::genAC()
 		*/
 
 		code inst;
-		inst.field_1 = "popparam";
+		inst.field_1 = "pop_param";
 		inst.field_2 = children[0] -> name;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
@@ -2156,6 +2360,53 @@ void Parasite::genAC()
 
 		*/
 
+		ListStore = false;
+		int loops = list_storage.size();
+
+		string t1 = newTmp();
+		string t2 = newTmp();
+
+		code inst;
+		inst.field_1 = t1;
+		inst.field_2 = "=";
+		inst.field_3 = "0";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t2;
+		inst.field_2 = "=";
+		inst.field_3 = t1;
+		inst.field_4 = "*";
+		inst.field_5 = 8;
+		inst.label = current;
+		threeAC.push_back(inst);
+
+		inst.field_1 = children[0] -> tmp;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + children[2] -> tmp + " + " + t2 + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = tmp;
+		inst.field_2 = "=";
+		inst.field_3 = t1;
+		inst.field_4 = "<";
+		inst.field_5 = to_string(loops);
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = t1;
+		inst.field_2 = "=";
+		inst.field_3 = t1;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		list_storage.clear();
+
 	}
 
 
@@ -2172,7 +2423,12 @@ void Parasite::genAC()
 
 		if (allocate)
 		{
-			tempExprs.push_back(children[0] -> tmp);
+			tempExprs.insert(tempExprs.begin(), children[0] -> tmp);
+		}
+
+		if (ListStore)
+		{
+			list_storage.insert(list_storage.begin(), children[0] -> tmp);
 		}
 
 		/* nothing to do */
@@ -2187,7 +2443,7 @@ void Parasite::genAC()
 			expression: disjunction             
 		*/
 
-		
+
 
 		tmp = children[0] -> tmp;
 
@@ -2798,7 +3054,7 @@ void Parasite::genAC()
 			string: STRING_LITERAL              
 		*/
 
-		allocate_mem((children[0] -> name).length() - 1);
+		allocate_mem(to_string((children[0] -> name).length() - 1));
 		tmp = MemRg;
 		code inst;
 		inst.field_1 = "*(" + tmp + ")";
@@ -2854,7 +3110,7 @@ void Parasite::genAC()
 		assert(entry);
 		int size = tempExprs.size() * (entry -> size);
 		allocate = false;
-		allocate_mem(size);
+		allocate_mem(to_string(size));
 		tmp = MemRg;
 
 		code inst;

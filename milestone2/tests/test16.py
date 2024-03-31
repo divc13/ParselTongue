@@ -1,3 +1,1 @@
-a:int = 10
-if a:
-    print(a)
+a:list[int] = [1,2,3,4]
