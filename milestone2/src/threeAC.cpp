@@ -1193,7 +1193,6 @@ void Parasite::genAC()
 
 
 		tableRecord* funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
-		cout << children[0] -> name;
 		assert (funcEntry);
 		for (auto &i: params)
 			free(i);

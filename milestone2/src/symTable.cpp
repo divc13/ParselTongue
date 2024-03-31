@@ -79,7 +79,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 							break;
 						}
 					}
-					if (name == "__init__") cout << params->size() << endl << ((table -> entries)[num]) -> name << endl;
+					// if (name == "__init__") cout << params->size() << endl << ((table -> entries)[num]) -> name << endl;
 					if ((*params)[num] -> type != ((table -> entries)[num]) -> type)
 						match = false;
 
