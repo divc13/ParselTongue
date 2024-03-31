@@ -1,65 +1,47 @@
-class class1:
-    nfs:int = 0
-    def __init__(self, value: int):
-        self.value1:int = value
+class cl1:
 
-# obj1:class1 = class1(1)
-# obj2:class1 = class1(2)
-# obj3:class1 = class1(3)
+    def __init__(self, name:str):
+        self.name: str = name;
 
-# a:list[int] = [1, 2, 3];
-# # a[3.14]
-
-
-# # x:list[class1] = [class1(1), class1(2), class1(3)]
-# x:list[class1] = [obj1, obj2, obj3]
-
-# i:int
-# for i in range(len(x)):
-#     b: class1 = x[i]
-#     print(b.value1)
-
-class class2(class1):
-    ans:int = 0
-
-    def __init__(self, value1: int, value2: int):
-        self.value2:float = value2
-        class1.__init__(self, value1)
-
-
-#     def add(self) -> None:
-#         class2.ans = self.value1 + self.value2
-#         print(class2.ans)
+    def print(self) -> None:
+        print(self.name)
     
+def create_obj() -> cl1:
+    obj1:cl1 = cl1("obj1")
+    return obj1
 
-class class3(class2):
+def create_objs() -> list[cl1]:
+    obj1:cl1 = cl1("fhe");
+    obj2:cl1 = cl1("fjie")
+    
+    # x:list[cl1] = [cl1("fei"), cl1("ifej")]
+    x:list[cl1] = [obj1, obj2]
+    return x
 
-    # def __init__(self, value1:int):
-    #     a:int = 10
-        # class2.__init__(self, value1, value2)
-        
-     def __init__(self, value1:int, value2:int):
-         a:int = 17
-    #     class2.__init__(self, value1, value2)
+def func1() -> None:
+    i: int
+    for i in range(10):
+        j:float = i
+    
+    print(j)
 
-#     def sub(self) -> None:
-#         class2.ans += - self.value2
-#         print(class2.ans)
+i: int
+for i in range(10):
+    print(i)
+
+def main():
+    obj1:cl1 = create_obj()
+
+    obj1.print()
+
+    obj2:list[cl1] = create_objs()
+    a: cl1 = obj2[0]
+    b: cl1 = obj2[1]
+    a.print()
+    print(b.name)
+
 
     
 
-# def main():
-#     obj1: class2 = class2(10, 5)
-#     obj1.add()
-#     print(class2.ans)
-
-#     obj2: class3 = class3(10, 5)
-#     obj2.add()
-#     obj2.sub()
-
-#     print(obj2.ans)
-#     print(obj1.ans) 
-#     print(class2.ans)   
-
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+  main()

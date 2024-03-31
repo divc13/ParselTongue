@@ -2649,6 +2649,36 @@ void Parasite::genAC()
 
 		*/
 
+		if (children[0]->name == "strings")
+		{
+			allocate_mem(to_string((children[0] -> tmp).length() - 1 + 8));
+			tmp = MemRg;
+			code inst;
+
+			inst.field_1 = "*(" + tmp + ")";
+			inst.field_2 = "=";
+			inst.field_3 = to_string((children[0] -> tmp).length() - 1);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t1 = newTmp();
+
+			inst.field_1 = t1;
+			inst.field_2 = "=";
+			inst.field_3 = tmp;
+			inst.field_4 = "+";
+			inst.field_5 = "8";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "*(" + t1 + ")";
+			inst.field_2 = "=";
+			inst.field_3 = (children[0] -> tmp);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+		}
+
 		if (children[0]->type == "IDENTIFIER")
 		{
 			tableRecord* entry = table -> lookup(children[0] -> name);
@@ -2694,31 +2724,10 @@ void Parasite::genAC()
 			string: STRING_LITERAL              
 		*/
 
-		allocate_mem(to_string((children[0] -> name).length() - 1 + 8));
-		tmp = MemRg;
-		code inst;
 
-		inst.field_1 = "*(" + tmp + ")";
-		inst.field_2 = "=";
-		inst.field_3 = to_string((children[0] -> name).length() - 1);
-		inst.label = newLabel();
-		threeAC.push_back(inst);
+		tmp = children[0] -> name;
 
-		string t1 = newTmp();
 
-		inst.field_1 = t1;
-		inst.field_2 = "=";
-		inst.field_3 = tmp;
-		inst.field_4 = "+";
-		inst.field_5 = "8";
-		inst.label = newLabel();
-		threeAC.push_back(inst);
-
-		inst.field_1 = "*(" + t1 + ")";
-		inst.field_2 = "=";
-		inst.field_3 = (children[0] -> name);
-		inst.label = newLabel();
-		threeAC.push_back(inst);
 
 	}
 
@@ -2733,22 +2742,17 @@ void Parasite::genAC()
 
 		*/
 
-		if (children.size() == 1)
-		{
-			tmp = children[0] -> tmp;
-		}
 
-		else 
+		if (children.size() == 2)
 		{
-			tmp = newTmp();
-			code inst;
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = children[0] -> tmp;
-			inst.field_4 = "+";
-			inst.field_5 = children[1] -> tmp;
-			inst.label = newLabel();
-			threeAC.push_back(inst);
+			formatString(children[0]->tmp);
+			formatString(children[1]->tmp);
+			tmp = "\"" + children[0]->tmp + children[1]->tmp + "\"";
+		}
+		else
+		{
+			formatString(children[0]->tmp);
+			tmp = "\"" + children[0]->tmp + "\"";
 		}
 
 	}

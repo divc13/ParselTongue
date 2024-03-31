@@ -283,23 +283,12 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	return 0;
 }
 
-void formatString(string &name, string &type)
+void formatString(string &name)
 {
 
 	if (name[0] == 'r' || name[0] == 'R')
 	{
 		name = name.substr(1, name.length() - 1);
-
-		if(name[0] == 'b' || name[0] == 'B')
-		{
-			name = name.substr(1, name.length() - 1);
-			while (name[0] == '\'' || name[0] == '\"')
-			{
-				name = name.substr(1, name.length() - 2);
-			}
-			type = "bstr";
-			return;
-		}
 
 		while (name[0] == '\'' || name[0] == '\"')
 		{
@@ -309,29 +298,10 @@ void formatString(string &name, string &type)
 
 	}
 
-
-	if(name[0] == 'b' || name[0] == 'B')
-	{
-		name = name.substr(1, name.length() - 1);
-		if (name[0] == 'r' || name[0] == 'R')
-		{
-			name = name.substr(1, name.length() - 1);
-			while (name[0] == '\'' || name[0] == '\"')
-			{
-				name = name.substr(1, name.length() - 2);
-			}
-			type = "bstr";
-			return;
-		}
-		type = "bstr";
-	}
-
-
 	while (name[0] == '\'' || name[0] == '\"')
 	{
 		name = name.substr(1, name.length() - 2);
 	}
-
 
 	string tmp = "";
 	for (int i = 0; i < name.length(); i++)
@@ -445,6 +415,22 @@ int handle_bool_expressions(TreeNode* root)
 		raise_error(ERR::EXPECTED_BOOL, root);
 		return -1;
 	}
+	return 0;
+}
+
+// root is the expression node here
+int handle_expression(TreeNode* root)
+{
+	string type = "str";
+	for (auto child : root->children)
+	{
+		if(!isCompatible(type, child->dataType).length())
+		{
+			raise_error(ERR::EXPECTED_BOOL, root);
+			return -1;
+		}
+	}
+	root->dataType = type;
 	return 0;
 }
 
@@ -708,7 +694,7 @@ int handle_const_strings(TreeNode* root)
 {
 	tableRecord* record;
 	string str_type = "str";
-	formatString(root -> name, str_type);
+	formatString(root -> name);
 	record = new tableRecord(root -> name, str_type, SIZE_STRING((root -> name).length()), root -> lineno, root -> column, recordType::CONST_STRING);
 	if(!globTable -> lookup(record -> name, recordType::CONST_STRING))
 		globTable -> insert(record, NULL);
@@ -1333,6 +1319,13 @@ int generate_symtable(TreeNode *root)
 	{
 		children[nchild] -> scope = currTable;
 		int ret = generate_symtable(children[nchild]);
+		if (ret < 0)
+			return ret;
+	}
+
+	if (root -> name == "expression" && root->type == "NON_TERMINAL")
+	{
+		int ret = handle_expression(root);
 		if (ret < 0)
 			return ret;
 	}

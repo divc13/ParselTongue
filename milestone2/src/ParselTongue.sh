@@ -30,11 +30,8 @@ display_help() {
 file_exists() {
 	if [ -f "$1" ]; then
 		input_files+=("$1")
-	elif [ -f "../tests/$1" ]; then
-		echo -e "\e[33mWarning: File '$1' not found in specified path but found in ../tests/$1\e[0m"
-		input_files+=("../tests/$1")
 	else
-		echo -e "\e[31mError: File '$1' not found in specified path nor in ../tests/$1\e[0m"
+		echo -e "\e[31mError: File '$1' not found in specified path\e[0m"
 		exit 1
 	fi
 }
