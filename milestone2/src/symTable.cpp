@@ -244,7 +244,10 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	entries[currentIndex] = record;
 
 	if (recordType == recordType::TYPE_FUNCTION)
+	{
+		record->size = 0;
 		record->offset = -1;
+	}
 	else
 		record -> offset = size;
 
