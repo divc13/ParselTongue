@@ -16,6 +16,7 @@ typedef struct parasite{
 	struct node* host;
 	vector <struct parasite*> children;
 	void genAC();
+	void genCode();
 	parasite(struct node* __host);
 	void make_ptree_debug(string out);
 

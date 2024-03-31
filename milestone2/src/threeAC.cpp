@@ -19,7 +19,7 @@ vector<string> list_storage;
 
 string newLabel()
 {
-	return "L" + to_string(++label);
+	return "#L#" + to_string(++label);
 }
 
 string newTmp()
@@ -3149,3 +3149,44 @@ OTHERWISE REASSIGNING OLD VALUE IS OKAY.
 NEW VALUE IS NOW BEING USED IN ALL CASES, HOPING TO REWRITE ALL VALUES AFTER THE DFS
 
 */
+
+void Parasite::genCode()
+{
+	map<string, string> labelMap;
+	genAC();
+	for (int i=0; i<threeAC.size(); i++)
+	{
+		labelMap[threeAC[i].label] = to_string(i + 1);
+	}
+
+	for (int i=0; i<threeAC.size(); i++)
+	{
+
+		threeAC[i].label = labelMap[threeAC[i].label];
+
+		if (labelMap.find(threeAC[i].field_1) != labelMap.end())
+		{
+			threeAC[i].field_1 = labelMap[threeAC[i].field_1];
+		}
+
+		if (labelMap.find(threeAC[i].field_2) != labelMap.end())
+		{
+			threeAC[i].field_2 = labelMap[threeAC[i].field_2];
+		}
+
+		if (labelMap.find(threeAC[i].field_3) != labelMap.end())
+		{
+			threeAC[i].field_3 = labelMap[threeAC[i].field_3];
+		}
+
+		if (labelMap.find(threeAC[i].field_4) != labelMap.end())
+		{
+			threeAC[i].field_4 = labelMap[threeAC[i].field_4];
+		}
+
+		if (labelMap.find(threeAC[i].field_5) != labelMap.end())
+		{
+			threeAC[i].field_5 = labelMap[threeAC[i].field_5];
+		}
+	}
+}

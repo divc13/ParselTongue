@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
 	cout << "main 7" << endl;
 
-	parasiticRoot -> genAC();
+	parasiticRoot -> genCode();
 
 	cout << "main 8" << endl;
 
