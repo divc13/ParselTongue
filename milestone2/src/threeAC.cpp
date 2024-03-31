@@ -15,6 +15,7 @@ map <string, string> Temporaries;
 string MemRg = "";
 bool allocate = false;
 vector<string> tempExprs;
+string isReturn = "";
 
 string newLabel()
 {
@@ -2075,13 +2076,18 @@ void Parasite::genAC()
 		*/
 
 		code inst;
-		inst.field_1 = "ret";
 
 		if (children.size() == 2)
 		{
+			inst.field_1 = "push";
 			inst.field_2 = children[1] -> tmp;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+			isReturn = children[1] -> tmp;
 		}
 
+		inst.field_1 = "return";
+		inst.field_2 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -3024,7 +3030,7 @@ void Parasite::genAC()
 		code inst;
 		inst.field_1 = tmp;
 		inst.field_2 = "=";
-		inst.field_3 = "#returnVal";
+		inst.field_3 = "popparam";
 
 	}
 
