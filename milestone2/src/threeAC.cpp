@@ -41,7 +41,6 @@ string tableHash(symbolTable* curr)
 // only for variables and not for functions
 string mangle(string name)
 {
-	cout << name << endl;
 	tableRecord* entry = table -> lookup(name);
 	assert(entry);
 	string temp = name + tableHash(entry -> symTab);
@@ -283,8 +282,6 @@ void Parasite::genAC()
 				| multi_targets_assgn   
 
 		*/
-
-		cout << "assignment" << endl;
 
 		if (children.size() == 1)
 		{
@@ -1212,12 +1209,10 @@ void Parasite::genAC()
 		if (dotTable)
 		{
 			funcName = tableHash(dotTable);
+			dotTable = NULL;
 		}
 
-		dotTable = NULL;
-
 		symbolTable* funcTable = funcEntry -> symTab;
-
 		for (int i = 0; i < nparams; i++)
 		{
 			funcName += (funcTable -> entries)[i] -> type + "%@";
@@ -1278,12 +1273,6 @@ void Parasite::genAC()
 				| atom
 
 		*/
-
-		// if (children.size() == 3)
-		// {
-		// 	tableRecord* entry = table -> lookup()
-		// 	dotTable = 
-		// }
 
 		if (children[0] -> name == "list_access")
 		{
@@ -1448,14 +1437,14 @@ void Parasite::genAC()
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 
-	cout << name << endl;
+	// cout << name << endl;
 	for (auto &i : children)
 	{	
-		cout << "children : " << i -> name << endl;	
+		// cout << "children : " << i -> name << endl;	
 		i -> genAC();
 		
 	}
-	cout << "return " << name << endl;
+	// cout << "return " << name << endl;
 	
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
@@ -1624,19 +1613,22 @@ void Parasite::genAC()
 		*/
 
 		tmp = children[0] -> tmp;
-		// string type = children[1] -> host -> dataType;  // not to use
-		// if (type == "int" || type == "float" || type == "bool")
-		// {
-			
-		// }
+		string type = host -> dataType;
 
-		// else if 
-		// {
+		if (type == "int" || type == "float" || type == "bool" || type == "str" || type.compare(0, 4, "list") == 0)
+		{
+			// do nothing
+		}
 
-		// }
-
-		
-
+		else
+		{
+			// handle class objects
+			tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
+			assert (entry);
+			int size = entry -> symTab -> size;
+			allocate_mem(size);
+			tmp = MemRg;
+		}
 
 	}
 
@@ -1693,8 +1685,6 @@ void Parasite::genAC()
 				| l_primary OP_ASN_ASN multi_targets_assgn
 
 		*/
-
-		cout << "MULTITARGET" << endl;
 
 		code inst;
 		inst.field_1 = children[0] -> tmp;
@@ -2694,21 +2684,20 @@ void Parasite::genAC()
 
 		*/
 
+		
+
 		if (children.size() == 3)
 		{
-			string hashs = tableHash(table) + children[0] -> name + "." + children[2] -> name;
-			if (Temporaries.find(hashs) == Temporaries.end())
-			{
-				Temporaries[hashs] = newTmp();
-
-				string tmp1 = newTmp();
-				code inst;
-				inst.field_1 = tmp1;
-
-			}			
-			tmp = Temporaries[hashs];
-
+			tableRecord* entry = table -> lookup(children[0] -> name);
+			assert (entry);
+			entry = globTable -> lookup (entry -> type , recordType::TYPE_CLASS);
+			assert (entry);
+			symTable* tmpTable = entry -> symTab;
+			entry = tmpTable -> lookup_table(children[2] -> name);
+			assert (entry);
+			tmp = "*(" + children[0] -> tmp + " + " + to_string(entry -> offset) + ")";
 		}
+
 
 		else
 		{

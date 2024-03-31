@@ -114,6 +114,8 @@ int main(int argc, char **argv)
 	if (ptree_flag)
 		parasiticRoot->make_ptree_debug(noExtentionOutputFile + "_ptree.dot");
 
+	cout << "main 1" << endl;
+
 	AST_Maker(root);
 
 	// UNCOMMENT BEFORE SUBMISSION //
@@ -121,8 +123,13 @@ int main(int argc, char **argv)
 	// if (ast_flag)
 	// 	root->make_dot(noExtentionOutputFile + "_ast.dot");
 
+	cout << "main 2" << endl;
+
 	
 	initTypes();
+
+	cout << "main 3" << endl;
+
 
 	rtnval = symTable_Maker(root);
 	// if (rtnval < 0) {
@@ -132,6 +139,9 @@ int main(int argc, char **argv)
 
 	// REMOVE VEFORE SUBMISSION //
 
+	cout << "main 4" << endl;
+
+
 	if (ast_flag)
 		root->make_dot_debug(noExtentionOutputFile + "_ast.dot");
 
@@ -139,6 +149,9 @@ int main(int argc, char **argv)
 	// 	fclose(yyin);
 	// 	return -1;
 	// } 
+
+	cout << "main 5" << endl;
+
 
 	if (csv_flag)
 	{
@@ -154,6 +167,9 @@ int main(int argc, char **argv)
 		CSV.close();
 	}
 
+	cout << "main 6" << endl;
+
+
 	if (md_flag)
 	{
 		ofstream MD(noExtentionOutputFile + ".md");
@@ -167,12 +183,11 @@ int main(int argc, char **argv)
 		MD.close();
 	}
 
-	cout << "123" << endl;
+	cout << "main 7" << endl;
 
 	parasiticRoot -> genAC();
 
-	cout << "123" << endl;
-
+	cout << "main 8" << endl;
 
 	if (tac_flag)
 	{

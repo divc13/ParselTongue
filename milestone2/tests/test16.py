@@ -1,3 +1,3 @@
-a:str = "Hello"
-b:list[int] = [1, 2, 3, 4, 5]
-b[3] = 10
+a:int = 10
+if a:
+    print(a)

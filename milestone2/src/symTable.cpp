@@ -1131,8 +1131,6 @@ string handle_list_access(TreeNode* root)
 	string type = (root->children)[0] -> dataType;
 	if (type.compare(0, 4, "list") == 0)
 		root -> dataType = type.substr(5, type.length() - 6);
-	else if (type.compare(0, 3, "str") == 0)
-		root -> dataType = type;
 	else
 	{
 		raise_error(ERR::BAD_LIST, (root->children)[0]);
@@ -1388,6 +1386,18 @@ int generate_symtable(TreeNode *root)
 	{
 		int ret = handle_list(root);
 		return ret;
+	}
+
+	if (root -> name == "typedecl" && root->type == "NON_TERMINAL")
+	{
+		root -> dataType = (root ->children)[0] -> dataType; 
+		return 0;
+	}
+
+	if (root -> name == "for_expr" && root->type == "NON_TERMINAL")
+	{
+		root -> dataType = (root ->children)[0] -> dataType; 
+		return 0;
 	}
 
 	// dealing with functions again, after completing the function symbol table

@@ -57,9 +57,11 @@ set<string> SkipToken1({
 	// "while_stmt",
 	// "group",
 	// "global_stmt",
-	// "return_stmt", 
+	// "return_stmt",
 
-	"for_expr",
+	// "typedecl",
+	// "for_expr",
+
 	"list_expr",
 	"arguments",
 	",",
@@ -125,7 +127,6 @@ set<string> SkipToken1({
 	"string",
 	"strings",
 	"kwarg",
-	"typedecl",
 	"else",
 	"elif",
 	"operand",
@@ -257,8 +258,15 @@ void generateAST(TreeNode *root, int flag)
 		// handle colon in different cases, if used for expression, bring up, otherwise skip
 		if (((child->name).compare(":") == 0 || (child->name).compare("bitwise_operators") == 0) && flag == 1)
 		{
-			if (((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) && (child->type).compare("IDENTIFIER") != 0)
+			// if (((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) && (child->type).compare("IDENTIFIER") != 0)
+			// 	ExchangeWithChild(root, nchild);
+
+			if (((root->name).compare("annotation") == 0) && (child->type).compare("IDENTIFIER") != 0)
 				ExchangeWithChild(root, nchild);
+
+			else if (((root->name).compare("typedecl") == 0 ) && (child->type).compare("IDENTIFIER") != 0)
+				ConstrainedExchange(root, nchild, 2);
+
 			else if((root->name).compare("comparison") == 0 && (child->name).compare("bitwise_operators") == 0)
 				ConstrainedExchange_bitwise(root, nchild, 2);
 			else
@@ -278,8 +286,10 @@ void generateAST(TreeNode *root, int flag)
 		{
 			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0)
 				ConstrainedExchange(root, nchild, 1);
-			else if (nchild > 1)
+			else if (nchild > 1 || ((root -> name).compare("for_expr") == 0 && (child -> name).compare("in") == 0 ))
+			{
 				ConstrainedExchange(root, nchild, 2);
+			}
 			continue;
 		}
 
@@ -318,6 +328,7 @@ void generateAST(TreeNode *root, int flag)
 			}
 		}
 
+		cout << root -> name << endl;
 		generateAST(child, flag);
 		nchild++;
 	}
