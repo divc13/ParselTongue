@@ -82,7 +82,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 							break;
 						}
 					}
-					// if (name == "__init__") cout << params->size() << endl << ((table -> entries)[num]) -> name << endl;
+
 					if ((*params)[num] -> type != ((table -> entries)[num]) -> type)
 						match = false;
 
@@ -157,7 +157,6 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 	return NULL;
 }
 
-// for variables
 tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord*> *params)
 {
 	tableRecord* record = lookup_table(name, recordType, params);
@@ -179,7 +178,6 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	int column = inputRecord -> column;
 	int __size = inputRecord -> size;
 	int recordType = inputRecord -> recordType;
-	// cout << name << " " << lineno << " " << column << " " << " " << type << " " << recordTypeMap[recordType] << " " << __size << endl; 
 	TreeNode *tempNode = new TreeNode(name, lineno, column);
 
 	if (recordType != recordType::TYPE_FUNCTION)
@@ -202,7 +200,6 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	else
 	{
-		// cout << name << " " << lineno << " " << column << " " << " " << type << " " << recordTypeMap[recordType] << " " << __size << endl; 
 		assert(funcTable);
 		vector<tableRecord*> params;
 		for (int i = 0; i < funcTable -> numParams; i++)
@@ -525,11 +522,6 @@ int handle_function_declaration(TreeNode* root)
 
 	if (cntSelf)
 	{
-		// cout << cntSelf << "  " << numParam << endl;
-		// record = currTable->lookup("self", recordType::CLASS_SELF);
-		// assert (record);
-		// tableRecord* entry = new tableRecord("self", , record->size, record->lineno, record->column, record->recordType);
-		
 		tableRecord* entry = new tableRecord("self", currTable -> parentSymtable -> name, SIZE_PTR, (((root -> children)[2]) -> children)[last_pos]->lineno, (((root -> children)[2]) -> children)[last_pos]->column, recordType::CLASS_OBJECT);
 		err = currTable -> insert(entry);
 		free(entry);
@@ -544,36 +536,6 @@ int handle_function_declaration(TreeNode* root)
 
 	return 0;
 }
-
-// int fillTables(symbolTable* Table, symbolTable* parentTable)
-// {
-// 	int err = 0;
-
-// 	for (int entry = 0, child = 0; entry < parentTable->currentIndex; entry++)
-// 	{
-// 		if(!((parentTable->entries)[entry] -> name == "self" && (parentTable->entries)[entry] -> recordType == recordType::CLASS_SELF))
-// 		{
-// 			if (child < (parentTable->childIndices).size() && parentTable->childIndices[child] == entry && !((parentTable->entries)[entry]->name == "__init__"))
-// 			{
-// 				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry] -> symTab);
-// 				// cout << (newTable->entries)[0] -> name << endl;
-// 				child++;
-// 				// cout << newTable->currentIndex << endl;
-// 			}
-// 			else if (!((parentTable->entries)[entry]->name == "__init__"))
-// 			{
-// 				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry]->symTab);
-// 			}
-// 		}
-// 		if (err < 0)
-// 		{
-// 			raise_error(ERR::IMPOSSIBLE, root);
-// 			return err;
-// 		}
-// 	}
-// 	return err;
-
-// }
 
 int fillTables(symbolTable* Table, symbolTable* parentTable, string type)
 {
@@ -880,7 +842,6 @@ int handle_in(TreeNode* root)
 	if ((right->dataType).compare(0, 4, "list") && (right->dataType).compare("string"))
 	{
 		raise_error(ERR::NOT_ITERABLE, root);
-		// print_note(NOTE::PREV_DECL, entry2);
 		return -1;
 	}
 
@@ -889,8 +850,6 @@ int handle_in(TreeNode* root)
 		if (isCompatible( (right -> dataType).substr(5, (left -> dataType).length()), left ->dataType).length() == 0)
 		{
 			raise_error(ERR::TYPE_MISMATCH, root);
-			// print_note(NOTE::PREV_DECL, entry1);
-			// print_note(NOTE::PREV_DECL, entry2);
 			return -1;
 		}
 	}
@@ -899,8 +858,6 @@ int handle_in(TreeNode* root)
 		if (left -> dataType != right->dataType)
 		{
 			raise_error(ERR::TYPE_MISMATCH, root);
-			// print_note(NOTE::PREV_DECL, entry1);
-			// print_note(NOTE::PREV_DECL, entry2);
 			return -1;
 		}
 	}
@@ -983,16 +940,8 @@ int pre_handle_dot(TreeNode* root)
 	}
 	
 	assert(classRecord);
-	// cout << currTable->name << endl << classRecord->symTab->name << endl << classRecord->symTab->parentSymtable->name << endl;
 	tempDotTable = classRecord -> symTab;
 	funcInClass = 1;
-
-	// if ((root->children)[0] -> dataType == (root->children)[0] -> name)
-	// {
-	// 	(root->children)[0] -> type = "self";
-	// 	(root->children)[0] -> dataType = "self";
-	// 	return 0;
-	// }
 
 	(root->children)[0] -> type = "CLASS_OBJ";
 	(root->children)[0] -> dataType = classRecord -> type;

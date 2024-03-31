@@ -2911,4 +2911,8 @@ void Parasite::genCode()
 			threeAC[i].field_5 = labelMap[threeAC[i].field_5];
 		}
 	}
+
+	code inst;
+	inst.label = "END";
+	threeAC.push_back(inst);
 }
