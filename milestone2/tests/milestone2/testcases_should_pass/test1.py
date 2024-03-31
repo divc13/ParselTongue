@@ -10,7 +10,7 @@ def func1(var1:int, var2:int) -> None:  #recursion
   if(var1 == 0):
     print(var2)
   if(var1):
-    print("ieofem")
+    print("ieofem" "hello" " hell" "lo")
     func1(var1, var2)
   
 if(var1 == 3):

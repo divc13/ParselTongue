@@ -147,3 +147,5 @@ string validateType(TreeNode* root);
 int handle_to(TreeNode* root);
 
 int handle_identifier(TreeNode* root);
+
+void formatString(string &name);

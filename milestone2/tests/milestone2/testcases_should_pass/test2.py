@@ -1,56 +1,45 @@
 class class1:
-    a:str = "fjid";
-    b:bool = False
-    c:float
-    d:float
-    ans:int
+    str1:str = "static var"
 
-    def __init__(self, var1:int, var2:float):
-        self.c = var1
-        self.d = var2
-        # c = var1
-        # d = var2
+print(class1.str1)
+
+def func2(a:int) -> int:
+    return 10.0 + a
+
+def func1() -> None:
+    a:int = 10;
+    a = func2(a)
+    print(a)
+
+    a = 10
+    while(a > False):
+        a -= 1
     
-    def divide_(self) -> None:
-        self.ans = self.c // self.d
-        print(self.ans)
+    if(a == False):
+        print(a)
 
+var1: int = 4
 
-def divide_(var1:int, var2:float) -> None: # function name same as class method
-    ans:int = var1 // var2
-    print(ans)
-    print(var1 // var2)
-
+class cl1:
+  
+  def __init__(self):
+    self.name:int = 5
+  
+  def func1(self) -> None:
+    # global var1
+    var2: int = var1 + self.name
+    print(var2)
 
 def main():
+    a:int = 10
+    func1()
 
-    obj1: class1 = class1(5, 2)
-    obj1.divide_();
+    obj1: cl1 = cl1();
+    obj1.func1()
 
-    divide_(5, 2.0);
+    b:int = func2(obj1.name)
+    print(b)
 
-    i:int
-    for i in range(0, 2):
-        print(i)
-
-    # i = 1;
-    for i in range(2):
-        print(i)
-    
-    x:list[int] = [3, 4, 5, ]
-
-    for i  in range(len(x)):
-        print(x[i])
-
-    s1: str = "abc"
-    for i in range(len(s1)):
-        print(s1[i])
-
-    if(0 < True):
-        print("fie")
-
-    var1:int = (True + True) * True - False + 10
-    print(var1)        
 
 if __name__ == "__main__":
   main()
