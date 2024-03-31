@@ -1251,15 +1251,15 @@ void Parasite::genAC()
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 
-	cout << name << endl;
+	// cout << name << endl;
 	for (auto &i : children)
 	{	
-		cout << "children : " << i -> name << endl;	
+		// cout << "children : " << i -> name << endl;	
 		i -> genAC();
 		
 	}
 
-	cout << "return " << name << endl;
+	// cout << "return " << name << endl;
 	
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
@@ -2674,6 +2674,8 @@ void Parasite::genAC()
 			inst.field_1 = "*(" + t1 + ")";
 			inst.field_2 = "=";
 			inst.field_3 = (children[0] -> tmp);
+			inst.field_4 = "";
+			inst.field_5 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
@@ -2829,6 +2831,7 @@ void fillCode()
 {
 	for (int index = 0; index < filler.size(); index++)
 	{
+
 		int entry1 = -1, entry2 = -1;
 		for (int i = 0; i < threeAC.size(); i++)
 		{
@@ -2842,8 +2845,8 @@ void fillCode()
 			}
 		}
 
-		assert(entry1 < 0);
-		assert(entry2 < 0);
+		assert(entry1 >= 0);
+		assert(entry2 >= 0);
 		
 		if	(entry2 == threeAC.size())
 			threeAC[entry1].field_4 = "END";
@@ -2859,7 +2862,7 @@ void Parasite::genCode()
 	map<string, string> labelMap;
 
 	genAC();
-	// fillCode();
+	fillCode();
 
 	for (int i=0; i<threeAC.size(); i++)
 	{
