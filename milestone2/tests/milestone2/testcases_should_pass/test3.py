@@ -8,7 +8,7 @@ obj2:class1 = class1(2)
 obj3:class1 = class1(3)
 
 a:list[int] = [1, 2, 3];
-a[3.14]
+# a[3.14]
 
 
 # x:list[class1] = [class1(1), class1(2), class1(3)]

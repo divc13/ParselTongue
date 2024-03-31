@@ -167,7 +167,12 @@ int main(int argc, char **argv)
 		MD.close();
 	}
 
+	cout << "123" << endl;
+
 	parasiticRoot -> genAC();
+
+	cout << "123" << endl;
+
 
 	if (tac_flag)
 	{

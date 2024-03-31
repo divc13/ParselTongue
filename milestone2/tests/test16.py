@@ -1,2 +1,3 @@
-b: str = b"hello"
-print(b[4])
+a:str = "Hello"
+b:list[int] = [1, 2, 3, 4, 5]
+b[3] = 10

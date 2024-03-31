@@ -803,6 +803,9 @@ int handle_type_declarations(TreeNode* root)
 		(root -> children)[0] -> dataType = node -> dataType;
 	
 	err = tempTable -> insert(record);
+	if (err < 0)
+		return err;
+
 	assert(record->symTab);
 	
 	free(record);
@@ -1010,7 +1013,7 @@ int handle_operators(TreeNode* root)
 
 		if (category == "OP_ASSIGNMENT")
 		{
-			if (left -> type != "IDENTIFIER" && left -> name != "." && left -> name != ":")
+			if (left -> type == "INT_LITERAL" || left -> type == "FLOAT_LITERAL" || left -> type == "STRING_LITERAL")
 			{
 				raise_error(ERR::BAD_LVAL, left);
 				return -1;

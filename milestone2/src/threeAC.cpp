@@ -1,17 +1,20 @@
 #include "include/threeAC.hpp"
 
-extern string inputFile;
 extern symbolTable* globTable;
 
 int label = 0;
 int tmp = 0;
 
-string state = "#$" + inputFile + "#$";
-string UseState = "#$" + inputFile + "#$";
 symbolTable* table = globTable;
 symbolTable* dotTable = NULL;
+tableRecord* dotRecord = NULL;
 stack<pair<string, string>> labelStack;
 vector<code> threeAC;
+map <string, string> Temporaries;
+string MemRg = "";
+int memberCnt = 0;
+bool allocate = false;
+vector<string> tempExprs;
 
 string newLabel()
 {
@@ -20,14 +23,57 @@ string newLabel()
 
 string newTmp()
 {
-	return "@#__" + to_string(++tmp) + "__#@";
+	return "$t" + to_string(++tmp);
+}
+
+string tableHash(symbolTable* curr)
+{
+	string name = "";
+	while(curr -> name != "__GLOBAL__")
+	{
+		name += "@";
+		name += curr -> name;
+		curr = curr -> parentSymtable;
+	}
+	return name;
+}
+
+// only for variables and not for functions
+string mangle(string name)
+{
+	cout << name << endl;
+	tableRecord* entry = table -> lookup(name);
+	assert(entry);
+	string temp = name + tableHash(entry -> symTab);
+	return temp;
+}
+
+void allocate_mem(int size)
+{
+	code inst;
+	inst.field_1 = "pushparam";
+	inst.field_2 = to_string(size);
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "call";
+	inst.field_2 = "alloc_mem";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	MemRg = newTmp();
+	inst.field_1 = MemRg;
+	inst.field_2 = "=";
+	inst.field_3 = "#returnVal";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
 }
 
 void Parasite::genAC()
 {
 
 
-	if (name == "file")
+	if (type != "IDENTIFIER" && name == "file")
 	{
 					
 		/*
@@ -53,7 +99,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "statements")
+	if (type != "IDENTIFIER" && name == "statements")
 	{
 					
 		/*
@@ -81,7 +127,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "statement")
+	if (type != "IDENTIFIER" && name == "statement")
 	{
 					
 		/*
@@ -99,7 +145,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple_stmts")
+	if (type != "IDENTIFIER" && name == "simple_stmts")
 	{
 					
 		/*
@@ -116,7 +162,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple1")
+	if (type != "IDENTIFIER" && name == "simple1")
 	{
 					
 		/*
@@ -142,7 +188,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple2")
+	if (type != "IDENTIFIER" && name == "simple2")
 	{
 					
 		/*
@@ -157,7 +203,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple_stmt")
+	if (type != "IDENTIFIER" && name == "simple_stmt")
 	{
 					
 		/*
@@ -185,10 +231,12 @@ void Parasite::genAC()
 			children[0] -> current = newLabel();
 		}
 
+
+
 	}
 
 
-	if (name == "compound_stmt")
+	if (type != "IDENTIFIER" && name == "compound_stmt")
 	{
 					
 		/*
@@ -207,7 +255,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "typedecl")
+	if (type != "IDENTIFIER" && name == "typedecl")
 	{
 					
 		/*
@@ -224,7 +272,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "assignment")
+	if (type != "IDENTIFIER" && name == "assignment")
 	{
 					
 		/*
@@ -236,10 +284,12 @@ void Parasite::genAC()
 
 		*/
 
+		cout << "assignment" << endl;
+
 		if (children.size() == 1)
 		{
-			children[2] -> next = newLabel();
-			children[2] -> current = newLabel();
+			children[0] -> next = newLabel();
+			children[0] -> current = newLabel();
 		}
 
 		else
@@ -253,7 +303,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "multi_targets_assgn")
+	if (type != "IDENTIFIER" && name == "multi_targets_assgn")
 	{
 					
 		/*
@@ -271,7 +321,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "augassign")
+	if (type != "IDENTIFIER" && name == "augassign")
 	{
 					
 		/*
@@ -296,7 +346,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "return_stmt")
+	if (type != "IDENTIFIER" && name == "return_stmt")
 	{
 					
 		/*
@@ -323,7 +373,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "block")
+	if (type != "IDENTIFIER" && name == "block")
 	{
 					
 		/*
@@ -348,7 +398,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "class_def")
+	if (type != "IDENTIFIER" && name == "class_def")
 	{
 					
 		/*
@@ -362,8 +412,7 @@ void Parasite::genAC()
 		children[4] -> next = next;
 		children[4] -> current = children[2] -> next;
 
-		state = state + children[1] -> name + "#$";
-		tableRecord* entry = table -> lookup(children[2] -> name, recordType::TYPE_CLASS);
+		tableRecord* entry = table -> lookup(children[1] -> name, recordType::TYPE_CLASS);
 		assert (entry);
 		assert (entry -> symTab);
 		table = entry -> symTab;
@@ -371,7 +420,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "function_def")
+	if (type != "IDENTIFIER" && name == "function_def")
 	{
 					
 		/*
@@ -388,7 +437,7 @@ void Parasite::genAC()
 		children[7] -> current = children[5] -> next;
 
 		/* class constructors are not an issue here */
-		string funcName = state + children[1] -> name + "%@";
+		string funcName = tableHash(table) + children[1] -> name + "%@";
 		tableRecord* entry = table -> lookup(children[1] -> name);
 		
 		assert (entry);
@@ -407,12 +456,10 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-
-
 	}
 
 
-	if (name == "is_arguments")
+	if (type != "IDENTIFIER" && name == "is_arguments")
 	{
 					
 		/*
@@ -432,7 +479,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "is_fn_expression")
+	if (type != "IDENTIFIER" && name == "is_fn_expression")
 	{
 					
 		/*
@@ -451,7 +498,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "params")
+	if (type != "IDENTIFIER" && name == "params")
 	{
 					
 		/*
@@ -472,7 +519,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "param_nd")
+	if (type != "IDENTIFIER" && name == "param_nd")
 	{
 					
 		/*
@@ -494,7 +541,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "param_no_default")
+	if (type != "IDENTIFIER" && name == "param_no_default")
 	{
 					
 		/*
@@ -508,7 +555,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "param")
+	if (type != "IDENTIFIER" && name == "param")
 	{
 					
 		/*
@@ -527,7 +574,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "annotation")
+	if (type != "IDENTIFIER" && name == "annotation")
 	{
 					
 		/*
@@ -542,7 +589,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "if_stmt")
+	if (type != "IDENTIFIER" && name == "if_stmt")
 	{
 					
 		/*
@@ -577,7 +624,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "elif_stmt")
+	if (type != "IDENTIFIER" && name == "elif_stmt")
 	{
 					
 		/*
@@ -610,7 +657,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "else_block")
+	if (type != "IDENTIFIER" && name == "else_block")
 	{
 					
 		/*
@@ -625,7 +672,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "while_stmt")
+	if (type != "IDENTIFIER" && name == "while_stmt")
 	{
 					
 		/*
@@ -660,7 +707,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "for_stmt")
+	if (type != "IDENTIFIER" && name == "for_stmt")
 	{
 					
 		/*
@@ -694,7 +741,7 @@ void Parasite::genAC()
 		
 	}
 
-	if (name == "for_expr")
+	if (type != "IDENTIFIER" && name == "for_expr")
 	{
 					
 		/*
@@ -709,7 +756,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "expressions")
+	if (type != "IDENTIFIER" && name == "expressions")
 	{
 					
 		/*
@@ -740,23 +787,26 @@ void Parasite::genAC()
 			children[2] -> current = children[0] -> next;
 		}
 
+		memberCnt++;
+
 
 	}
 
 
-	if (name == "expression")
+	if (type != "IDENTIFIER" && name == "expression")
 	{
 					
 		/*
 			expression: disjunction             
 		*/
 
+
 		children[0] -> next = next;
 		children[0] -> current = newLabel();
 	}
 
 
-	if (name == "disjunction")
+	if (type != "IDENTIFIER" && name == "disjunction")
 	{
 					
 		/*
@@ -784,7 +834,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "conjunction")
+	if (type != "IDENTIFIER" && name == "conjunction")
 	{
 					
 		/*
@@ -811,7 +861,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "inversion")
+	if (type != "IDENTIFIER" && name == "inversion")
 	{
 					
 		/*
@@ -838,7 +888,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "comparison")
+	if (type != "IDENTIFIER" && name == "comparison")
 	{
 					
 		/*
@@ -865,7 +915,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "bitwise_operator")
+	if (type != "IDENTIFIER" && name == "bitwise_operator")
 	{
 					
 		/*
@@ -886,7 +936,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "bitwise_or")
+	if (type != "IDENTIFIER" && name == "bitwise_or")
 	{
 					
 		/*
@@ -914,7 +964,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "bitwise_xor")
+	if (type != "IDENTIFIER" && name == "bitwise_xor")
 	{
 					
 		/*
@@ -941,7 +991,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "bitwise_and")
+	if (type != "IDENTIFIER" && name == "bitwise_and")
 	{
 					
 		/*
@@ -967,7 +1017,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "shift_expr")
+	if (type != "IDENTIFIER" && name == "shift_expr")
 	{
 					
 		/*
@@ -994,7 +1044,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "sum")
+	if (type != "IDENTIFIER" && name == "sum")
 	{
 					
 		/*
@@ -1021,7 +1071,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "term")
+	if (type != "IDENTIFIER" && name == "term")
 	{
 					
 		/*
@@ -1050,7 +1100,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "factor")
+	if (type != "IDENTIFIER" && name == "factor")
 	{
 					
 		/*
@@ -1079,7 +1129,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "power")
+	if (type != "IDENTIFIER" && name == "power")
 	{
 					
 		/*
@@ -1106,7 +1156,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "function_call")
+	if (type != "IDENTIFIER" && name == "function_call")
 	{
 					
 		/*
@@ -1121,24 +1171,51 @@ void Parasite::genAC()
 
 		code inst;
 
+		if (dotRecord)
+		{
+			params.push_back(dotRecord);
+			inst.field_1 = "pushparam";
+			inst.field_2 = "self";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+			dotRecord = NULL;
+		}
+
 		for(int i = 0; i < nparams; i++)
 		{
 			TreeNode* node = ((host -> children)[2] -> children)[i];
-			tableRecord* record = new tableRecord(node -> dataType, node -> dataType);
+			tableRecord* record = new tableRecord(node -> name, node -> dataType);
 			params.push_back(record);
 
 			inst.field_1 = "pushparam";
 			inst.field_2 = (children[2] -> children)[i] -> tmp;
 			inst.label = newLabel();
+			threeAC.push_back(inst);
 
 		}
 
+
 		tableRecord* funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+		cout << children[0] -> name;
 		assert (funcEntry);
 		for (auto &i: params)
 			free(i);
 		
-		string funcName = UseState;
+		int local_size = funcEntry -> symTab -> currentIndex - funcEntry -> symTab -> numParams;
+		inst.field_1 = "shift_sp";
+		inst.field_2 = to_string(local_size * SIZE_PTR * -1);
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string funcName = tableHash(table);
+
+		if (dotTable)
+		{
+			funcName = tableHash(dotTable);
+		}
+
+		dotTable = NULL;
+
 		symbolTable* funcTable = funcEntry -> symTab;
 
 		for (int i = 0; i < nparams; i++)
@@ -1151,11 +1228,14 @@ void Parasite::genAC()
 		inst.label = current;
 		threeAC.push_back(inst);
 
-
+		inst.field_1 = "shift_sp";
+		inst.field_2 = to_string(local_size * SIZE_PTR);
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 	}
 
 
-	if (name == "args")
+	if (type != "IDENTIFIER" && name == "args")
 	{
 					
 		/*
@@ -1174,7 +1254,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "list_access")
+	if (type != "IDENTIFIER" && name == "list_access")
 	{
 					
 		/*
@@ -1188,7 +1268,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "l_primary")
+	if (type != "IDENTIFIER" && name == "l_primary")
 	{
 					
 		/*
@@ -1199,13 +1279,13 @@ void Parasite::genAC()
 
 		*/
 
-		if (children[0] -> name == "list_access")
-		{
-			children[0] -> next = next;
-			children[0] -> current = newLabel();
-		}
+		// if (children.size() == 3)
+		// {
+		// 	tableRecord* entry = table -> lookup()
+		// 	dotTable = 
+		// }
 
-		if (children.size() == 3 && children[2] -> name == "list_access")
+		if (children[0] -> name == "list_access")
 		{
 			children[0] -> next = next;
 			children[0] -> current = newLabel();
@@ -1220,7 +1300,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "primary")
+	if (type != "IDENTIFIER" && name == "primary")
 	{
 					
 		/*
@@ -1239,28 +1319,16 @@ void Parasite::genAC()
 
 		else
 		{
-			if (children[0] -> name == "list_access")
-			{
-				children[0] -> next = newLabel();
-				children[0] -> current = newLabel();
-				children[2] -> next = next;
-				children[2] -> current = children[0] -> next;
 
-			}
-
-			else
-			{
-				children[2] -> next = next;
-				children[2] -> current = newLabel();
-
-			}
+			children[2] -> next = next;
+			children[2] -> current = newLabel();
 
 		} 
 
 	}
 
 
-	if (name == "atom")
+	if (type != "IDENTIFIER" && name == "atom")
 	{
 					
 		/*
@@ -1298,7 +1366,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "group")
+	if (type != "IDENTIFIER" && name == "group")
 	{
 					
 		/*
@@ -1317,7 +1385,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "string")
+	if (type != "IDENTIFIER" && name == "string")
 	{
 					
 		/*
@@ -1329,7 +1397,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "strings")
+	if (type != "IDENTIFIER" && name == "strings")
 	{
 					
 		/*
@@ -1355,7 +1423,7 @@ void Parasite::genAC()
 
 	}
 
-	if (name == "list")
+	if (type != "IDENTIFIER" && name == "list")
 	{
 					
 		/*
@@ -1367,6 +1435,8 @@ void Parasite::genAC()
 		children[2] -> next = next;
 		children[2] -> current = newLabel();
 
+		allocate = true;
+
 	}
 
 
@@ -1378,10 +1448,14 @@ void Parasite::genAC()
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
 
+	cout << name << endl;
 	for (auto &i : children)
-	{		
+	{	
+		cout << "children : " << i -> name << endl;	
 		i -> genAC();
+		
 	}
+	cout << "return " << name << endl;
 	
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
 	/////////////////////////////////////////// DFS END ///////////////////////////////////////////////////
@@ -1391,7 +1465,7 @@ void Parasite::genAC()
 
 
 
-	if (name == "file")
+	if (type != "IDENTIFIER" && name == "file")
 	{
 					
 		/*
@@ -1407,7 +1481,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "statements")
+	if (type != "IDENTIFIER" && name == "statements")
 	{
 					
 		/*
@@ -1422,7 +1496,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "statement")
+	if (type != "IDENTIFIER" && name == "statement")
 	{
 					
 		/*
@@ -1437,7 +1511,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple_stmts")
+	if (type != "IDENTIFIER" && name == "simple_stmts")
 	{
 					
 		/*
@@ -1452,7 +1526,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple1")
+	if (type != "IDENTIFIER" && name == "simple1")
 	{
 					
 		/*
@@ -1467,7 +1541,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple2")
+	if (type != "IDENTIFIER" && name == "simple2")
 	{
 					
 		/*
@@ -1482,7 +1556,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "simple_stmt")
+	if (type != "IDENTIFIER" && name == "simple_stmt")
 	{
 					
 		/*
@@ -1519,7 +1593,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "compound_stmt")
+	if (type != "IDENTIFIER" && name == "compound_stmt")
 	{
 					
 		/*
@@ -1534,10 +1608,13 @@ void Parasite::genAC()
 
 		/* nothing to do */
 
+		
+
+
 	}
 
 
-	if (name == "typedecl")
+	if (type != "IDENTIFIER" && name == "typedecl")
 	{
 					
 		/*
@@ -1547,12 +1624,24 @@ void Parasite::genAC()
 		*/
 
 		tmp = children[0] -> tmp;
+		// string type = children[1] -> host -> dataType;  // not to use
+		// if (type == "int" || type == "float" || type == "bool")
+		// {
+			
+		// }
+
+		// else if 
+		// {
+
+		// }
+
+		
 
 
 	}
 
 
-	if (name == "assignment")
+	if (type != "IDENTIFIER" && name == "assignment")
 	{
 					
 		/*
@@ -1595,7 +1684,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "multi_targets_assgn")
+	if (type != "IDENTIFIER" && name == "multi_targets_assgn")
 	{
 					
 		/*
@@ -1605,6 +1694,8 @@ void Parasite::genAC()
 
 		*/
 
+		cout << "MULTITARGET" << endl;
+
 		code inst;
 		inst.field_1 = children[0] -> tmp;
 		inst.field_2 = "=";
@@ -1612,11 +1703,10 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-
 	}
 
 
-	if (name == "augassign")
+	if (type != "IDENTIFIER" && name == "augassign")
 	{
 					
 		/*
@@ -1641,7 +1731,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "return_stmt")
+	if (type != "IDENTIFIER" && name == "return_stmt")
 	{
 					
 		/*
@@ -1665,7 +1755,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "block")
+	if (type != "IDENTIFIER" && name == "block")
 	{
 					
 		/*
@@ -1680,7 +1770,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "class_def")
+	if (type != "IDENTIFIER" && name == "class_def")
 	{
 					
 		/*
@@ -1688,14 +1778,12 @@ void Parasite::genAC()
 			class_def: KW_class NAME is_arguments DLM_COLON block
 
 		*/
-
-		string state = "#$" + inputFile + "#$";
 		table = globTable;
 
 	}
 
 
-	if (name == "function_def")
+	if (type != "IDENTIFIER" && name == "function_def")
 	{
 					
 		/*
@@ -1703,11 +1791,15 @@ void Parasite::genAC()
 		*/
 
 		table = table -> parentSymtable;
+		code inst;
+		inst.field_1 = "end_function";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 
 	}
 
 
-	if (name == "is_arguments")
+	if (type != "IDENTIFIER" && name == "is_arguments")
 	{
 					
 		/*
@@ -1723,7 +1815,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "is_fn_expression")
+	if (type != "IDENTIFIER" && name == "is_fn_expression")
 	{
 					
 		/*
@@ -1737,7 +1829,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "params")
+	if (type != "IDENTIFIER" && name == "params")
 	{
 					
 		/*
@@ -1751,7 +1843,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "param_nd")
+	if (type != "IDENTIFIER" && name == "param_nd")
 	{
 					
 		/*
@@ -1767,7 +1859,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "param_no_default")
+	if (type != "IDENTIFIER" && name == "param_no_default")
 	{
 					
 		/*
@@ -1778,7 +1870,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "param")
+	if (type != "IDENTIFIER" && name == "param")
 	{
 					
 		/*
@@ -1793,7 +1885,7 @@ void Parasite::genAC()
 			code inst;
 
 			inst.field_1 = "popparam";
-			inst.field_2 = children[0] -> tmp;
+			inst.field_2 = mangle(children[0] -> name);
 			inst.field_3 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst); 
@@ -1802,33 +1894,23 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "annotation")
+	if (type != "IDENTIFIER" && name == "annotation")
 	{
 					
 		/*
 			annotation: NAME DLM_COLON expression 
 		*/
 
-		children[0] -> tmp = newTmp();
-		tmp = children[0] -> tmp;
 		code inst;
-		inst.field_1 = tmp;
-		inst.field_2 = "=";
-		inst.field_3 = children[0] -> name;
-		inst.label = current;
-		threeAC.push_back(inst);
-
-		// code inst;
 		inst.field_1 = "popparam";
-		inst.field_2 = children[0] -> tmp;
-		inst.field_3 = "";
+		inst.field_2 = children[0] -> name;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 	}
 
 
-	if (name == "if_stmt")
+	if (type != "IDENTIFIER" && name == "if_stmt")
 	{
 					
 		/*
@@ -1888,7 +1970,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "elif_stmt")
+	if (type != "IDENTIFIER" && name == "elif_stmt")
 	{
 					
 		/*
@@ -1947,7 +2029,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "else_block")
+	if (type != "IDENTIFIER" && name == "else_block")
 	{
 					
 		/*
@@ -1961,7 +2043,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "while_stmt")
+	if (type != "IDENTIFIER" && name == "while_stmt")
 	{
 					
 		/*
@@ -2019,7 +2101,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "for_stmt")
+	if (type != "IDENTIFIER" && name == "for_stmt")
 	{
 					
 		/*
@@ -2076,7 +2158,7 @@ void Parasite::genAC()
 
 	}
 
-	if (name == "for_expr")
+	if (type != "IDENTIFIER" && name == "for_expr")
 	{
 					
 		/*
@@ -2088,7 +2170,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "expressions")
+	if (type != "IDENTIFIER" && name == "expressions")
 	{
 					
 		/*
@@ -2099,12 +2181,17 @@ void Parasite::genAC()
 
 		*/
 
+		if (allocate)
+		{
+			tempExprs.push_back(children[0] -> tmp);
+		}
+
 		/* nothing to do */
 
 	}
 
 
-	if (name == "expression")
+	if (type != "IDENTIFIER" && name == "expression")
 	{
 					
 		/*
@@ -2118,7 +2205,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "disjunction")
+	if (type != "IDENTIFIER" && name == "disjunction")
 	{
 					
 		/*
@@ -2128,23 +2215,28 @@ void Parasite::genAC()
 
 		*/
 
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
 
-		tmp = newTmp();
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "conjunction")
+	if (type != "IDENTIFIER" && name == "conjunction")
 	{
 					
 		/*
@@ -2155,22 +2247,28 @@ void Parasite::genAC()
 		*/
 
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "inversion")
+	if (type != "IDENTIFIER" && name == "inversion")
 	{
 					
 		/*
@@ -2180,22 +2278,27 @@ void Parasite::genAC()
 
 		*/
 
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
 
-		tmp = newTmp();
 		if (children.size() == 2)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> name;
 			inst.field_4 = children[1] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "comparison")
+	if (type != "IDENTIFIER" && name == "comparison")
 	{
 					
 		/*
@@ -2205,22 +2308,28 @@ void Parasite::genAC()
 
 		*/
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "bitwise_operator")
+	if (type != "IDENTIFIER" && name == "bitwise_operator")
 	{
 					
 		/*
@@ -2243,7 +2352,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "bitwise_or")
+	if (type != "IDENTIFIER" && name == "bitwise_or")
 	{
 					
 		/*
@@ -2255,22 +2364,28 @@ void Parasite::genAC()
 
 		
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "bitwise_xor")
+	if (type != "IDENTIFIER" && name == "bitwise_xor")
 	{
 					
 		/*
@@ -2281,22 +2396,28 @@ void Parasite::genAC()
 		*/
 
 		
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "bitwise_and")
+	if (type != "IDENTIFIER" && name == "bitwise_and")
 	{
 					
 		/*
@@ -2308,22 +2429,28 @@ void Parasite::genAC()
 
 		
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "shift_expr")
+	if (type != "IDENTIFIER" && name == "shift_expr")
 	{
 					
 		/*
@@ -2336,22 +2463,28 @@ void Parasite::genAC()
 
 		
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "sum")
+	if (type != "IDENTIFIER" && name == "sum")
 	{
 					
 		/*
@@ -2364,22 +2497,27 @@ void Parasite::genAC()
 
 		
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
-
 	}
 
 
-	if (name == "term")
+	if (type != "IDENTIFIER" && name == "term")
 	{
 					
 		/*
@@ -2394,22 +2532,28 @@ void Parasite::genAC()
 
 		
 
-		tmp = newTmp();
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "factor")
+	if (type != "IDENTIFIER" && name == "factor")
 	{
 					
 		/*
@@ -2421,23 +2565,27 @@ void Parasite::genAC()
 
 		*/
 
-		
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
 
-		tmp = newTmp();
 		if (children.size() == 2)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> name;
 			inst.field_4 = children[1] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "power")
+	if (type != "IDENTIFIER" && name == "power")
 	{
 					
 		/*
@@ -2447,24 +2595,31 @@ void Parasite::genAC()
 
 		*/
 
-		
 
-		tmp = newTmp();
+
+
+		if (children.size() == 1)
+		{
+			tmp = children[0] -> tmp; 
+		}
+
 		if (children.size() == 3)
 		{
+			tmp = newTmp();
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = children[1] -> name;
 			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
 			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "function_call")
+	if (type != "IDENTIFIER" && name == "function_call")
 	{
 					
 		/*
@@ -2473,12 +2628,16 @@ void Parasite::genAC()
 
 		*/
 
-		/* do nothing */
+		tmp = newTmp();
+		code inst;
+		inst.field_1 = tmp;
+		inst.field_2 = "=";
+		inst.field_3 = "#returnVal";
 
 	}
 
 
-	if (name == "args")
+	if (type != "IDENTIFIER" && name == "args")
 	{
 					
 		/*
@@ -2492,7 +2651,7 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "list_access")
+	if (type != "IDENTIFIER" && name == "list_access")
 	{
 					
 		/*
@@ -2501,23 +2660,30 @@ void Parasite::genAC()
 
 		*/
 
-		tableRecord* entry = table -> lookup(children[0] -> name);
-		assert (entry);
-		assert ((entry -> type).substr(0, 4) == "list");
-		string store = entry -> tmp;
+		if (children[0] -> name != "list")
+		{
+			string type = (host -> dataType);
+			tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
+			assert(entry);
+			int size = entry -> size;
+			
+			string tmpry = newTmp();
+			code inst;
+			inst.field_1 = tmpry;
+			inst.field_2 = "=";
+			inst.field_3 = to_string(size);
+			inst.field_4 = "*";
+			inst.field_5 = children[2] -> tmp;
+			inst.label = current;
+			threeAC.push_back(inst);
+			
+			tmp = "*(" + mangle(children[0] -> name) + " + " + tmpry + ")";
+		}
 
-		code inst;
-		tmp = newTmp();
-		inst.field_1 = tmp;
-		inst.field_2 = "=";
-		inst.field_3 = children[0] -> name;
-		inst.field_4 = "[" + children[2] -> tmp + "]";
-		inst.label = current;
-		threeAC.push_back(inst);
 
 	}
 
-	if (name == "l_primary")
+	if (type != "IDENTIFIER" && name == "l_primary")
 	{
 					
 		/*
@@ -2528,11 +2694,30 @@ void Parasite::genAC()
 
 		*/
 
+		if (children.size() == 3)
+		{
+			string hashs = tableHash(table) + children[0] -> name + "." + children[2] -> name;
+			if (Temporaries.find(hashs) == Temporaries.end())
+			{
+				Temporaries[hashs] = newTmp();
 
+				string tmp1 = newTmp();
+				code inst;
+				inst.field_1 = tmp1;
+
+			}			
+			tmp = Temporaries[hashs];
+
+		}
+
+		else
+		{
+			tmp = children[0] -> tmp;
+		}
 
 	}
 
-	if (name == "primary")
+	if (type != "IDENTIFIER" && name == "primary")
 	{
 					
 		/*
@@ -2551,13 +2736,19 @@ void Parasite::genAC()
 
 		if (children.size() == 3 && children[1] -> name == ".")
 		{
-
+			tmp = children[2] -> tmp;
+			tableRecord* entry = table -> lookup(children[0] -> name);
+			assert (entry);
+			entry = globTable -> lookup_table(entry ->type, recordType::TYPE_CLASS);
+			assert (entry);
+			dotTable = entry -> symTab;
+			dotRecord = entry;
 		}
 
 	}
 
 
-	if (name == "atom")
+	if (type != "IDENTIFIER" && name == "atom")
 	{
 					
 		/*
@@ -2574,33 +2765,31 @@ void Parasite::genAC()
 
 		*/
 
-		if (children[0]->type != "NON_TERMINAL")
+		if (children[0]->type == "IDENTIFIER")
 		{
-			tmp = newTmp();
-			code inst;
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = children[0] -> name;
-			inst.label = current;
-			threeAC.push_back(inst);
+			tableRecord* entry = table -> lookup(children[0] -> name);
+			assert (entry);
+			if (entry -> name  == entry -> type)
+			{
+				tmp = children[0] -> name;
+			}
+			else tmp = mangle(children[0] -> name);
+		}
+
+		else if (children[0]->type != "NON_TERMINAL")
+		{
+			tmp = children[0] -> name;
 		}
 
 		else
 		{
-			children[0] -> tmp = newTmp();
 			tmp = children[0] -> tmp;
-			code inst;
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = children[0] -> name;
-			inst.label = current;
-			threeAC.push_back(inst);
 		}
 
 	}
 
 
-	if (name == "group")
+	if (type != "IDENTIFIER" && name == "group")
 	{
 					
 		/*
@@ -2614,26 +2803,26 @@ void Parasite::genAC()
 	}
 
 
-	if (name == "string")
+	if (type != "IDENTIFIER" && name == "string")
 	{
 					
 		/*
-
 			string: STRING_LITERAL              
 		*/
 
-		tmp = newTmp();
+		allocate_mem((children[0] -> name).length() - 1);
+		tmp = MemRg;
 		code inst;
-		inst.field_1 = tmp;
+		inst.field_1 = "*(" + tmp + ")";
 		inst.field_2 = "=";
-		inst.field_3 = children[0] -> name;
-		inst.label = current;
+		inst.field_3 = (children[0] -> name);
+		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 	}
 
 
-	if (name == "strings")
+	if (type != "IDENTIFIER" && name == "strings")
 	{
 					
 		/*
@@ -2657,11 +2846,13 @@ void Parasite::genAC()
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = "+";
 			inst.field_5 = children[1] -> tmp;
+			inst.label = current;
+			threeAC.push_back(inst);
 		}
 
 	}
 
-	if (name == "list")
+	if (type != "IDENTIFIER" && name == "list")
 	{
 					
 		/*
@@ -2670,17 +2861,37 @@ void Parasite::genAC()
 
 		*/
 
-	}
+		string type = (host -> dataType).substr(5, (host -> dataType).length() - 6);
+		tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
+		assert(entry);
+		int size = tempExprs.size() * (entry -> size);
+		allocate = false;
+		allocate_mem(size);
+		tmp = MemRg;
 
-	if (type == "IDENTIFIER")
-	{
-		tmp = newTmp();
 		code inst;
-		inst.field_1 = tmp;
-		inst.field_2 = "=";
-		inst.field_3 = name;
-		inst.label = current;
-		threeAC.push_back(inst);
+		string location = newTmp();
+
+		for (int i=0; i<tempExprs.size(); i++)
+		{
+			inst.field_1 = location;
+			inst.field_2 = "=";
+			inst.field_3 = tmp;
+			inst.field_4 = "+";
+			inst.field_5 = to_string(i * (entry -> size));
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "*(" + location + ")";
+			inst.field_2 = "=";
+			inst.field_3 = tempExprs[i];
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
+
+		tempExprs.clear();
 
 	}
 
