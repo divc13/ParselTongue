@@ -1532,12 +1532,12 @@ void Parasite::genAC()
 		for (auto &i: params)
 			free(i);
 		
-		int local_size = funcEntry -> symTab -> currentIndex - funcEntry -> symTab -> numParams;
+		int local_size = funcEntry -> symTab -> size;
 
 		if(local_size)
 		{
 			inst.field_1 = "shift_sp";
-			inst.field_2 = to_string(local_size * SIZE_PTR * -1);
+			inst.field_2 = to_string(local_size * -1);
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
@@ -1566,7 +1566,7 @@ void Parasite::genAC()
 		if(local_size)
 		{
 			inst.field_1 = "shift_sp";
-			inst.field_2 = to_string(local_size * SIZE_PTR);
+			inst.field_2 = to_string(local_size);
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
