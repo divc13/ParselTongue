@@ -11,6 +11,9 @@ int type_offset = 1;
 vector<int> in_loop(1, 0);
 int in_function = 0;
 int self_ind =  -1;
+int fun_call = 0;
+string self_type = "";
+int funcInClass = 0;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -242,7 +245,11 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	name_to_indices[name].push_back(currentIndex);
 	record -> index = currentIndex;
 	entries[currentIndex] = record;
-	record -> offset = size;
+
+	if (recordType == recordType::TYPE_FUNCTION)
+		record->offset = -1;
+	else
+		record -> offset = size;
 
 	// size of the table not updated when function entry
 	if (recordType != recordType::TYPE_FUNCTION)
@@ -498,6 +505,13 @@ int handle_function_declaration(TreeNode* root)
 		return -1;
 	}
 
+
+	if (currTable -> tableType == tableType::CLASS && cntSelf == 0)
+	{
+		raise_error(ERR::NO_SELF, (((root -> children)[2]) -> children)[last_pos]);
+		return -1;
+	}
+
 	currTable = Table;
 	currTable -> numParams = numParam;
 
@@ -525,9 +539,12 @@ int handle_function_declaration(TreeNode* root)
 
 	if (cntSelf)
 	{
-		record = currTable->lookup("self", recordType::CLASS_SELF);
-		assert (record);
-		tableRecord* entry = new tableRecord(record->name, record->type, record->size, record->lineno, record->column, record->recordType);
+		// cout << cntSelf << "  " << numParam << endl;
+		// record = currTable->lookup("self", recordType::CLASS_SELF);
+		// assert (record);
+		// tableRecord* entry = new tableRecord("self", , record->size, record->lineno, record->column, record->recordType);
+		
+		tableRecord* entry = new tableRecord("self", currTable -> parentSymtable -> name, SIZE_PTR, (((root -> children)[2]) -> children)[last_pos]->lineno, (((root -> children)[2]) -> children)[last_pos]->column, recordType::CLASS_OBJECT);
 		err = currTable -> insert(entry);
 		free(entry);
 	}
@@ -542,7 +559,37 @@ int handle_function_declaration(TreeNode* root)
 	return 0;
 }
 
-int fillTables(symbolTable* Table, symbolTable* parentTable)
+// int fillTables(symbolTable* Table, symbolTable* parentTable)
+// {
+// 	int err = 0;
+
+// 	for (int entry = 0, child = 0; entry < parentTable->currentIndex; entry++)
+// 	{
+// 		if(!((parentTable->entries)[entry] -> name == "self" && (parentTable->entries)[entry] -> recordType == recordType::CLASS_SELF))
+// 		{
+// 			if (child < (parentTable->childIndices).size() && parentTable->childIndices[child] == entry && !((parentTable->entries)[entry]->name == "__init__"))
+// 			{
+// 				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry] -> symTab);
+// 				// cout << (newTable->entries)[0] -> name << endl;
+// 				child++;
+// 				// cout << newTable->currentIndex << endl;
+// 			}
+// 			else if (!((parentTable->entries)[entry]->name == "__init__"))
+// 			{
+// 				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry]->symTab);
+// 			}
+// 		}
+// 		if (err < 0)
+// 		{
+// 			raise_error(ERR::IMPOSSIBLE, root);
+// 			return err;
+// 		}
+// 	}
+// 	return err;
+
+// }
+
+int fillTables(symbolTable* Table, symbolTable* parentTable, string type)
 {
 	int err = 0;
 
@@ -550,17 +597,37 @@ int fillTables(symbolTable* Table, symbolTable* parentTable)
 	{
 		if(!((parentTable->entries)[entry] -> name == "self" && (parentTable->entries)[entry] -> recordType == recordType::CLASS_SELF))
 		{
-			if (child < (parentTable->childIndices).size() && parentTable->childIndices[child] == entry && !((parentTable->entries)[entry]->name == "__init__"))
+
+
+			if (child < (parentTable->childIndices).size() && parentTable->childIndices[child] == entry && (parentTable->entries)[entry]->name == "__init__")
 			{
-				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry] -> symTab);
-				// cout << (newTable->entries)[0] -> name << endl;
 				child++;
-				// cout << newTable->currentIndex << endl;
+				continue;
 			}
-			else if (!((parentTable->entries)[entry]->name == "__init__"))
+
+			if (child < (parentTable->childIndices).size() && parentTable->childIndices[child] == entry)
 			{
-				err = Table->insert((parentTable->entries)[entry], (parentTable->entries)[entry]->symTab);
+				symbolTable* newTable = new symbolTable((parentTable->entries)[entry]->name, Table);
+				newTable->numParams = (parentTable->entries)[entry]->symTab->numParams;
+				newTable->tableType = (parentTable->entries)[entry]->symTab->tableType;
+				fillTables(newTable, (parentTable->entries)[entry]->symTab, type);
+				tableRecord* newRecord = new tableRecord((parentTable->entries)[entry]->name, (parentTable->entries)[entry]->type, (parentTable->entries)[entry]->size, (parentTable->entries)[entry]->lineno, (parentTable->entries)[entry]->column, (parentTable->entries)[entry]->recordType);
+				err = Table->insert(newRecord, newTable);
+				free(newRecord);
+				child++;
 			}
+			else
+			{
+				tableRecord* newRecord = new tableRecord((parentTable->entries)[entry]->name, (parentTable->entries)[entry]->type, (parentTable->entries)[entry]->size, (parentTable->entries)[entry]->lineno, (parentTable->entries)[entry]->column, (parentTable->entries)[entry]->recordType);
+				err = Table->insert(newRecord, Table);
+				free(newRecord);
+			}
+		}
+		else
+		{
+			tableRecord* selfRecord = new tableRecord((parentTable->entries)[entry]->name, type, (parentTable->entries)[entry]->size, (parentTable->entries)[entry]->lineno, (parentTable->entries)[entry]->column, (parentTable->entries)[entry]->recordType);
+			err = Table->insert(selfRecord, Table);
+			free(selfRecord);
 		}
 		if (err < 0)
 		{
@@ -569,7 +636,6 @@ int fillTables(symbolTable* Table, symbolTable* parentTable)
 		}
 	}
 	return err;
-
 }
 
 // root is class def here
@@ -618,18 +684,18 @@ int handle_class_declaration(TreeNode* root)
 	if (err < 0)
 		return err;
 
-	record = new tableRecord("self", node -> name, SIZE_PTR, node -> lineno, node -> column, recordType::CLASS_SELF);
-	err = currTable -> insert(record);
+	// record = new tableRecord("self", node -> name, SIZE_PTR, node -> lineno, node -> column, recordType::CLASS_SELF);
+	// err = currTable -> insert(record);
 
-	free(record);
-	record = NULL;
-	if (err < 0)
-		return err;
+	// free(record);
+	// record = NULL;
+	// if (err < 0)
+	// 	return err;
 
 	
 	if (parent != globTable)
 	{
-		err = fillTables(currTable, parent);
+		err = fillTables(currTable, parent, currTable -> name);
 		if (err < 0)
 			return err;
 	}
@@ -902,8 +968,6 @@ int post_handle_dot(TreeNode* root)
 {
 	assert((root->children).size() == 2);
 	root -> dataType = (root->children)[1]->dataType;
-	if(tempDotTable)
-		currTable = tempDotTable;
 	tempDotTable = NULL;
 	
 	return 0;
@@ -934,8 +998,8 @@ int pre_handle_dot(TreeNode* root)
 	
 	assert(classRecord);
 	// cout << currTable->name << endl << classRecord->symTab->name << endl << classRecord->symTab->parentSymtable->name << endl;
-	tempDotTable = currTable;
-	currTable = classRecord -> symTab;
+	tempDotTable = classRecord -> symTab;
+	funcInClass = 1;
 
 	// if ((root->children)[0] -> dataType == (root->children)[0] -> name)
 	// {
@@ -946,6 +1010,12 @@ int pre_handle_dot(TreeNode* root)
 
 	(root->children)[0] -> type = "CLASS_OBJ";
 	(root->children)[0] -> dataType = classRecord -> type;
+
+	if (root->children[1]->name == "function_call" && root->children[1]->type == "NON_TERMINAL" && classRecord->name != (root->children)[0] -> name)
+	{
+		fun_call = 1;
+		self_type = classRecord -> type;
+	}
 
 	return 0;
 }
@@ -1147,6 +1217,17 @@ string handle_function_call(TreeNode* root)
 
 	int nparams = ((root -> children)[2]->children).size();
 	vector<tableRecord*> params;
+
+	if(fun_call == 1)
+	{
+		TreeNode* node = (root -> children)[0];
+		tableRecord* record = new tableRecord("self", self_type);
+		params.push_back(record);
+		fun_call = 0;
+		self_type = "";
+	}
+
+
 	for(int i = 0; i < nparams; i++)
 	{
 		TreeNode* node = ((root -> children)[2]->children)[i];
@@ -1160,11 +1241,9 @@ string handle_function_call(TreeNode* root)
 	}
 
 	tableRecord* funcEntry = currTable -> lookup((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
-	if (tempDotTable) funcEntry = currTable -> lookup_table((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
-	// cout << (root -> children)[0] -> name << " " << currTable->parentSymtable->name << endl;
-	// if(tempDotTable)
-	// 	currTable = tempDotTable;
-	// tempDotTable = NULL;
+	if (tempDotTable) funcEntry = tempDotTable -> lookup_table((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
+	tempDotTable = NULL;
+
 	for (auto &i: params)
 		free(i);
 		
@@ -1173,6 +1252,8 @@ string handle_function_call(TreeNode* root)
 		raise_error(ERR::FUNC_OVERLOAD, (root -> children)[0]);
 		return "";
 	}
+
+	
 
 	root -> dataType = funcEntry -> type;
 	return root -> dataType;
@@ -1196,10 +1277,11 @@ int handle_to(TreeNode* root)
 int handle_identifier(TreeNode* root)
 {
 	tableRecord* entry = currTable -> lookup(root -> name);
-	if (tempDotTable) entry = currTable -> lookup_table(root -> name);
-	// if(tempDotTable)
-	// 	currTable = tempDotTable;
-	// tempDotTable = NULL;
+	if (funcInClass)
+	{
+		if (tempDotTable) entry = tempDotTable -> lookup_table(root -> name);
+		funcInClass = 0;
+	}
 
 	if (!entry)
 	{
@@ -1412,6 +1494,12 @@ int generate_symtable(TreeNode *root)
 		tableRecord* entry = currTable -> parentSymtable -> lookup_table((root->children)[0]->name, recordType::TYPE_FUNCTION, &params);
 		assert(entry);
 		entry -> size = currTable -> size;
+
+
+		for (int i = 0; i < entry->symTab->numParams; i++)
+		{
+			entry -> size -= (entry->symTab->entries)[i]->size;
+		}
 
 		// setting the class constructor function
 		if(entry -> name == "__init__")

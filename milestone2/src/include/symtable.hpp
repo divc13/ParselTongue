@@ -9,10 +9,10 @@ using namespace std;
 #define MAGENTA "\033[1;35m"
 #define CYAN "\033[1;36m"
 
-#define SIZE_INT 4
+#define SIZE_INT 8
 #define SIZE_PTR 8
 #define SIZE_FLOAT 8
-#define SIZE_BOOL 1
+#define SIZE_BOOL 8
 #define SIZE_STRING(x) (1 + (x))
 #define SIZE_LIST(x) (8 * ((x)-2))
 

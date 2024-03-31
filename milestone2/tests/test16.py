@@ -1,1 +1,2 @@
-a:list[int] = [1,2,3,4]
+def a(b:int) -> None:
+    return

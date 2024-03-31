@@ -787,7 +787,7 @@ void Parasite::genAC()
 
 		code inst;
 		inst.field_1 = "begin_function";
-		inst.field_2 = "funcName";
+		inst.field_2 = funcName;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -902,8 +902,8 @@ void Parasite::genAC()
 
 		if (children[0] -> name == "annotation")
 		{
-			children[1] -> next = next;
-			children[1] -> current = newLabel();
+			children[0] -> next = next;
+			children[0] -> current = newLabel();
 		}
 
 	}
@@ -1524,7 +1524,6 @@ void Parasite::genAC()
 			inst.field_2 = (children[2] -> children)[i] -> tmp;
 			inst.label = newLabel();
 			threeAC.push_back(inst);
-
 		}
 
 
@@ -1550,6 +1549,8 @@ void Parasite::genAC()
 			funcName = tableHash(dotTable);
 			dotTable = NULL;
 		}
+
+		funcName += children[0] -> name + "%@";
 
 		symbolTable* funcTable = funcEntry -> symTab;
 		for (int i = 0; i < nparams; i++)
