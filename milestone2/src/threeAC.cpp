@@ -115,6 +115,15 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		string tmper = newTmp();
+		inst.field_1 = tmper;
+		inst.field_2 = "=";
+		inst.field_3 = val;
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		allocate_mem(tmpry);
 
 		string l1 = newLabel();
@@ -150,7 +159,7 @@ void Parasite::genAC()
 
 		inst.field_1 = "*(" + t1 + " + " + t4 + ")";
 		inst.field_2 = "=";
-		inst.field_3 = t2;
+		inst.field_3 = tmper;
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
@@ -159,6 +168,14 @@ void Parasite::genAC()
 		inst.field_1 = t2;
 		inst.field_2 = "=";
 		inst.field_3 = t2;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = tmper;
+		inst.field_2 = "=";
+		inst.field_3 = tmper;
 		inst.field_4 = "+";
 		inst.field_5 = "1";
 		inst.label = newLabel();
@@ -1406,7 +1423,7 @@ void Parasite::genAC()
 		{
 
 			int operation_len = (children[1] -> name).length();
-			string operation = (children[1] -> name).substr(1, operation_len - 1); 
+			string operation = (children[1] -> name).substr(0, operation_len - 1); 
 
 			code inst;
 			inst.field_1 = children[0] -> tmp;
