@@ -166,7 +166,16 @@ void Parasite::genAC()
 		inst.label = l1;
 		threeAC.push_back(inst);
 
-		inst.field_1 = "*(" + t1 + " + " + t4 + ")";
+		string loc = newTmp();
+		inst.field_1 = loc;
+		inst.field_2 = "=";
+		inst.field_3 = t1;
+		inst.field_4 = "+";
+		inst.field_5 = t4;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "*(" + loc + ")";
 		inst.field_2 = "=";
 		inst.field_3 = tmper;
 		inst.field_4 = "";
@@ -293,6 +302,7 @@ void Parasite::genAC()
 		string t7 = newTmp();
 		string t8 = newTmp();
 		string t9 = newTmp();
+		string t10 = newTmp();
 
 		allocate_mem(tmpry_3);
 		t5 = MemRg;
@@ -337,7 +347,15 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		inst.field_1 = "*(" + t5 + " + " + t8 + ")";
+		inst.field_1 = t10;
+		inst.field_2 = "=";
+		inst.field_3 = t5;
+		inst.field_4 = "+";
+		inst.field_5 = t8;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "*(" + t10 + ")";
 		inst.field_2 = "=";
 		inst.field_3 = t6;
 		inst.field_4 = "";
@@ -1988,6 +2006,7 @@ void Parasite::genAC()
 		string t2 = newTmp();
 		string t3 = newTmp();
 		string t4 = newTmp();
+		string t5 = newTmp();
 
 		code inst;
 		inst.field_1 = t3;
@@ -2022,9 +2041,17 @@ void Parasite::genAC()
 		inst.label = lab;
 		threeAC.push_back(inst);
 
+		inst.field_1 = t5;
+		inst.field_2 = "=";
+		inst.field_3 = children[2] -> tmp;
+		inst.field_4 = "+";
+		inst.field_5 = t2;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = children[0] -> tmp;
 		inst.field_2 = "=";
-		inst.field_3 = "*(" + children[2] -> tmp + " + " + t2 + ")";
+		inst.field_3 = "*(" + t5 + ")";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
@@ -2653,10 +2680,19 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
+			string t1 = newTmp();
+			inst.field_1 = t1;
+			inst.field_2 = "=";
+			inst.field_3 = mangle(children[0] -> name);
+			inst.field_4 = "+";
+			inst.field_5 = tmpry;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
 			tmp = newTmp();
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
-			inst.field_3 = "*(" + mangle(children[0] -> name) + " + " + tmpry + ")";
+			inst.field_3 = t1;
 			inst.field_4 = "";
 			inst.field_5 = "";
 			inst.label = newLabel();
@@ -2688,7 +2724,16 @@ void Parasite::genAC()
 			symTable* tmpTable = entry -> symTab;
 			entry = tmpTable -> lookup_table(children[2] -> name);
 			assert (entry);
-			tmp = "*(" + children[0] -> tmp + " + " + to_string(entry -> offset) + ")";
+
+			code inst;
+			tmp = newTmp();
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = children[0] -> tmp;
+			inst.field_4 = "+";
+			inst.field_5 = to_string(entry -> offset);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
 		}
 
 
