@@ -176,6 +176,7 @@ void initTypes()
 	tempRecord = new tableRecord("print", "None", 0, 0, 0, recordType::TYPE_FUNCTION);
 	tempRecord_int -> recordType = recordType::VARIABLE;
 	print_int->insert(tempRecord_int);
+	print_int->size = 0;
 	globTable -> insert(tempRecord, print_int);
 
 	symbolTable* print_float = new symbolTable("print", globTable);
@@ -183,6 +184,7 @@ void initTypes()
 	print_float -> tableType = tableType::FUNCTION;
 	tempRecord_float -> recordType = recordType::VARIABLE;
 	print_float -> insert(tempRecord_float);
+	print_float->size = 0;
 	globTable -> insert(tempRecord, print_float);
 
 	symbolTable* print_bool = new symbolTable("print", globTable);
@@ -190,6 +192,7 @@ void initTypes()
 	print_bool -> tableType = tableType::FUNCTION;
 	tempRecord_bool -> recordType = recordType::VARIABLE;
 	print_bool -> insert(tempRecord_bool);
+	print_bool->size = 0;
 	globTable -> insert(tempRecord, print_bool);
 
 	symbolTable* print_str = new symbolTable("print", globTable);
@@ -197,6 +200,7 @@ void initTypes()
 	print_str -> tableType = tableType::FUNCTION;
 	tempRecord_str -> recordType = recordType::VARIABLE;
 	print_str -> insert(tempRecord_str);
+	print_str->size = 0;
 	globTable -> insert(tempRecord, print_str);
 
 
@@ -207,6 +211,7 @@ void initTypes()
 	print_int_list -> tableType = tableType::FUNCTION;
 	tempRecord_int -> type = "list[int]";
 	print_int_list -> insert(tempRecord_int);
+	print_int_list->size = 0;
 	globTable -> insert(tempRecord, print_int_list);
 
 	symbolTable* print_float_list = new symbolTable("print", globTable);
@@ -214,6 +219,7 @@ void initTypes()
 	print_float_list -> tableType = tableType::FUNCTION;
 	tempRecord_float -> type = "list[float]";
 	print_float_list -> insert(tempRecord_float);
+	print_float_list->size = 0;
 	globTable -> insert(tempRecord, print_float_list);
 
 	symbolTable* print_bool_list = new symbolTable("print", globTable);
@@ -221,6 +227,7 @@ void initTypes()
 	print_bool_list -> tableType = tableType::FUNCTION;
 	tempRecord_bool -> type = "list[bool]";
 	print_bool_list -> insert(tempRecord_bool);
+	print_bool_list->size = 0;
 	globTable -> insert(tempRecord, print_bool_list);
 
 	symbolTable* print_str_list = new symbolTable("print", globTable);
@@ -228,6 +235,7 @@ void initTypes()
 	print_str_list -> tableType = tableType::FUNCTION;
 	tempRecord_str -> type = "list[str]";
 	print_str_list -> insert(tempRecord_str);
+	print_str_list->size = 0;
 	globTable -> insert(tempRecord, print_str_list);
 
 
@@ -242,12 +250,14 @@ void initTypes()
 	range_two_args -> insert(tempRecord_int);
 	tempRecord_int -> name = "#var2";
 	range_two_args -> insert(tempRecord_int);
+	range_two_args -> size = 0;
 	globTable -> insert(tempRecord, range_two_args);
 
 	symbolTable* range_one_args = new symbolTable("range", globTable);
 	range_one_args -> numParams = 1;
 	range_one_args -> tableType = tableType::FUNCTION;
 	range_one_args -> insert(tempRecord_int);
+	range_one_args -> size = 0;
 	globTable -> insert(tempRecord, range_one_args);
 
 

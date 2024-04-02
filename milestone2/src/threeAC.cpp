@@ -2492,7 +2492,8 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 		}
 
-		string funcName = tableHash(table);
+		assert (funcEntry -> symTab -> parentSymtable);
+		string funcName = tableHash(funcEntry -> symTab -> parentSymtable);
 
 		if (dotTable)
 		{
@@ -2694,7 +2695,20 @@ void Parasite::genAC()
 
 		}
 
-		if (children[0]->type == "IDENTIFIER")
+		else if (children[0]->type == "KEYWORD")
+		{
+			if (children[0]->name == "True")
+			{
+				tmp = "1";
+			}
+
+			if (children[0]->name == "False")
+			{
+				tmp = "0";
+			}
+		}
+
+		else if (children[0]->type == "IDENTIFIER")
 		{
 			tableRecord* entry = table -> lookup(children[0] -> name);
 			assert (entry);
