@@ -1350,8 +1350,28 @@ int generate_symtable(TreeNode *root)
 	{
 		int size = (root ->children).size();
 		assert(size <= 1);
+
+		if (!currTable -> parentSymtable)
+		{
+			raise_error(ERR::RETURN_NO_FUNC, root);
+			return -1;
+		}
+
 		assert (currTable -> parentSymtable);
 		tableRecord* record1 = currTable -> parentSymtable->lookup(currTable -> name);
+
+		if (!record1)
+		{
+			raise_error(ERR::RETURN_NO_FUNC, root);
+			return -1;
+		}
+
+		if (record1 -> recordType != recordType::TYPE_FUNCTION)
+		{
+			raise_error(ERR::RETURN_NO_FUNC, root);
+			return -1;
+		}
+
 		assert(record1 && record1 -> recordType == recordType::TYPE_FUNCTION);
 		string type1 = record1 -> type;
 		if (size == 0)
