@@ -17,7 +17,7 @@ display_help() {
 	echo -e "Options:"
 	echo -e "	-v,	--verbose			: Output a .debug file at the output folder"
 	echo -e "	-i,	--input				: Specify the Input PYTHON file(s), any files specified after this option are input files till -o is specified"
-	echo -e "	-o,	--output			: Specify the Output .tac file(s), any files specified after this option are output files till -i is specified"
+	echo -e "	-o,	--output			: Specify the Output tac file(s), any files specified after this option are output files till -i is specified"
 	echo -e "	-d,	--dot				: Output a .DOT file at the output folder"
 	echo -e "	-a,	--ast				: Output an AST pdf file at the output folder"
 	echo -e "	-p,	--ptree				: Output a Parse Tree pdf file at the output folder"
@@ -143,7 +143,7 @@ for ((i = 0; i < ${#input_files[@]}; i++)); do
 	else
 		filename=$(basename "$input_files[$i]")
 		filename_no_extension="${filename%.*}"
-		output_file="../output/${filename_no_extension}.tac"
+		output_file="../output/${filename_no_extension}.txt"
 	fi
 	output_directory=$(dirname "$output_file")
 	create_directory_if_not_exists "$output_directory"
@@ -179,7 +179,7 @@ else
 		if [ "$i" -lt "${#output_files[@]}" ]; then
 			output_file="${output_files[$i]}"
 		else
-			output_file="${output_files_without_extention[$i]}.tac"
+			output_file="${output_files_without_extention[$i]}.txt"
 			output_files+="${output_file}"
 			echo -e "\e[34m${output_file}\e[0m"
 		fi

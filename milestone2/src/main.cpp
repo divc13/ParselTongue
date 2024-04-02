@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 
 	if (tac_flag)
 	{
-		dumpAC(noExtentionOutputFile + ".tac");
+		dumpAC(noExtentionOutputFile + ".txt");
 	}
 
 	fclose(yyin);

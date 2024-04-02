@@ -33,7 +33,7 @@ symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 }
 
 // look only inside the table, donot go one level up (for variables)
-tableRecord* symbolTable::lookup_table(string name, int recordType, vector<tableRecord*> *params)
+tableRecord* symbolTable::lookup_table(string name, int recordType, vector<tableRecord*> *params, int doInsert)
 {
 	vector<int>indices = name_to_indices[name];
 	tableRecord* record = NULL;
@@ -104,15 +104,23 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			}
 		}
 
-		if (cnt > 1)
+		if(!doInsert)
 		{
-			TreeNode* node = new TreeNode("");
-			for (auto&i: index)
+			if (cnt > 1)
 			{
-				node -> name = entries[i] -> name;
-				node -> lineno = entries[i] -> lineno;
-				node -> column = entries[i] -> column;
-				raise_error(ERR::CANDIDATE, node);
+				TreeNode* node = new TreeNode("");
+				for (auto&i: index)
+				{
+					node -> name = entries[i] -> name;
+					node -> lineno = entries[i] -> lineno;
+					node -> column = entries[i] -> column;
+					raise_error(ERR::CANDIDATE, node);
+				}
+			}
+
+			if (cnt == 1)
+			{
+				return entries[index[0]];
 			}
 		}
 
@@ -157,7 +165,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 	return NULL;
 }
 
-tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord*> *params)
+tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord*> *params, int doInsert)
 {
 	tableRecord* record = lookup_table(name, recordType, params);
 	if (record)
@@ -166,7 +174,7 @@ tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord
 	if(!parentSymtable) 
 		return NULL;
 
-	record = parentSymtable -> lookup(name, recordType, params);
+	record = parentSymtable -> lookup(name, recordType, params, doInsert);
 	return record;
 }
 
@@ -182,7 +190,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	if (recordType != recordType::TYPE_FUNCTION)
 	{
-		tableRecord* entry = lookup_table(name, recordType);
+		tableRecord* entry = lookup_table(name, recordType, NULL, 1);
 		if (entry && entry->recordType != recordType::KEYWORD)
 		{
 			raise_error (ERR::REDIFINITION, tempNode);
@@ -205,7 +213,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		for (int i = 0; i < funcTable -> numParams; i++)
 			params.push_back((funcTable -> entries)[i]);
 
-		tableRecord* entry = lookup_table(name, recordType, &params);
+		tableRecord* entry = lookup_table(name, recordType, &params, 1);
 		if(entry)
 		{
 			if (entry -> recordType == recordType::TYPE_FUNCTION)
@@ -437,6 +445,13 @@ int handle_expression(TreeNode* root)
 // root is function def here
 int handle_function_declaration(TreeNode* root)
 {
+
+	if (currTable != globTable && currTable -> tableType != tableType::CLASS)
+	{
+		raise_error(ERR::NESTED_FUNCTION, root);
+		return -1;
+	}
+
 	// a function definition has 6 children
 	if (((root -> children)[0] -> name).compare("main")
 					 && ((root -> children)[0] -> name).compare("__init__"))
@@ -448,6 +463,36 @@ int handle_function_declaration(TreeNode* root)
 			raise_error (ERR::NO_RET_TYPE, (root ->children)[0]);
 			return -1;
 		}
+
+		assert ((root -> children).size() == 6);
+		if ((root -> children)[4] -> children[0] -> name != "None")
+		{
+			if ((root -> children)[5] -> name != "return_stmt")
+			{
+				if ((root -> children)[5] -> name != "block")
+				{
+					raise_error(ERR::NO_RETURN, root);
+					return -1;
+				}
+
+				TreeNode* node = (root -> children)[5];
+				bool ret = false;
+				for (int i=0; i<(node -> children).size();i++)
+				{
+					if ((node -> children)[i] -> name == "return_stmt")
+					{
+						ret = true;
+						break;
+					}
+				}
+				if (!ret)
+				{
+					raise_error(ERR::NO_RETURN, root);
+					return -1;
+				}
+			}
+		}
+
 	}
 
 	else 
@@ -510,6 +555,7 @@ int handle_function_declaration(TreeNode* root)
 			return ret;
 		type = (((root -> children)[4]) -> children)[0] -> dataType;
 	}
+	
 	node -> dataType = type;
 
 	tableRecord* record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
@@ -1087,9 +1133,9 @@ int handle_operators(TreeNode* root)
 	}
 
 	// unary operators
-	assert ((root -> name).compare("-") == 0 || (root -> name).compare("+") == 0 || (root -> name).compare("not") == 0 );
+	assert ((root -> name).compare("-") == 0 || (root -> name).compare("+") == 0 || (root -> name).compare("not") == 0 || (root -> name).compare("~") == 0);
 
-	if((root->name).compare("not"))
+	if((root->name).compare("not") && (root->name).compare("~"))
 	{
 		final = isCompatible("int", left -> dataType);
 		if (final.length() == 0)
@@ -1103,7 +1149,7 @@ int handle_operators(TreeNode* root)
 		return 0;
 	}
 
-	// handle not
+	// handle not and ~
 	final = isCompatible("bool", left -> dataType);
 	if (final.length() == 0)
 	{
@@ -1350,8 +1396,28 @@ int generate_symtable(TreeNode *root)
 	{
 		int size = (root ->children).size();
 		assert(size <= 1);
+
+		if (!currTable -> parentSymtable)
+		{
+			raise_error(ERR::RETURN_NO_FUNC, root);
+			return -1;
+		}
+
 		assert (currTable -> parentSymtable);
 		tableRecord* record1 = currTable -> parentSymtable->lookup(currTable -> name);
+
+		if (!record1)
+		{
+			raise_error(ERR::RETURN_NO_FUNC, root);
+			return -1;
+		}
+
+		if (record1 -> recordType != recordType::TYPE_FUNCTION)
+		{
+			raise_error(ERR::RETURN_NO_FUNC, root);
+			return -1;
+		}
+
 		assert(record1 && record1 -> recordType == recordType::TYPE_FUNCTION);
 		string type1 = record1 -> type;
 		if (size == 0)
