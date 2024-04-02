@@ -2013,20 +2013,20 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		inst.field_1 = t1;
+		inst.field_2 = "=";
+		inst.field_3 = t1;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		tmp = newTmp();
 		inst.field_1 = tmp;
 		inst.field_2 = "=";
 		inst.field_3 = t1;
 		inst.field_4 = "<";
 		inst.field_5 = t4;
-		inst.label = newLabel();
-		threeAC.push_back(inst);
-
-		inst.field_1 = t1;
-		inst.field_2 = "=";
-		inst.field_3 = t1;
-		inst.field_4 = "+";
-		inst.field_5 = "1";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
