@@ -2631,7 +2631,7 @@ void Parasite::genAC()
 		*/
 
 
-		if (children[0] -> name == "l_primary")
+		if (children.size() == 0)
 		{
 			tmp = children[0]->tmp;
 		}
