@@ -1125,7 +1125,7 @@ int handle_operators(TreeNode* root)
 	}
 
 	// unary operators
-	assert ((root -> name).compare("-") == 0 || (root -> name).compare("+") == 0 || (root -> name).compare("not") == 0 );
+	assert ((root -> name).compare("-") == 0 || (root -> name).compare("+") == 0 || (root -> name).compare("not") == 0 || (root -> name).compare("~") == 0);
 
 	if((root->name).compare("not"))
 	{
