@@ -14,7 +14,6 @@ int self_ind =  -1;
 int fun_call = 0;
 string self_type = "";
 int funcInClass = 0;
-bool ShouldReturn = false;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -456,6 +455,36 @@ int handle_function_declaration(TreeNode* root)
 			raise_error (ERR::NO_RET_TYPE, (root ->children)[0]);
 			return -1;
 		}
+
+		assert ((root -> children).size() == 6);
+		if ((root -> children)[4] -> children[0] -> name != "None")
+		{
+			if ((root -> children)[5] -> name != "return_stmt")
+			{
+				if ((root -> children)[5] -> name != "block")
+				{
+					raise_error(ERR::NO_RETURN, root);
+					return -1;
+				}
+
+				TreeNode* node = (root -> children)[5];
+				bool ret = false;
+				for (int i=0; i<(node -> children).size();i++)
+				{
+					if ((node -> children)[i] -> name == "return_stmt")
+					{
+						ret = true;
+						break;
+					}
+				}
+				if (!ret)
+				{
+					raise_error(ERR::NO_RETURN, root);
+					return -1;
+				}
+			}
+		}
+
 	}
 
 	else 
