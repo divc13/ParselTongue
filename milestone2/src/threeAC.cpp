@@ -115,15 +115,6 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		string tmper = newTmp();
-		inst.field_1 = tmper;
-		inst.field_2 = "=";
-		inst.field_3 = val;
-		inst.field_4 = "";
-		inst.field_5 = "";
-		inst.label = newLabel();
-		threeAC.push_back(inst);
- 
 		string tmpry_2 = newTmp();
 		inst.field_1 = tmpry_2;
 		inst.field_2 = "=";
@@ -177,23 +168,15 @@ void Parasite::genAC()
 
 		inst.field_1 = "*(" + loc + ")";
 		inst.field_2 = "=";
-		inst.field_3 = tmper;
-		inst.field_4 = "";
-		inst.field_5 = "";
+		inst.field_3 = t2;
+		inst.field_4 = "-";
+		inst.field_5 = "1";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		inst.field_1 = t2;
 		inst.field_2 = "=";
 		inst.field_3 = t2;
-		inst.field_4 = "+";
-		inst.field_5 = "1";
-		inst.label = newLabel();
-		threeAC.push_back(inst);
-
-		inst.field_1 = tmper;
-		inst.field_2 = "=";
-		inst.field_3 = tmper;
 		inst.field_4 = "+";
 		inst.field_5 = "1";
 		inst.label = newLabel();
@@ -1769,7 +1752,15 @@ void Parasite::genAC()
 		inst.label = label;
 		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
-		filler.push_back({label, children[3]->last});
+
+		if (children[3] -> first == children[3] -> last)
+		{
+			filler.push_back({label, label});
+		}
+		else{
+			filler.push_back({label, children[3]->last});
+		}
+
 
 
 		if (children.size() == 5)
@@ -1793,9 +1784,17 @@ void Parasite::genAC()
 			inst.field_3 = "goto";
 			inst.field_4 = "";
 			inst.label = label;
-
 			threeAC.insert(threeAC.begin() + loc + 1, inst);
-			filler.push_back({label, children[4]->last});
+
+			if (children[4] -> first == children[4] -> last)
+			{
+				filler.push_back({label, label});
+			}
+			else{
+				filler.push_back({label, children[4]->last});
+			}
+
+			// filler.push_back({label, children[4]->last});
 		}
 		
 	}
@@ -1833,8 +1832,15 @@ void Parasite::genAC()
 		inst.label = label;
 		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
-		filler.push_back({label, children[3]->last});
+		// filler.push_back({label, children[3]->last});
 
+		if (children[3] -> first == children[3] -> last)
+		{
+			filler.push_back({label, label});
+		}
+		else{
+			filler.push_back({label, children[3]->last});
+		}
 
 		if (children.size() == 5)
 		{
@@ -1859,7 +1865,15 @@ void Parasite::genAC()
 			inst.label = label;
 
 			threeAC.insert(threeAC.begin() + loc + 1, inst);
-			filler.push_back({label, children[4]->last});
+			if (children[4] -> first == children[4] -> last)
+			{
+				filler.push_back({label, label});
+			}
+			else{
+				filler.push_back({label, children[4]->last});
+			}
+
+			// filler.push_back({label, children[4]->last});
 		}
 
 	}
@@ -3007,7 +3021,7 @@ void fillCode()
 
 		assert(entry1 >= 0);
 		assert(entry2 >= 0);
-		
+
 		if	(entry2 == threeAC.size())
 			threeAC[entry1].field_4 = "END";
 		else
