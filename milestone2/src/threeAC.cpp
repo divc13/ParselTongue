@@ -812,8 +812,6 @@ void Parasite::genAC()
 
 		*/
 
-		// labelStack.push({current, next});
-
 	}
 
 
@@ -826,8 +824,6 @@ void Parasite::genAC()
 				| KW_for for_expr DLM_COLON block else_block
 
 		*/
-
-		// labelStack.push({current, next});
 		
 	}
 
@@ -1439,6 +1435,7 @@ void Parasite::genAC()
 		inst.field_3 = children[2] -> tmp;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
+		tmp = children[0] -> tmp;
 
 	}
 
@@ -2579,8 +2576,23 @@ void Parasite::genAC()
 			inst.field_5 = children[2] -> tmp;
 			inst.label = newLabel();
 			threeAC.push_back(inst);
-			
-			tmp = "*(" + mangle(children[0] -> name) + " + " + tmpry + ")";
+
+			inst.field_1 = tmpry;
+			inst.field_2 = "=";
+			inst.field_3 = tmpry;
+			inst.field_4 = "+";
+			inst.field_5 = "8";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			tmp = newTmp();
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = "*(" + mangle(children[0] -> name) + " + " + tmpry + ")";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
 		}
 
 
@@ -2631,7 +2643,7 @@ void Parasite::genAC()
 		*/
 
 
-		if (children.size() == 0)
+		if (children.size() == 1)
 		{
 			tmp = children[0]->tmp;
 		}
@@ -2844,6 +2856,10 @@ void Parasite::genAC()
 	if (type == "NON_TERMINAL")
 	{
 		last = threeAC[threeAC.size() - 1].label;
+		if (name == "for_stmt" || name == "while_stmt")
+		{
+			labelStack.push({first, last});
+		}
 	}
 
 }
