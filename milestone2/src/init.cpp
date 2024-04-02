@@ -50,6 +50,7 @@ void init_error()
 	ErrorMap[ERR::LOOP] 						=		"break and continue can only be used when inside a loop";
 	ErrorMap[ERR::IMPOSSIBLE] 					=		"you somehow achieved what I thought was impossible";
 	ErrorMap[ERR::RETURN_NO_FUNC] 				=		"return can only be used when inside the function and you are not in one";
+	ErrorMap[ERR::NESTED_FUNCTION] 				=		"Nesting of functions is not yet supported";
 	ErrorMap[ERR::BAD_LIST] 					=		"cannot dereference an element of a variable which is not a list";
 
 

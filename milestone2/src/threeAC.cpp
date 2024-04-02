@@ -52,7 +52,7 @@ string mangle(string name)
 void allocate_mem(string size)
 {
 	code inst;
-	inst.field_1 = "pushparam";
+	inst.field_1 = "param";
 	inst.field_2 = size;
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -2451,26 +2451,27 @@ void Parasite::genAC()
 
 		code inst;
 
-		if (dotRecord)
-		{
-			params.push_back(dotRecord);
-			inst.field_1 = "pushparam";
-			inst.field_2 = "self";
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-			dotRecord = NULL;
-		}
 
-		for(int i = 0; i < nparams; i++)
+		for(int i = nparams -1; i >= 0; i--)
 		{
 			TreeNode* node = ((host -> children)[2] -> children)[i];
 			tableRecord* record = new tableRecord(node -> name, node -> dataType);
 			params.push_back(record);
 
-			inst.field_1 = "pushparam";
+			inst.field_1 = "param";
 			inst.field_2 = tempExprs[i];
 			inst.label = newLabel();
 			threeAC.push_back(inst);
+		}
+
+		if (dotRecord)
+		{
+			params.push_back(dotRecord);
+			inst.field_1 = "param";
+			inst.field_2 = "self";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+			dotRecord = NULL;
 		}
 
 		tempExprs.clear();

@@ -438,6 +438,13 @@ int handle_expression(TreeNode* root)
 // root is function def here
 int handle_function_declaration(TreeNode* root)
 {
+
+	if (currTable != globTable && currTable -> tableType != tableType::CLASS)
+	{
+		raise_error(ERR::NESTED_FUNCTION, root);
+		return -1;
+	}
+
 	// a function definition has 6 children
 	if (((root -> children)[0] -> name).compare("main")
 					 && ((root -> children)[0] -> name).compare("__init__"))
