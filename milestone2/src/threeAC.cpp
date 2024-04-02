@@ -2523,13 +2523,15 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 		}
 
-		tmp = newTmp();
-		inst.field_1 = tmp;
-		inst.field_2 = "=";
-		inst.field_3 = "popparam";
-		inst.label = newLabel();
-		threeAC.push_back(inst);
-
+		if (funcEntry -> type != "None" && funcEntry -> type != "")
+		{
+			tmp = newTmp();
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = "popparam";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
 	}
 
 

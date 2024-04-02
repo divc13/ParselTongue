@@ -116,6 +116,11 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			}
 		}
 
+		if (cnt == 1)
+		{
+			return entries[index[0]];
+		}
+
 		return NULL;
 	}
 
