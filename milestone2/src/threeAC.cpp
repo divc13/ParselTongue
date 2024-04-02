@@ -1729,7 +1729,7 @@ void Parasite::genAC()
 
 		code inst;
 		inst.field_1 = "pop_param";
-		inst.field_2 = children[0] -> name;
+		inst.field_2 = mangle(children[0] -> name);
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
