@@ -85,11 +85,11 @@ typedef struct symTable {
 	/* here lineno and column are those of the entity that is found now and looked up,
 	err shows whether to print error message
 	returns the first matched entry if multiple entries found */
-	tableRecord* lookup(string name, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
+	tableRecord* lookup(string name, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL, int doInsert = 0);
 	
 	/* lookup only inside the corresponding table, donot go up in the heirarchy,
 	returns the first matched entry if multiple entries found */
-	tableRecord* lookup_table(string name, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL);
+	tableRecord* lookup_table(string name, int recordType = recordType::VARIABLE, vector<tableRecord*> *params = NULL, int doInsert = 0);
 
 	int insert(tableRecord* inputRecord, struct symTable* funcTable = NULL);
 	void dumpCSV(ofstream &CSV);

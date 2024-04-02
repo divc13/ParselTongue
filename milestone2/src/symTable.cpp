@@ -33,7 +33,7 @@ symbolTable::symTable(string __name, symbolTable* __parentSymtable)
 }
 
 // look only inside the table, donot go one level up (for variables)
-tableRecord* symbolTable::lookup_table(string name, int recordType, vector<tableRecord*> *params)
+tableRecord* symbolTable::lookup_table(string name, int recordType, vector<tableRecord*> *params, int doInsert)
 {
 	vector<int>indices = name_to_indices[name];
 	tableRecord* record = NULL;
@@ -104,21 +104,24 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			}
 		}
 
-		if (cnt > 1)
+		if(!doInsert)
 		{
-			TreeNode* node = new TreeNode("");
-			for (auto&i: index)
+			if (cnt > 1)
 			{
-				node -> name = entries[i] -> name;
-				node -> lineno = entries[i] -> lineno;
-				node -> column = entries[i] -> column;
-				raise_error(ERR::CANDIDATE, node);
+				TreeNode* node = new TreeNode("");
+				for (auto&i: index)
+				{
+					node -> name = entries[i] -> name;
+					node -> lineno = entries[i] -> lineno;
+					node -> column = entries[i] -> column;
+					raise_error(ERR::CANDIDATE, node);
+				}
 			}
-		}
 
-		if (cnt == 1)
-		{
-			return entries[index[0]];
+			if (cnt == 1)
+			{
+				return entries[index[0]];
+			}
 		}
 
 		return NULL;
@@ -162,7 +165,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 	return NULL;
 }
 
-tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord*> *params)
+tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord*> *params, int doInsert)
 {
 	tableRecord* record = lookup_table(name, recordType, params);
 	if (record)
@@ -171,7 +174,7 @@ tableRecord* symbolTable::lookup(string name, int recordType, vector<tableRecord
 	if(!parentSymtable) 
 		return NULL;
 
-	record = parentSymtable -> lookup(name, recordType, params);
+	record = parentSymtable -> lookup(name, recordType, params, doInsert);
 	return record;
 }
 
@@ -187,7 +190,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 
 	if (recordType != recordType::TYPE_FUNCTION)
 	{
-		tableRecord* entry = lookup_table(name, recordType);
+		tableRecord* entry = lookup_table(name, recordType, NULL, 1);
 		if (entry && entry->recordType != recordType::KEYWORD)
 		{
 			raise_error (ERR::REDIFINITION, tempNode);
@@ -210,7 +213,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		for (int i = 0; i < funcTable -> numParams; i++)
 			params.push_back((funcTable -> entries)[i]);
 
-		tableRecord* entry = lookup_table(name, recordType, &params);
+		tableRecord* entry = lookup_table(name, recordType, &params, 1);
 		if(entry)
 		{
 			if (entry -> recordType == recordType::TYPE_FUNCTION)
