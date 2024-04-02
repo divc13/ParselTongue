@@ -2527,6 +2527,8 @@ void Parasite::genAC()
 		inst.field_1 = tmp;
 		inst.field_2 = "=";
 		inst.field_3 = "popparam";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 
 	}
 
