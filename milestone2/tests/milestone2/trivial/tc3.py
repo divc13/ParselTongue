@@ -1,8 +1,3 @@
-def fun() -> int:
-    return ~(1 + 2)
-
-def m() -> int:
-    return fun()
-
-if True:
-    print(1)
+i:int = 0
+for i in range(3):
+    print(i)
