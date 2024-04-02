@@ -1127,7 +1127,7 @@ int handle_operators(TreeNode* root)
 	// unary operators
 	assert ((root -> name).compare("-") == 0 || (root -> name).compare("+") == 0 || (root -> name).compare("not") == 0 || (root -> name).compare("~") == 0);
 
-	if((root->name).compare("not"))
+	if((root->name).compare("not") && (root->name).compare("~"))
 	{
 		final = isCompatible("int", left -> dataType);
 		if (final.length() == 0)
@@ -1141,7 +1141,7 @@ int handle_operators(TreeNode* root)
 		return 0;
 	}
 
-	// handle not
+	// handle not and ~
 	final = isCompatible("bool", left -> dataType);
 	if (final.length() == 0)
 	{
