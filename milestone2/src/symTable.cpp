@@ -14,6 +14,7 @@ int self_ind =  -1;
 int fun_call = 0;
 string self_type = "";
 int funcInClass = 0;
+bool ShouldReturn = false;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -510,6 +511,7 @@ int handle_function_declaration(TreeNode* root)
 			return ret;
 		type = (((root -> children)[4]) -> children)[0] -> dataType;
 	}
+	
 	node -> dataType = type;
 
 	tableRecord* record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
