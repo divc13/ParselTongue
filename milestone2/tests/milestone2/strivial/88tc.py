@@ -1,4 +1,4 @@
-a: int = 1
+a: float = 1
 b: int = 2
 c: int = 3
 d: int = 4

@@ -9,5 +9,6 @@ action_adder
 *.dot
 .vscode
 output/
+toutput/
 run.sh
 runner

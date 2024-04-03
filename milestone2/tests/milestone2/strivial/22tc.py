@@ -9,11 +9,12 @@ class B:
         b.a = 5
         self.a:int = 10
         return
-    def hell() -> None:
+    def hell(self) -> None:
         b: int = 0
         return
     
         
 def main():
-    a: A = A()
+    a: B = B()
+    a.hell()
     return
