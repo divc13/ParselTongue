@@ -6,7 +6,6 @@ class A:
     class B:
         def __init__(self):
             self.b: A = A()
-            self.b.a = 5
             self.a:int = 10
             return
         def hell(self) -> None:

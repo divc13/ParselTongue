@@ -42,7 +42,6 @@ string tableHash(symbolTable* curr)
 // only for variables and not for functions
 string mangle(string name)
 {
-	cout << name << endl;
 	tableRecord* entry = table -> lookup(name);
 	if (dotTable) entry = dotTable -> lookup(name);
 	assert(entry);
@@ -1986,7 +1985,7 @@ void Parasite::genAC()
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = label;
-		threeAC.insert(threeAC.begin() + loc_3 + 1, inst);
+		threeAC.insert(threeAC.begin() + loc_3 + 2, inst);
 
 		filler.push_back({const_label, label});
 	}

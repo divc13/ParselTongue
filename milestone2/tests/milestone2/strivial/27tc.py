@@ -1,13 +1,14 @@
 class A:
-    x: int = 5
     def __init__(self):
         self.a:int = 10
         return
     
+class B(A):
+    def __init__(self):
+        self.a = 8
+        return
+    
         
 def main():
-    a: A = A()
-    a.a = 9
-    b: A = A()
-    print(b.a)
+    a: B = B()
     return

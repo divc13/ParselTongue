@@ -85,7 +85,9 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 					}
 
 					if ((*params)[num] -> type != ((table -> entries)[num]) -> type)
+					{
 						match = false;
+					}
 
 					string final = isCompatible((*params)[num] -> type, ((table -> entries)[num]) -> type);
 					if (!final.length())
@@ -100,6 +102,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 						cnt++;
 						continue;
 					}
+
 					return entry;
 				}
 			}
@@ -212,7 +215,9 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		assert(funcTable);
 		vector<tableRecord*> params;
 		for (int i = 0; i < funcTable -> numParams; i++)
+		{
 			params.push_back((funcTable -> entries)[i]);
+		}
 
 		tableRecord* entry = lookup_table(name, recordType, &params, 1);
 		if(entry)
@@ -236,7 +241,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 			return -1;
 		}
 	}
-
+	
 	tableRecord* record = new tableRecord(name, type, __size, lineno, column, recordType);
 	record -> symTab = this;
 
@@ -289,7 +294,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		globTable -> insert(lenFunc, lenTable);
 
 	}
-
+	
 	return 0;
 }
 
@@ -520,7 +525,9 @@ int handle_function_declaration(TreeNode* root)
 		}
 
 		else if ((itr -> name).compare(":") == 0)
+		{
 			numParam++;
+		}
 
 		else if ((currTable -> tableType == tableType::CLASS && (itr -> name).compare("self") == 0))
 		{
@@ -531,6 +538,7 @@ int handle_function_declaration(TreeNode* root)
 
 		index++;
 	}
+
 
 	if (cntSelf > 1)
 	{
@@ -547,7 +555,7 @@ int handle_function_declaration(TreeNode* root)
 
 	currTable = Table;
 	currTable -> numParams = numParam;
-
+	
 	TreeNode* node = ((root -> children)[0]);
 	string type = "None";
 	if (((root -> children)[0] -> name).compare("main") && ((root -> children)[0] -> name).compare("__init__"))
@@ -562,14 +570,8 @@ int handle_function_declaration(TreeNode* root)
 
 	tableRecord* record = new tableRecord(node -> name, type, currTable -> size, node -> lineno, node -> column, recordType::TYPE_FUNCTION);
 	
-	assert(currTable -> parentSymtable);
-	int err = currTable -> parentSymtable -> insert(record, currTable);
+	int err = 0;
 
-	free(record);
-	record = NULL;
-
-	if (err < 0)
-		return err;
 
 	if (cntSelf)
 	{
@@ -581,6 +583,31 @@ int handle_function_declaration(TreeNode* root)
 	if (err < 0)
 		return err;
 
+
+	
+	for (auto &itr: ((root -> children)[2]) -> children)
+	{
+
+		if ((itr -> name).compare(":") == 0)
+		{
+			
+			int ret = handle_type_declarations(itr);
+			if (ret < 0)
+				return -1;
+				
+			itr -> type = "HANDLED";
+		}
+
+		index++;
+	}
+
+	assert(currTable -> parentSymtable);
+	err = currTable -> parentSymtable -> insert(record, currTable);
+	free(record);
+	record = NULL;
+	
+	if (err < 0)
+		return err;
 
 	in_loop.push_back(0);
 	in_function++;
@@ -817,6 +844,12 @@ int handle_type_declarations(TreeNode* root)
 {
 	// colon will have exactly 2 chidren
 	assert((root -> children).size() == 2);
+
+	if (root -> type == "HANDLED")
+	{
+		root -> type = "DELIMITER";
+		return 0;
+	}
 	
 	TreeNode* node = ((root -> children)[0]);
 	symbolTable* tempTable = currTable;
@@ -866,7 +899,7 @@ int handle_type_declarations(TreeNode* root)
 
 	if (((root -> children)[0]->name).compare(".") == 0)
 		(root -> children)[0] -> dataType = node -> dataType;
-	
+
 	err = tempTable -> insert(record);
 	if (err < 0)
 		return err;
@@ -914,7 +947,7 @@ int handle_in(TreeNode* root)
 int handle_list(TreeNode* root)
 {
 	vector<TreeNode*>children = root -> children;
-	if (children[1] -> name =="]")
+	if (children[1] -> name == "]")
 	{
 		raise_error(ERR::EMPTY_LIST, children[0]);
 		return -1;
@@ -1053,7 +1086,19 @@ int handle_operators(TreeNode* root)
 			if (left -> type == "INT_LITERAL" || left -> type == "FLOAT_LITERAL" || left -> type == "STRING_LITERAL")
 			{
 				raise_error(ERR::BAD_LVAL, left);
+				free(record1);
+				free(record2);
 				return -1;
+			}
+			if ((left -> dataType).compare(0, 4, "list") == 0 && right -> type == "NON_TERMINAL" && right -> name == "list")
+			{
+				if (left -> dataType != right -> dataType)
+				{
+					raise_error(ERR::TYPE_MISMATCH, root);
+					free(record1);
+					free(record2);
+					return -1;
+				}
 			}
 			root -> dataType = final;
 			return 0;
