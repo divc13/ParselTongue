@@ -2811,7 +2811,7 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 			
-			tmp = "*(" + t1 + ")";
+			tmp = "*(" + t2 + ")";
 		}
 
 
