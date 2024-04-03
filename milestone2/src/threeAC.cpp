@@ -33,8 +33,7 @@ string tableHash(symbolTable* curr)
 	string name = "";
 	while(curr -> name != "__GLOBAL__")
 	{
-		name += "@";
-		name += curr -> name;
+		name = curr -> name + "." + name;
 		curr = curr -> parentSymtable;
 	}
 	return name;
@@ -45,7 +44,7 @@ string mangle(string name)
 {
 	tableRecord* entry = table -> lookup(name);
 	assert(entry);
-	string temp = name + tableHash(entry -> symTab);
+	string temp = name + "%" + tableHash(entry -> symTab);
 	return temp;
 }
 
@@ -123,7 +122,7 @@ void Parasite::genAC()
 		
 		code inst;
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "range%@int%@";
+		inst.field_2 = tableHash(globTable) + "range@int";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -254,7 +253,7 @@ void Parasite::genAC()
 		/* range (int x, int y) */
 		
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "range%@int%@int%@";
+		inst.field_2 = tableHash(globTable) + "range@int@int";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -425,7 +424,7 @@ void Parasite::genAC()
 		/* len (str) */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "len%@str%@";
+		inst.field_2 = tableHash(globTable) + "len@str";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -480,7 +479,7 @@ void Parasite::genAC()
 				string type = i.first;
 
 				inst.field_1 = "begin_function";
-				inst.field_2 = tableHash(globTable) + "len%@" + type + "%@";
+				inst.field_2 = tableHash(globTable) + "len@" + type;
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 
@@ -750,7 +749,7 @@ void Parasite::genAC()
 		*/
 
 		/* class constructors are not an issue here */
-		string funcName = tableHash(table) + children[1] -> name + "%@";
+		string funcName = tableHash(table) + children[1] -> name;
 		tableRecord* entry = table -> lookup(children[1] -> name);
 		
 		assert (entry);
@@ -760,7 +759,7 @@ void Parasite::genAC()
 
 		for (int i = 0; i < table -> numParams; i++)
 		{
-			funcName += (table -> entries)[i] -> type + "%@";
+			funcName += "@" + (table -> entries)[i] -> type;
 		}
 
 		code inst;
@@ -1456,20 +1455,20 @@ void Parasite::genAC()
 		tmp = children[0] -> tmp;
 		string type = host -> dataType;
 
-		if (type == "int" || type == "float" || type == "bool" || type == "str" || type.compare(0, 4, "list") == 0)
-		{
-			// do nothing
-		}
+		// if (type == "int" || type == "float" || type == "bool" || type == "str" || type.compare(0, 4, "list") == 0)
+		// {
+		// 	// do nothing
+		// }
 
-		else
-		{
-			// handle class objects
-			tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
-			assert (entry);
-			int size = entry -> symTab -> size;
-			allocate_mem(to_string(size));
-			tmp = MemRg;
-		}
+		// else
+		// {
+		// 	// handle class objects
+		// 	tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
+		// 	assert (entry);
+		// 	int size = entry -> symTab -> size;
+		// 	allocate_mem(to_string(size));
+		// 	tmp = MemRg;
+		// }
 
 	}
 
@@ -2583,10 +2582,8 @@ void Parasite::genAC()
 
 		int nparams = tempExprs.size();
 		vector<tableRecord*> params;
-
 		code inst;
-
-
+		tableRecord* funcEntry = NULL;
 		for(int i = nparams -1; i >= 0; i--)
 		{
 			TreeNode* node = ((host -> children)[2] -> children)[i];
@@ -2599,24 +2596,46 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 		}
 
-		if (dotRecord)
-		{
-			params.push_back(dotRecord);
-			inst.field_1 = "param";
-			inst.field_2 = "self";
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-			dotRecord = NULL;
-		}
-
 		tempExprs.clear();
 
+		tableRecord* entry = globTable -> lookup_table(children[0] -> name);
+		assert (entry);
+		if (entry -> recordType == recordType::TYPE_CLASS || entry -> recordType == recordType::CLASS_CONSTRUCTOR)
+		{
+			// this is the constructor
+			int width = entry -> size;
+			allocate_mem(to_string(width));
+			tmp = MemRg;
 
-		tableRecord* funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+			inst.field_1 = "param";
+			inst.field_2 = tmp;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+			nparams ++;
+			funcEntry = entry ->symTab -> lookup_table("__init__");
+		}
+
+		else {
+
+			if (dotRecord)
+			{
+				params.push_back(dotRecord);
+				inst.field_1 = "param";
+				inst.field_2 = mangle("self");
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+				nparams ++;
+				dotRecord = NULL;
+			}
+
+			funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+
+		}
+
 		assert (funcEntry);
 		for (auto &i: params)
 			free(i);
-		
+
 		int local_size = funcEntry -> symTab -> size;
 
 		if(local_size)
@@ -2636,12 +2655,12 @@ void Parasite::genAC()
 			dotTable = NULL;
 		}
 
-		funcName += children[0] -> name + "%@";
+		funcName += funcEntry -> name;
 
 		symbolTable* funcTable = funcEntry -> symTab;
 		for (int i = 0; i < nparams; i++)
 		{
-			funcName += (funcTable -> entries)[i] -> type + "%@";
+			funcName += "@" + (funcTable -> entries)[i] -> type;
 		}
 
 		inst.field_1 = "call";
@@ -2654,6 +2673,7 @@ void Parasite::genAC()
 		{
 			inst.field_1 = "shift_sp";
 			inst.field_2 = to_string(local_size);
+			inst.field_3 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
@@ -2667,6 +2687,7 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
+		
 	}
 
 
@@ -2769,12 +2790,33 @@ void Parasite::genAC()
 			assert (entry);
 
 			code inst;
-			tmp = newTmp();
-			inst.field_1 = tmp;
+
+			string t1 = newTmp();
+			inst.field_1 = t1;
+			inst.field_2 = "=";
+			inst.field_3 = mangle(children[0] -> name);
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			children[0] -> tmp = t1;
+
+			string t2 = newTmp();
+			inst.field_1 = t2;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
 			inst.field_4 = "+";
 			inst.field_5 = to_string(entry -> offset);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+			
+			tmp = newTmp();
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = "*(" + t1 + ")";
+			inst.field_4 = "";
+			inst.field_5 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}

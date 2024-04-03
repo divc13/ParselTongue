@@ -1,7 +1,5 @@
-a:int = 10
-for a in range(10):
-    print(a)
-    if (a == 5):
-        continue
-    else:
-        break
+# class A():
+def __init__() -> None:
+    print("chch")
+
+__init__()

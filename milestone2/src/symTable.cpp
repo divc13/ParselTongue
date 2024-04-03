@@ -14,6 +14,7 @@ int self_ind =  -1;
 int fun_call = 0;
 string self_type = "";
 int funcInClass = 0;
+bool initPresence = false;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -239,10 +240,11 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	tableRecord* record = new tableRecord(name, type, __size, lineno, column, recordType);
 	record -> symTab = this;
 
-	if ((recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION))
+	if ((recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION || recordType == recordType::CLASS_CONSTRUCTOR))
 	{
 		record -> symTab = funcTable;
-		childIndices.push_back(currentIndex);
+		if(record -> recordType != recordType::CLASS_CONSTRUCTOR)
+			childIndices.push_back(currentIndex);
 	}
 
 	inputRecord -> symTab = record -> symTab;
@@ -1504,11 +1506,18 @@ int generate_symtable(TreeNode *root)
 		// setting the class constructor function
 		if(entry -> name == "__init__")
 		{
+
+			if(!(currTable -> parentSymtable) || (currTable -> parentSymtable) -> tableType != tableType::CLASS)
+			{
+				raise_error(ERR::CLASS_CTOR, (root->children)[0]);
+				return -1;
+			}
 			string name = entry -> symTab -> parentSymtable -> name;
 			tableRecord* record = new tableRecord(name, name, entry -> size, entry -> lineno, entry -> column, recordType::CLASS_CONSTRUCTOR);
 			int ret = globTable -> insert(record, entry -> symTab);
 			if (ret < 0)
 				return -1;
+			initPresence = true;
 		}
 		
 		currTable = currTable -> parentSymtable;
@@ -1530,6 +1539,14 @@ int generate_symtable(TreeNode *root)
 	// dealing with classes again on coming back
 	if ((root -> type).compare("NON_TERMINAL") == 0 && (root -> name).compare("class_def") == 0)
 	{
+
+		if (!initPresence)
+		{
+			raise_error(ERR::NO_INIT, (root->children)[0]);
+			return -1;
+		}
+
+		initPresence = false;
 		assert ((currTable -> name).compare((root -> children)[0] -> name) == 0);
 		assert(currTable -> parentSymtable);
 		tableRecord* entry = globTable -> lookup_table((root->children)[0]->name, recordType::TYPE_CLASS);

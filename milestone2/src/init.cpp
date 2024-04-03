@@ -27,6 +27,7 @@ void init_error()
 	ErrorMap[ERR::TYPE_NOT_DECL_PARAM] 			=		"Type was not declared for the parameter ";
 	ErrorMap[ERR::KEYWORD_DECL] 				=		"Variable cannot be declared with the name as keyword ";
 	ErrorMap[ERR::NOT_GLOBAL]	 				=		"No global declaration found for ";
+	ErrorMap[ERR::NO_INIT]		 				=		"No initializer found for the class ";
 	ErrorMap[ERR::CANDIDATE]	 				=		"ambiguity found in call of overloaded ";
 	ErrorMap[ERR::RETURN_TYPE_MISMATCH]	 		=		"return type does not match the function definition ";
 	ErrorMap[ERR::NO_RET_TYPE]	 				=		"no return type specified for the function ";
