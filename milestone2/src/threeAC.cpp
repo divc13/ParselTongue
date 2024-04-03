@@ -42,7 +42,9 @@ string tableHash(symbolTable* curr)
 // only for variables and not for functions
 string mangle(string name)
 {
+	cout << name << endl;
 	tableRecord* entry = table -> lookup(name);
+	if (dotTable) entry = dotTable -> lookup(name);
 	assert(entry);
 	string temp = name + "%" + tableHash(entry -> symTab);
 	return temp;
@@ -1189,6 +1191,16 @@ void Parasite::genAC()
 				| function_call
 
 		*/
+
+		if (children.size() == 3 && children[1] -> name == ".")
+		{
+			tableRecord* entry = table -> lookup(children[0] -> name);
+			assert (entry);
+			entry = globTable -> lookup_table(entry ->type, recordType::TYPE_CLASS);
+			assert (entry);
+			dotTable = entry -> symTab;
+			dotRecord = entry;
+		}
 
 	}
 
@@ -2599,8 +2611,7 @@ void Parasite::genAC()
 		tempExprs.clear();
 
 		tableRecord* entry = globTable -> lookup_table(children[0] -> name);
-		assert (entry);
-		if (entry -> recordType == recordType::TYPE_CLASS || entry -> recordType == recordType::CLASS_CONSTRUCTOR)
+		if (entry && (entry -> recordType == recordType::TYPE_CLASS || entry -> recordType == recordType::CLASS_CONSTRUCTOR))
 		{
 			// this is the constructor
 			int width = entry -> size;
@@ -2621,14 +2632,22 @@ void Parasite::genAC()
 			{
 				params.push_back(dotRecord);
 				inst.field_1 = "param";
-				inst.field_2 = mangle("self");
+				inst.field_2 = dotRecord -> name;
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 				nparams ++;
 				dotRecord = NULL;
 			}
 
-			funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+			if (dotTable)
+			{
+				funcEntry = dotTable -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+			}
+
+			else {
+				funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
+			}
+
 
 		}
 
@@ -2842,12 +2861,6 @@ void Parasite::genAC()
 		if (children.size() == 3 && children[1] -> name == ".")
 		{
 			tmp = children[2] -> tmp;
-			tableRecord* entry = table -> lookup(children[0] -> name);
-			assert (entry);
-			entry = globTable -> lookup_table(entry ->type, recordType::TYPE_CLASS);
-			assert (entry);
-			dotTable = entry -> symTab;
-			dotRecord = entry;
 		}
 
 	}
