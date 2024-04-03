@@ -1,5 +1,7 @@
 a:int = 10
-if a:
+for a in range(10):
     print(a)
-
-b:str = "hello"
+    if (a == 5):
+        continue
+    else:
+        break

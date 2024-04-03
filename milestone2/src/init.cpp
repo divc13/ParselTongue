@@ -235,7 +235,7 @@ void initTypes()
 	print_str_list -> tableType = tableType::FUNCTION;
 	tempRecord_str -> type = "list[str]";
 	print_str_list -> insert(tempRecord_str);
-	print_str_list->size = 0;
+	print_str_list -> size = 0;
 	globTable -> insert(tempRecord, print_str_list);
 
 

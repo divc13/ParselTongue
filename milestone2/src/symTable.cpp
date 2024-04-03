@@ -935,21 +935,10 @@ int handle_list(TreeNode* root)
 	for (int i = 2; i < children.size() - 1; i++)
 	{
 		string type2 = children[i] -> dataType;
-		if (isCompatible(type1, type2).length() == 0)
+		if (type1 != type2)
 		{
 			raise_error(ERR::MIXED_LIST, children[i]);
 			return -1;
-		}
-		else
-		{
-			if (type1 == type2)
-				continue;
-
-			if ( type1 == "int" && type2 == "bool" )
-				type1 = "bool";
-			
-			if ( type1 == "int" && type2 == "float" )
-				type1 = "float";
 		}
 	}
 	root -> dataType = "list[" + type1 + "]";
@@ -1082,8 +1071,8 @@ int handle_operators(TreeNode* root)
 			if (final.compare("str") && final.compare("bool") && final.compare("int") && final.compare("float"))
 			{
 				raise_error(ERR::OP_OVERLOAD, root);
-				print_note(NOTE::PREV_DECL, record1);
-				print_note(NOTE::PREV_DECL, record2);
+				print_note(NOTE::SHOW_TYPE, record1);
+				print_note(NOTE::SHOW_TYPE, record2);
 				free(record1);
 				free(record2);
 				return -1;
@@ -1098,8 +1087,8 @@ int handle_operators(TreeNode* root)
 			if (final.compare("int") && final.compare("float") && final.compare("bool"))
 			{
 				raise_error(ERR::OP_OVERLOAD, root);
-				print_note(NOTE::PREV_DECL, record1);
-				print_note(NOTE::PREV_DECL, record2);
+				print_note(NOTE::SHOW_TYPE, record1);
+				print_note(NOTE::SHOW_TYPE, record2);
 				free(record1);
 				free(record2);
 				return -1;
@@ -1114,8 +1103,8 @@ int handle_operators(TreeNode* root)
 			if (final.compare("int") && final.compare("bool"))
 			{
 				raise_error(ERR::OP_OVERLOAD, root);
-				print_note(NOTE::PREV_DECL, record1);
-				print_note(NOTE::PREV_DECL, record2);
+				print_note(NOTE::SHOW_TYPE, record1);
+				print_note(NOTE::SHOW_TYPE, record2);
 				free(record1);
 				free(record2);
 				return -1;
@@ -1141,7 +1130,7 @@ int handle_operators(TreeNode* root)
 		if (final.length() == 0)
 		{
 			raise_error(ERR::OP_OVERLOAD, root);
-			print_note(NOTE::PREV_DECL, record1);
+			print_note(NOTE::SHOW_TYPE, record1);
 			free(record1);
 			return -1;
 		}
@@ -1154,7 +1143,7 @@ int handle_operators(TreeNode* root)
 	if (final.length() == 0)
 	{
 		raise_error(ERR::OP_OVERLOAD, root);
-		print_note(NOTE::PREV_DECL, record1);
+		print_note(NOTE::SHOW_TYPE, record1);
 		free(record1);
 		return -1;
 	}

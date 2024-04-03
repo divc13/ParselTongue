@@ -49,6 +49,36 @@ string mangle(string name)
 	return temp;
 }
 
+void Parasite::formFirstLast()
+{
+
+	if (type == "NON_TERMINAL" && (name == "for_stmt" || name == "while_stmt"))
+	{
+		labelStack.push({first, last});
+	}
+
+	if (type == "NON_TERMINAL" && (name == "simple_stmt"))
+	{
+		if (children[0] -> name == "continue")
+		{
+			filler.push_back({children[0]->tmp, (labelStack.top()).first});
+		}
+
+		if (children[0] -> name == "break")
+		{
+			filler.push_back({children[0]->tmp, (labelStack.top()).second});
+		}
+	}
+
+	for (auto &i : children)
+		i -> formFirstLast();
+
+	if (type == "NON_TERMINAL" && (name == "for_stmt" || name == "while_stmt"))
+	{
+		labelStack.pop();
+	}
+}
+
 void allocate_mem(string size)
 {
 	code inst;
@@ -73,12 +103,9 @@ void allocate_mem(string size)
 
 void Parasite::genAC()
 {
-
 	if (type == "NON_TERMINAL")
-	{
 		if (threeAC.size())
 			first = threeAC[threeAC.size() - 1].label;
-	}
 
 	if (type != "IDENTIFIER" && name == "file")
 	{
@@ -894,7 +921,7 @@ void Parasite::genAC()
 				| KW_for for_expr DLM_COLON block else_block
 
 		*/
-		
+
 	}
 
 	if (type != "IDENTIFIER" && name == "for_expr")
@@ -1373,23 +1400,25 @@ void Parasite::genAC()
 
 		if (children[0] -> name == "continue")
 		{
-			assert (!labelStack.empty());
 			code inst;
+			string label = newLabel();
 			inst.field_1 = "goto";
-			inst.field_2 = (labelStack.top()).first;
-			inst.label = newLabel();
+			inst.field_2 = "@FILL_LATER@";
+			inst.label = label;
 			threeAC.push_back(inst);
+			children[0] -> tmp = label;
 		}
 
 		if (children[0] -> name == "break")
 		{
-			assert (!labelStack.empty());
 			code inst;
+			string label = newLabel();
 			inst.field_1 = "goto";
-			inst.field_2 = (labelStack.top()).second;
-			// labelStack.pop();
-			inst.label = newLabel();
+			inst.field_2 = "@FILL_LATER@";
+			inst.label = label;
 			threeAC.push_back(inst);
+			children[0] -> tmp = label;
+
 		}
 
 	}
@@ -1411,7 +1440,6 @@ void Parasite::genAC()
 		/* nothing to do */
 
 		
-
 
 	}
 
@@ -1748,7 +1776,7 @@ void Parasite::genAC()
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = "";
+		inst.field_4 = "@FILL_LATER@";
 		inst.label = label;
 		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
@@ -1782,7 +1810,7 @@ void Parasite::genAC()
 			inst.field_1 = "if";
 			inst.field_2 = children[1] -> tmp;
 			inst.field_3 = "goto";
-			inst.field_4 = "";
+			inst.field_4 = "@FILL_LATER@";
 			inst.label = label;
 			threeAC.insert(threeAC.begin() + loc + 1, inst);
 
@@ -1828,7 +1856,7 @@ void Parasite::genAC()
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = "";
+		inst.field_4 = "@FILL_LATER@";
 		inst.label = label;
 		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
@@ -1861,7 +1889,7 @@ void Parasite::genAC()
 			inst.field_1 = "if";
 			inst.field_2 = children[1] -> tmp;
 			inst.field_3 = "goto";
-			inst.field_4 = "";
+			inst.field_4 = "@FILL_LATER@";
 			inst.label = label;
 
 			threeAC.insert(threeAC.begin() + loc + 1, inst);
@@ -1934,7 +1962,7 @@ void Parasite::genAC()
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = "";
+		inst.field_4 = "@FILL_LATER@";
 		inst.label = const_label;
 		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
@@ -1950,7 +1978,6 @@ void Parasite::genAC()
 		threeAC.insert(threeAC.begin() + loc_3 + 1, inst);
 
 		filler.push_back({const_label, label});
-
 	}
 
 
@@ -1988,14 +2015,14 @@ void Parasite::genAC()
 		inst.field_1 = "if_false";
 		inst.field_2 = children[1] -> tmp;
 		inst.field_3 = "goto";
-		inst.field_4 = "";
+		inst.field_4 = "@FILL_LATER@";
 		inst.label = const_label;
 		threeAC.insert(threeAC.begin() + loc + 1, inst);
 
 		label = newLabel();
 
 		inst.field_1 = "goto";
-		inst.field_2 = children[1] -> first;
+		inst.field_2 = "@FILL_LATER@";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -2003,7 +2030,9 @@ void Parasite::genAC()
 		threeAC.insert(threeAC.begin() + loc_3 + 2, inst); // +2 due to an instruction added 
 
 		filler.push_back({const_label, label});
+		filler.push_back({label, children[1] -> first});
 
+		first = children[1] -> first;
 	}
 
 	if (type != "IDENTIFIER" && name == "for_expr")
@@ -2037,22 +2066,22 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		string lab = newLabel();
 		inst.field_1 = t1;
 		inst.field_2 = "=";
 		inst.field_3 = "1";
 		inst.field_4 = "";
 		inst.field_5 = "";
-		inst.label = newLabel();
+		inst.label = lab;
 		threeAC.push_back(inst);
 
-		string lab = newLabel();
 
 		inst.field_1 = t2;
 		inst.field_2 = "=";
 		inst.field_3 = t1;
 		inst.field_4 = "*";
 		inst.field_5 = "8";
-		inst.label = lab;
+		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		inst.field_1 = t5;
@@ -2981,14 +3010,8 @@ void Parasite::genAC()
 	}
 
 	if (type == "NON_TERMINAL")
-	{
-		last = threeAC[threeAC.size() - 1].label;
-		if (name == "for_stmt" || name == "while_stmt")
-		{
-			labelStack.push({first, last});
-		}
-	}
-
+		if (threeAC.size())
+			last = threeAC[threeAC.size() - 1].label;
 }
 
 /* 
@@ -3023,9 +3046,27 @@ void fillCode()
 		assert(entry2 >= 0);
 
 		if	(entry2 == threeAC.size())
-			threeAC[entry1].field_4 = "END";
+		{
+			if (threeAC[entry1].field_4 == "@FILL_LATER@")
+			{
+				threeAC[entry1].field_4 = "END";
+			}
+			else if (threeAC[entry1].field_2 == "@FILL_LATER@")
+			{
+				threeAC[entry1].field_2 = "END";
+			}
+		}
 		else
-			threeAC[entry1].field_4 = threeAC[entry2].label;		
+		{
+			if (threeAC[entry1].field_4 == "@FILL_LATER@")
+			{
+				threeAC[entry1].field_4 = threeAC[entry2].label;
+			}
+			else if (threeAC[entry1].field_2 == "@FILL_LATER@")
+			{
+				threeAC[entry1].field_2 = threeAC[entry2].label;
+			}
+		}
 	}
 
 	return;
@@ -3036,6 +3077,7 @@ void Parasite::genCode()
 	map<string, string> labelMap;
 
 	genAC();
+	formFirstLast();
 	fillCode();
 
 	for (int i=0; i<threeAC.size(); i++)
@@ -3046,7 +3088,7 @@ void Parasite::genCode()
 	for (int i=0; i<threeAC.size(); i++)
 	{
 
-		threeAC[i].label = labelMap[threeAC[i].label];
+		threeAC[i].label = labelMap[threeAC[i].label] + ":";
 
 		if (labelMap.find(threeAC[i].field_1) != labelMap.end())
 		{
