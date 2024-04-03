@@ -1,4 +1,4 @@
-data: list[float] = [-2.3, 3.14, 0.9, 11, -9.1]
+data: list[float] = [-2.3, 3.14, 0.9, 0.4, -9.1]
 
 
 def compute_min() -> float:

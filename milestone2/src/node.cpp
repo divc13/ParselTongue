@@ -256,7 +256,7 @@ void generateAST(TreeNode *root, int flag)
 		// second iteration
 
 		// handle colon in different cases, if used for expression, bring up, otherwise skip
-		if (((child->name).compare(":") == 0 || (child->name).compare("bitwise_operators") == 0) && flag == 1)
+		if (((child->name).compare(":") == 0) && flag == 1)
 		{
 			// if (((root->name).compare("typedecl") == 0 || (root->name).compare("annotation") == 0) && (child->type).compare("IDENTIFIER") != 0)
 			// 	ExchangeWithChild(root, nchild);
@@ -266,9 +266,6 @@ void generateAST(TreeNode *root, int flag)
 
 			else if (((root->name).compare("typedecl") == 0 ) && (child->type).compare("IDENTIFIER") != 0)
 				ConstrainedExchange(root, nchild, 2);
-
-			else if((root->name).compare("comparison") == 0 && (child->name).compare("bitwise_operators") == 0)
-				ConstrainedExchange_bitwise(root, nchild, 2);
 			else
 				SkipNode(root, nchild);
 			continue;
@@ -282,7 +279,8 @@ void generateAST(TreeNode *root, int flag)
 		}
 
 		// perform constrained exchang, if the root nonterminal cannot be replaced
-		if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 2 && (root->name).compare("bitwise_operators") != 0)
+		if ((isOperator(child) || (child->name).compare(".") == 0) && flag == 2)
+		// if ((isOperator(child) || (child->name).compare(".") == 0 || (child->name).compare("in") == 0) && flag == 2)
 		{
 			if ((child->name).compare("not") == 0 || (child->name).compare("~") == 0)
 				ConstrainedExchange(root, nchild, 1);
@@ -293,17 +291,17 @@ void generateAST(TreeNode *root, int flag)
 			continue;
 		}
 
-		// handle function call and array access
-		if ((root->name).compare("operand") == 0 && (nchild == 0) && (child->type).compare("IDENTIFIER") == 0 && flag == 2)
+		if (((child->name).compare("in") == 0) && flag == 3 && SkipToken1.find(root->name) == SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
 		{
-			ExchangeWithChild(root, nchild);
+			if (root -> name == "for_expr" && root -> type == "NON_TERMINAL")
+				ConstrainedExchange(root, nchild, 2);
 			continue;
 		}
 
 		// third iteration
 
 		// skip all unnecessary nonterminal symbols
-		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 3)
+		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken1.find(child->name) != SkipToken1.end() && flag == 4)
 		{
 			SkipNode(root, nchild);
 			continue;
@@ -312,13 +310,13 @@ void generateAST(TreeNode *root, int flag)
 		// fourth iteration
 
 		// skip statements block and args with only one child
-		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken2.find(child->name) != SkipToken2.end() && (child->children).size() == 1 && flag == 4)
+		if ((child->type).compare("IDENTIFIER") != 0 && SkipToken2.find(child->name) != SkipToken2.end() && (child->children).size() == 1 && flag == 5)
 		{
 			SkipNode(root, nchild);
 			continue;
 		}
 
-		if (isOperator(child) && flag == 4)
+		if (isOperator(child) && flag == 5)
 		{
 			int len = (child->name).length();
 			if (opType[child -> name].compare("OP_ASSIGNMENT") == 0 && len > 1)
@@ -340,6 +338,7 @@ void AST_Maker(TreeNode *root)
 	generateAST(root, 2);
 	generateAST(root, 3);
 	generateAST(root, 4);
+	generateAST(root, 5);
 	return;
 }
 

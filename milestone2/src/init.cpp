@@ -47,7 +47,7 @@ void init_error()
 	ErrorMap[ERR::FUNC_OVERLOAD] 				=		"Function cannot be overloaded for the given types";
 	ErrorMap[ERR::OP_OVERLOAD] 					=		"Operator cannot be overloaded for the given types";
 	ErrorMap[ERR::EMPTY_LIST] 					=		"Empty lists are not supported";
-	ErrorMap[ERR::NO_SELF] 						=		"functions defined in class should have self as a parameter";
+	ErrorMap[ERR::NO_SELF] 						=		"functions defined in class should have self as the first parameter";
 	ErrorMap[ERR::LOOP] 						=		"break and continue can only be used when inside a loop";
 	ErrorMap[ERR::IMPOSSIBLE] 					=		"you somehow achieved what I thought was impossible";
 	ErrorMap[ERR::RETURN_NO_FUNC] 				=		"return can only be used when inside the function and you are not in one";

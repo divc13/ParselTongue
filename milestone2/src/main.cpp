@@ -60,7 +60,6 @@ int main(int argc, char **argv)
 	int md_flag = atoi(argv[7]);
 	int tac_flag = atoi(argv[6]);
 
-	// yyin = fopen(inputFile.c_str(), "r");
 	FILE* file = fopen(inputFile.c_str(), "r");
 
 	if (file == nullptr) {
@@ -106,52 +105,25 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	// if (ptree_flag)
-	// 	root->make_dot(noExtentionOutputFile + "_ptree.dot");
+	if (ptree_flag)
+		root->make_dot(noExtentionOutputFile + "_ptree.dot");
 
 	parasiticRoot = root -> make_tree();
-
-	if (ptree_flag)
-		parasiticRoot->make_ptree_debug(noExtentionOutputFile + "_ptree.dot");
-
-	cout << "main 1" << endl;
 
 	AST_Maker(root);
 
 	// UNCOMMENT BEFORE SUBMISSION //
 
-	// if (ast_flag)
-	// 	root->make_dot(noExtentionOutputFile + "_ast.dot");
+	if (ast_flag)
+		root->make_dot(noExtentionOutputFile + "_ast.dot");
 
-	cout << "main 2" << endl;
-
-	
 	initTypes();
 
-	cout << "main 3" << endl;
-
-
 	rtnval = symTable_Maker(root);
-	// if (rtnval < 0) {
-	// 	fclose(yyin);
-	// 	return -1;
-	// } 
-
-	// REMOVE VEFORE SUBMISSION //
-
-	cout << "main 4" << endl;
-
-
-	if (ast_flag)
-		root->make_dot_debug(noExtentionOutputFile + "_ast.dot");
-
-	// if (rtnval < 0) {
-	// 	fclose(yyin);
-	// 	return -1;
-	// } 
-
-	cout << "main 5" << endl;
-
+	if (rtnval < 0) {
+		fclose(yyin);
+		return -1;
+	} 
 
 	if (csv_flag)
 	{
@@ -166,9 +138,6 @@ int main(int argc, char **argv)
 		globTable->dumpCSV(CSV);
 		CSV.close();
 	}
-
-	cout << "main 6" << endl;
-
 
 	if (md_flag)
 	{

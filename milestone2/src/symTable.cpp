@@ -547,7 +547,7 @@ int handle_function_declaration(TreeNode* root)
 	}
 
 
-	if (currTable -> tableType == tableType::CLASS && cntSelf == 0)
+	if (currTable -> tableType == tableType::CLASS && (cntSelf == 0 || last_pos != 0))
 	{
 		raise_error(ERR::NO_SELF, (root -> children)[2]);
 		return -1;

@@ -2,7 +2,7 @@ class A:
     def __init__(self, c: int):
         self.a:int = c
         return
-    def hell(a:int, self) -> None:
+    def hell(a:int) -> None:
         self.a = 0
         return
     

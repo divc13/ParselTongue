@@ -9,5 +9,5 @@ def main():
     a: A = A()
     a.a = 9
     b: A = A()
-    print(b.a)
+    print(a.a)
     return

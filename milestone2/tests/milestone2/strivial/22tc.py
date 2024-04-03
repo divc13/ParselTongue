@@ -17,4 +17,5 @@ class B:
 def main():
     a: B = B()
     a.hell()
+    a.hell()
     return

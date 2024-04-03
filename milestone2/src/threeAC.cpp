@@ -36,16 +36,15 @@ string tableHash(symbolTable* curr)
 		name = curr -> name + "." + name;
 		curr = curr -> parentSymtable;
 	}
-	return name;
+	return "#" + name;
 }
 
 // only for variables and not for functions
 string mangle(string name)
 {
 	tableRecord* entry = table -> lookup(name);
-	if (dotTable) entry = dotTable -> lookup(name);
 	assert(entry);
-	string temp = name + "%" + tableHash(entry -> symTab);
+	string temp = name + tableHash(entry -> symTab);
 	return temp;
 }
 
@@ -2599,7 +2598,7 @@ void Parasite::genAC()
 		{
 			TreeNode* node = ((host -> children)[2] -> children)[i];
 			tableRecord* record = new tableRecord(node -> name, node -> dataType);
-			params.push_back(record);
+			params.insert(params.begin(), record);
 
 			inst.field_1 = "param";
 			inst.field_2 = tempExprs[i];
@@ -2629,13 +2628,12 @@ void Parasite::genAC()
 
 			if (dotRecord)
 			{
-				params.push_back(dotRecord);
+				params.insert(params.begin(), dotRecord);
 				inst.field_1 = "param";
 				inst.field_2 = dotRecord -> name;
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 				nparams ++;
-				dotRecord = NULL;
 			}
 
 			if (dotTable)
@@ -2670,7 +2668,6 @@ void Parasite::genAC()
 		if (dotTable)
 		{
 			funcName = tableHash(dotTable);
-			dotTable = NULL;
 		}
 
 		funcName += funcEntry -> name;
@@ -2705,6 +2702,9 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
+
+		dotTable = NULL;
+		dotRecord = NULL;
 		
 	}
 
@@ -2857,9 +2857,11 @@ void Parasite::genAC()
 			tmp = children[0]->tmp;
 		}
 
-		if (children.size() == 3 && children[1] -> name == ".")
+		if (children.size() == 3)
 		{
 			tmp = children[2] -> tmp;
+			dotTable = NULL;
+			dotRecord = NULL;
 		}
 
 	}
