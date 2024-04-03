@@ -887,28 +887,20 @@ int handle_in(TreeNode* root)
 	assert ((root -> children).size() == 2);
 	TreeNode* left = (root -> children)[0];
 	TreeNode* right = (root -> children)[1];
-	assert (left -> type == "IDENTIFIER" || left -> name == "." || left -> name == "list_access");
-	assert (right -> type == "IDENTIFIER" || right -> name == "." || right -> name == "function_call");
+	// assert (left -> type == "IDENTIFIER" || left -> name == "." || left -> name == "list_access");
+	// assert (right -> type == "IDENTIFIER" || right -> name == "." || right -> name == "function_call");
 
-	if ((right->dataType).compare(0, 4, "list") && (right->dataType).compare("string"))
+	if ((right->dataType).compare(0, 4, "list"))
 	{
-		raise_error(ERR::NOT_ITERABLE, root);
+		raise_error(ERR::NOT_ITERABLE, (root -> children)[1]);
 		return -1;
 	}
 
-	else if ((right->dataType).compare(0, 4, "list") == 0)
+	else
 	{
 		if (isCompatible( (right -> dataType).substr(5, (left -> dataType).length()), left ->dataType).length() == 0)
 		{
-			raise_error(ERR::TYPE_MISMATCH, root);
-			return -1;
-		}
-	}
-	else
-	{
-		if (left -> dataType != right->dataType)
-		{
-			raise_error(ERR::TYPE_MISMATCH, root);
+			raise_error(ERR::TYPE_MISMATCH, (root -> children)[1]);
 			return -1;
 		}
 	}

@@ -1,5 +1,3 @@
-# class A():
-def __init__() -> None:
-    print("chch")
-
-__init__()
+i:int = 10
+for i in 10:
+    print(i)
