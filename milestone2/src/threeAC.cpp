@@ -771,7 +771,11 @@ void Parasite::genAC()
 		*/
 
 		/* class constructors are not an issue here */
-		string funcName = tableHash(table) + "." + children[1] -> name;
+
+		string funcName = tableHash(table);
+		if (funcName.length()) funcName += ".";
+		funcName += children[1] -> name;
+
 		tableRecord* entry = table -> lookup(children[1] -> name);
 		
 		assert (entry);
