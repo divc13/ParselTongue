@@ -17,9 +17,9 @@ We aim to build the translator in three phases as below:
 - [x] [Milestone 1: From Python to Abstract Syntax Tree](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/tree/main/milestone1)
 In this milestone, we constructed a scanner and a parser for a statically typed subset of the Python language. The output of the compiler is a graphical representation of the abstract syntax tree of the input program. 
 
-- [ ] [Milestone 2: From Abstract Syntax Tree to 3AC IR]()
- In this milestone, we plan to generate 3AC IR for the input source program and add runtime support for making function calls. We would also need to 
-(i) implement support for the symbol table
+- [x] [Milestone 2: From Abstract Syntax Tree to 3AC IR]()
+ In this milestone, we genrated 3AC IR for the input source program and add runtime support for making function calls. We also
+(i) implemented support for the symbol table
 (ii) perform semantic analysis to do limited error checking on types and function signatures. 
 
 - [ ] [Milestone 3: From 3AC IR to x86-64]()
@@ -60,6 +60,6 @@ To acquire the superpower for speaking to serpents, you must have the following 
 
 
 ## Usage: Using the superpower
-While the development is in progress, you can refer to [milestone 1](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/tree/main/milestone1) documentation for building the abstract syntax tree.
+While the development is in progress, you can refer to [milestone 1](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/tree/main/milestone2) documentation for building the abstract syntax tree.
 
 <!-- ## Authors and acknowledgment -->
