@@ -1,7 +1,4 @@
-def fun(a: int, b: float, c: bool) -> None:
-    print(c)
+def fun() -> list[int]:
+    return [1, 2, 3]
 
-a:int = 1
-b:int = 1
-c:int = 1
-fun(a, b, c)
+a: list[int] = fun()

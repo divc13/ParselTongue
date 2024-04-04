@@ -1,3 +1,7 @@
-def fun() -> list[float]:
-    a:list[bool] = [1, 2]
+def fun() -> int:
+    a:int = 3
+    b:int = 8
+    c:int = 19
+    d:int = -10
+    c = d = a = b = 3
     return a

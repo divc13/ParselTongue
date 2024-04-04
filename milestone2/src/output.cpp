@@ -73,6 +73,7 @@ void symbolTable::dumpMD(ofstream &MD)
 	if (tableType == tableType::FUNCTION)
 		MD << "Function ";
 	print_name(MD, name);
+	MD << ", size = " << size;
 	MD << "__</span>\n";
 	if (parentSymtable)
 	{
@@ -133,6 +134,7 @@ void symbolTable::dumpCSV(ofstream &CSV)
 {
 	visitedCSV[this] = 1;
 	CSV << "# Table Name: " << name;
+	CSV << ", size = " << size;
 	if (parentSymtable)
 		CSV << ", Parent Table: " << parentSymtable -> name;
 	

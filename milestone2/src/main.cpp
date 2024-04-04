@@ -152,11 +152,7 @@ int main(int argc, char **argv)
 		MD.close();
 	}
 
-	cout << "main 7" << endl;
-
 	parasiticRoot -> genCode();
-
-	cout << "main 8" << endl;
 
 	if (tac_flag)
 	{

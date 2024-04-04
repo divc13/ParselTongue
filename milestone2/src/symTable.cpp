@@ -291,6 +291,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		tableRecord* lenParam = new tableRecord("#len", list_type, SIZE_PTR);
 		tableRecord* lenFunc = new tableRecord("len", "int", 0, 0, 0, recordType::TYPE_FUNCTION);
 		lenTable -> insert(lenParam);
+		lenTable -> size = 0;
 		globTable -> insert(lenFunc, lenTable);
 
 	}
@@ -887,7 +888,11 @@ int handle_type_declarations(TreeNode* root)
 	}
 
 	else if(tempTable -> tableType == tableType::CLASS)
+	{
 		recordType = recordType::CLASS_ATTRIBUTE;
+		raise_error(ERR::STRAY_CODE, (root ->children)[0]);
+		return -1;
+	}
 	
 	tableRecord* record = new tableRecord(node -> name, "", size, node -> lineno, node -> column, recordType);
 	int err = set_record_fields(root, record);

@@ -1,7 +1,4 @@
+a: int = 5
 def fun() -> int:
-    a:int = 3
-    b:int = 8
-    c:int = 19
-    d:int = -10
-    c = d = a = b = 3
     return a
+b:int = fun()

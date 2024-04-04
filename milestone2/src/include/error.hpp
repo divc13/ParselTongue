@@ -30,6 +30,7 @@ enum ERR {
 	KEYWORD_DECL,
 	NO_RET_TYPE,
 	BAD_LVAL,
+	STRAY_CODE,
 
 	// root- -> name not printed
 	ERR_MIN1,

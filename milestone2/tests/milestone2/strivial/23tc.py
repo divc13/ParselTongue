@@ -1,14 +1,15 @@
 class A:
+    x: int = 5
     def __init__(self):
         self.a:int = 10
-        return
-    def hell(self, a: int) -> None:
-        b: int = 0
         return
     
         
 def main():
     a: A = A()
-    c: int = 10
-    a.hell(c)
+    a.x = 9
+    b: A = A()
+    print(b.x)
     return
+
+

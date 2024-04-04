@@ -31,12 +31,16 @@ string newTmp()
 string tableHash(symbolTable* curr)
 {
 	string name = "";
-	while(curr -> name != "__GLOBAL__")
+	if(curr -> name != "__GLOBAL__")
 	{
-		name = curr -> name + "." + name;
-		curr = curr -> parentSymtable;
+		name = curr -> name;
 	}
-	return "#" + name;
+	while(curr -> parentSymtable && curr -> parentSymtable -> name != "__GLOBAL__")
+	{
+		curr = curr -> parentSymtable;
+		name = curr -> name + "." + name;
+	}
+	return name;
 }
 
 // only for variables and not for functions
@@ -44,7 +48,9 @@ string mangle(string name)
 {
 	tableRecord* entry = table -> lookup(name);
 	assert(entry);
-	string temp = name + tableHash(entry -> symTab);
+	string t1 = tableHash(entry -> symTab);
+	if (t1.length()) t1 = "%" + t1;
+	string temp = name + t1;
 	return temp;
 }
 
@@ -749,7 +755,7 @@ void Parasite::genAC()
 		*/
 
 		/* class constructors are not an issue here */
-		string funcName = tableHash(table) + children[1] -> name;
+		string funcName = tableHash(table) + "." + children[1] -> name;
 		tableRecord* entry = table -> lookup(children[1] -> name);
 		
 		assert (entry);
@@ -2275,7 +2281,14 @@ void Parasite::genAC()
 			tmp = children[0] -> tmp; 
 		}
 
-		if (children.size() == 3)
+		// else if (children.size() == 3 && children[2] -> name == "in")
+		// {
+		// 	code inst;
+		// 	string t1 = newTmp();
+		// 	inst.field_1 = 
+		// }
+
+		else if (children.size() == 3)
 		{
 			tmp = newTmp();
 			code inst;
@@ -2645,13 +2658,9 @@ void Parasite::genAC()
 				funcEntry = table -> lookup(children[0] -> name, recordType::TYPE_FUNCTION, &params);
 			}
 
-
 		}
 
 		assert (funcEntry);
-		for (auto &i: params)
-			free(i);
-
 		int local_size = funcEntry -> symTab -> size;
 
 		if(local_size)
@@ -2670,6 +2679,7 @@ void Parasite::genAC()
 			funcName = tableHash(dotTable);
 		}
 
+		if (funcName.length()) funcName += ".";
 		funcName += funcEntry -> name;
 
 		symbolTable* funcTable = funcEntry -> symTab;
@@ -2705,7 +2715,7 @@ void Parasite::genAC()
 
 		dotTable = NULL;
 		dotRecord = NULL;
-		
+
 	}
 
 
@@ -2774,7 +2784,7 @@ void Parasite::genAC()
 			tmp = newTmp();
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
-			inst.field_3 = t1;
+			inst.field_3 = "*(" + t1 + ")";
 			inst.field_4 = "";
 			inst.field_5 = "";
 			inst.label = newLabel();
@@ -2808,7 +2818,6 @@ void Parasite::genAC()
 			assert (entry);
 
 			code inst;
-
 			string t1 = newTmp();
 			inst.field_1 = t1;
 			inst.field_2 = "=";
