@@ -34,26 +34,8 @@ In this milestone, we plan to generate the correct x86_64 assembly from the 3AC 
 5. Developed another lexer to add semantic actions to the parser directly to generate the parse tree.
 6. Cleaned up the parse tree in a systematic way to build an abstrct syntax tree (AST) out of it.
 7. Generated DOT code from the AST and visualized the AST.
-
-## Language Features Supported:
-
-1. Primitive data types (e.g., int, float, str, and bool)
-2. 1D list (ignore dictionaries, tuples, and sets)
-3. Basic operators:
-    * Arithmetic operators: +, -, *, /, //, %, **
-    * Relational operators: ==, !=, >, <, >=, <=
-    * Logical operators: and, or, not
-    * Bitwise operators: &, |, ˆ, ˜, <<, >>
-    * Assignment operators: =, +=, -=, *=, /=, //=, %=, **=, &=, |=, ˆ=, «=, »=
-4. Control flow via if-elif-else, for, while, break and continue (ignore pass, do-while and
-switch)
-    * Support iterating over ranges specified using the range() function.
-5. Support for recursion
-6. Support the library function print() for only printing the primitive Python types, one at a time
-7. Support for classes and objects, including multilevel inheritance and constructors. Ignore multiple inheritance (i.e., a class can have only one parent class).
-8. Methods and method calls, including both static and non-static methods
-9. Static polymorphism via method overloading
-
+8. Traversed the AST to generate symbol tables and do type checking simultaneously
+9. Traversed the parse tree to generate the three address code as an intermediate representation
 
 ## Installation and Prerequisites: How do you acquire the superpower
 
@@ -70,24 +52,89 @@ To acquire the superpower for speaking to serpents, you must have the following 
 
 
 ## Usage: Using the superpower
-The source files for milestone 1 are all inside the directory milestone1/src. A bash wrapper ```ParselTongue.sh``` is provided for compilation and execution. This wrapper uses the Makefile for compilation and also refactors command line arguments for the main compiler.
+The source files for milestone 2 are all inside the directory milestone2/src. A bash wrapper ```ParselTongue.sh``` is provided for compilation and execution. This wrapper uses the Makefile for compilation and also refactors command line arguments for the main compiler.
 The options provided are as follows:
-* ```-h``` or ```-help``` or ```--help``` : Shows a manual for usage of compiler
-* ```-i``` or ```-input``` or ```--input``` : One can specify multiple input Python files for compiler
-* ```-o``` or ```-output``` or ```--output``` : One can specify multiple output PDF files for compiler
-* ```-v``` or ```-verbose``` or ```--verbose``` : Passing this option will generate a Parse Tree at the output file instead of classic AST
+
+* ```-h``` or ```--help``` : Shows a manual for usage of compiler
+* ```-i``` or ```--input``` : One can specify multiple input Python files for compiler
+* ```-o``` or ```--output``` : One can specify multiple output TAC files for compiler
+* ```-v``` or ```--verbose``` : This will return a .debug file which contains the infomation of parsing such as stack and tokens.
+* ```-p``` or ```--ptree``` : One can specify this option to have a parse tree pdf file at the output folder
+* ```-a``` or ```--ast``` : One can specify this option to have a abstract syntax tree pdf file at the output folder
+* ```-d``` or ```--dot``` : This option is supposed to be used with $-a$ or $-p$. It helps retain the dot file which was used to create the pdfs.
+* ```-c``` or ```--csv``` : This option need not be passed for this milestone to get the csv dump of symbol tables but will be needed for future milestone. Passing this currently wont change any behavior.
+* ```-m``` or ```--markdown``` : Passing this option will output a markdown file for the symbol table dump which can be used along with an extension for better visualization of the dump. The default csv dump will also be given in this case.
 
 ## Execution Examples
 
-Inside ```milestone1/src``` :
-* ```./ParselTongue.sh ../tests/test1.py```
-* ```./ParselTongue.sh test1.py```
-* ```./ParselTongue.sh -i ../tests/test1.py```
-* ```./ParselTongue.sh -i ../tests/test1.py -o ../output/test1.pdf```
-* ```./ParselTongue.sh -v -i ../tests/test1.py -o ../output/test1.pdf```
-* ```./ParselTongue.sh ../tests/test1.py ../tests/test2.py -o ../output/test1.pdf```
-* ```./ParselTongue.sh ../tests/test1.py -v -i ../tests/test2.py -o ../output/test1.pdf```
+Inside ```milestone2/src``` :
 
-Parsel Tongue will make new output file with the help of input files if there are not enough output files. All the files specified before ```-o``` are by default taken as input files. If an input file is not found in the specified-path, then the script looks for ```../tests/specified-path``` and takes the input file from there if it exists. File extensions are not checked in the script so one can even pass file not ending in ```.py``` and still get the desired output.
+* ```./ParselTongue.sh {input_file_1}.py {input_file_2}.py}```
+* ```./ParselTongue.sh -i {input_file}.py}```
+* ```./ParselTongue.sh -i {input_file}.py -o {output_file}.txt}```
+* ```./ParselTongue.sh -v -i {input_file}.py -o {output_file}.txt}```
+* ```./ParselTongue.sh {input_file_1}.py {input_file_2} -o {output_file}.txt}```
+* ```./ParselTongue.sh -a -m {input_file_1}.py {input_file_2}.py}```
+* ```./ParselTongue.sh -a -p -v {input_file_1}.py {input_file_2}.py}```
+* ```./ParselTongue.sh {input_file_1}.py -vampi {input_file_2}.py -o {output_file}.txt}```
 
-<!-- ## Authors and acknowledgment -->
+Parsel Tongue will make new output file with the help of input files if there are not enough output files. All the files specified before ```-o``` are by default taken as input files. If an input file is not found in the specified-path, then the script looks for ```../tests/specified-path``` and takes the input file from there if it exists. 
+Options can be passed together if needed as in above, -vampi means verbose, ast, markdown, ptree, input options.ParselTongue will make new output file with the help of input files if there are not enough output files. All the files specified before -o are by default taken as input files.
+
+## Language Features Supported:
+
+1. Primitive data types (e.g., int, float, str, and bool)
+2. 1D list (ignore dictionaries, tuples, and sets)
+3. Basic operators:
+    * Arithmetic operators: +, -, *, /, //, %, **
+    * Relational operators: ==, !=, >, <, >=, <=
+    * Logical operators: and, or, not
+    * Bitwise operators: &, |, ˆ, ˜, <<, >>
+    * Assignment operators: =, +=, -=, *=, /=, //=, %=, **=, &=, |=, ˆ=, «=, »=
+4. Control flow via if-elif-else, for, while, break and continue (ignoring pass, do-while and
+switch)
+5. Support for recursion
+6. Support the library function print() for only printing the primitive Python types, one at a time
+7. Support for classes and objects, including multilevel inheritance and constructors. (ignoring multiple inheritance, i.e., a class can have only one parent class).
+8. Methods and method calls, including both static and non-static methods
+
+## Additional features supported
+
+* Dynamic ```range``` and ```len``` functions:
+The list data structure is modified to internally store the list's length in the first 8 bytes. This design choice ensures that the length is always readily available during list creation and access, streamlining operations that rely on this information.
+
+* Function Overloading:
+In ParselTongue, we've implemented function overloading with appropriate checks, allowing multiple functions with the same name but different parameters to be defined.
+
+## Detailed Error Messages
+
+Apart from the syntax errors, detailed error messages are provided, including error lines with row, column, and file name information. Notes are also used to indicate previous declarations or provide variable types, making it easier for end users to understand and infer from the errors. They include, but are not limited to,
+* There is a use of undeclared variable
+* There is redefinition of a variable
+* A class attribute is used without defining it
+* The type provided during declaration is not a valid type. (A class can be a valid type.)
+* The left and right of an operator does not have compatible types
+* The iterated object is not iterable, it is not a list
+* The type was not specified for a parameter in a function definition
+* One tries to use keyword as a variable name
+* Class declaration is not done globally
+* An overloaded function creates ambiguity
+* The return type does not match the promised return type during function definition
+* A return type was not specified for a function
+* The lvalue for an assignment cannot be assigned a value
+* An object attribute is defined in some function other than ```__init__```
+* ```__init__``` function is defined somewhere other than inside the class
+* The parent for a class is not a valid class
+* There are two or more ```self``` in function formal parameters
+* there is a mixed list, i.e., a list with with more than one different datatype
+* Nested lists are defined. (Only 1D lists are allowed)
+* An empty list is passed to a variable as they are not supported
+* A function which is defined inside a class does not have self as a parameter
+* The break and continue statements are used outside of a loop
+* Return statement is used when not in function
+* A variable which is not a list is dereferenced
+* The list access or conditions in loop have an unsupported type of value in them
+
+A sample error message is shown as below:
+
+<img src="milestone2/misc/sampleError.png" alt="Sample Error" title="Sample Error" width="600" height="160"/>
