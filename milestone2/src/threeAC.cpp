@@ -127,14 +127,29 @@ void Parasite::genAC()
 		/* range (int x) */
 		
 		code inst;
+
+		inst.field_1 = "__name__";
+		inst.field_2 = "=";
+		inst.field_3 = "\"__main__\"";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "begin_function";
 		inst.field_2 = tableHash(globTable) + "range@int";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		string val = newTmp();
 		inst.field_1 = "pop_param";
 		inst.field_2 = val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -771,6 +786,9 @@ void Parasite::genAC()
 		code inst;
 		inst.field_1 = "begin_function";
 		inst.field_2 = funcName;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -1419,6 +1437,9 @@ void Parasite::genAC()
 			string label = newLabel();
 			inst.field_1 = "goto";
 			inst.field_2 = "@FILL_LATER@";
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
 			inst.label = label;
 			threeAC.push_back(inst);
 			children[0] -> tmp = label;
@@ -1430,6 +1451,9 @@ void Parasite::genAC()
 			string label = newLabel();
 			inst.field_1 = "goto";
 			inst.field_2 = "@FILL_LATER@";
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
 			inst.label = label;
 			threeAC.push_back(inst);
 			children[0] -> tmp = label;
@@ -1507,6 +1531,8 @@ void Parasite::genAC()
 			inst.field_1 = children[0] -> tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[2] -> tmp;
+			inst.field_4 = "";
+			inst.field_5 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
@@ -1546,6 +1572,8 @@ void Parasite::genAC()
 		inst.field_1 = children[0] -> tmp;
 		inst.field_2 = "=";
 		inst.field_3 = children[2] -> tmp;
+		inst.field_4 = "";
+		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 		tmp = children[0] -> tmp;
