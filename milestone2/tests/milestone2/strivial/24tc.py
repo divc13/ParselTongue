@@ -1,14 +1,8 @@
-class A:
-    def __init__(self):
-        self.a:int = 10
-        return
-    def hell(self) -> None:
-        self.a = 0
-        return
-    
-        
-def main():
-    a: A = A()
-    # c: int = 10
-    a.hell()
-    return
+def fun(a: int) -> int:
+    return a
+
+fun(1 + 2 + 3)
+# a: int = 1
+# b: int = 2
+# c: int = 3
+# fun(a + b - c)

@@ -16,15 +16,28 @@ display_help() {
 	echo -e "\e[38;5;208mUsage: $0 [options] [-i input_files...] [-o output_files...]"
 	echo -e "Options:"
 	echo -e "	-v,	--verbose			: Output a .debug file at the output folder"
-	echo -e "	-i,	--input				: Specify the Input PYTHON file(s), any files specified after this option are input files till -o is specified"
-	echo -e "	-o,	--output			: Specify the Output tac file(s), any files specified after this option are output files till -i is specified"
-	echo -e "	-d,	--dot				: Output a .DOT file at the output folder"
+	echo -e "	-i,	--input				: Specify the input PYTHON (.py) file(s), any files specified after this option are input files till -o is specified"
+	echo -e "	-o,	--output			: Specify the output TAC (.txt) file(s), any files specified after this option are output files till -i is specified"
+	echo -e "	-d,	--dot				: Output a .dot file at the output folder"
 	echo -e "	-a,	--ast				: Output an AST pdf file at the output folder"
 	echo -e "	-p,	--ptree				: Output a Parse Tree pdf file at the output folder"
 	echo -e "	-c,	--csv				: Output a CSV file containing Symbol Tables at the output folder"
 	echo -e "	-m,	--markdown			: Output a MD file containing Symbol Tables at the output folder"
 	echo -e "	-h,	--help				: Display this help message\e[0m"
 	echo ""
+}
+
+check_extension() {
+	filename="$1"
+	extension="${filename##*.}"
+	if [ "$output_flag" -eq 1 ] && [ "$extension" != "txt" ]; then
+		echo -e "\e[31mError in file: \e[34m${filename} \e[31m: File extension for output files should be .txt\e[0m"
+		exit 1
+	fi
+	if [ "$output_flag" -eq 0 ] && [ "$extension" != "py" ]; then
+		echo -e "\e[31mError in file: \e[34m${filename} \e[31m: File extension for input files should be .py\e[0m"
+		exit 1
+	fi
 }
 
 file_exists() {
@@ -116,12 +129,10 @@ for ((i=1; i<=$#; i++)); do
 		done
 		;;
 	* )
+		check_extension "$arg"
 		if [ "$output_flag" -eq 1 ]; then
 			output_directory=$(dirname "$arg")
 			create_directory_if_not_exists "$output_directory"
-			filename=$(basename "$arg")
-			filename_no_extension="${filename%.*}"
-			output_files_without_extention+=("${output_directory}/${filename_no_extension}")
 			output_files+="${arg}"
 		else
 			file_exists "$arg"
@@ -141,7 +152,7 @@ for ((i = 0; i < ${#input_files[@]}; i++)); do
 	if [ "$i" -lt "${#output_files[@]}" ]; then
 		output_file="${output_files[$i]}"
 	else
-		filename=$(basename "$input_files[$i]")
+		filename=$(basename "${input_files[$i]}")
 		filename_no_extension="${filename%.*}"
 		output_file="../output/${filename_no_extension}.txt"
 	fi
@@ -175,14 +186,10 @@ elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 	done
 else
 	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
-	for ((i = 0; i < ${#input_files[@]}; i++)); do
-		if [ "$i" -lt "${#output_files[@]}" ]; then
-			output_file="${output_files[$i]}"
-		else
-			output_file="${output_files_without_extention[$i]}.txt"
-			output_files+="${output_file}"
-			echo -e "\e[34m${output_file}\e[0m"
-		fi
+	for ((i = ${#output_files[@]}; i < ${#input_files[@]}; i++)); do
+		output_file="${output_files_without_extention[$i]}.txt"
+		output_files+="${output_file}"
+		echo -e "\e[34m${input_files[$i]} \u27f9  ${output_file}\e[0m"
 	done
 
 	for ((i = 0; i < ${#input_files[@]}; i++)); do
@@ -194,7 +201,6 @@ else
 		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
 	done	
 fi
-
 
 
 if [ "$ptree_flag" -eq 1 ]; then

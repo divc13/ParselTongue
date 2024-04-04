@@ -1,7 +1,9 @@
-a:int = 5
-
-while a > 3:
-    print("fij")
-    a -= 1
+if (False):
+    print ("")
     
+elif False:
+    print("af")
+    
+else :
+    print("")
     

@@ -1,7 +1,10 @@
-if False:
-    print("")
+if (False):
+    print ("")
+    
+elif True:
+    print("af")
     
 else :
-    print("fne")
+    print("")
     
     

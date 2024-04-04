@@ -1,6 +1,6 @@
 def main():
     a:int = 30
-    while(a):
+    while(a + 2 - 1):
         print("")
         b:int = 5
         a = False
