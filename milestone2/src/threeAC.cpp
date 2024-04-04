@@ -9,6 +9,7 @@ int tmp = 0;
 symbolTable* table = globTable;
 symbolTable* dotTable = NULL;
 tableRecord* dotRecord = NULL;
+tableRecord* dotRecord_1 = NULL;
 stack<pair<string, string>> labelStack;
 vector<code> threeAC;
 map <string, string> Temporaries;
@@ -1218,6 +1219,7 @@ void Parasite::genAC()
 		{
 			tableRecord* entry = table -> lookup(children[0] -> name);
 			assert (entry);
+			dotRecord_1 = entry;
 			entry = globTable -> lookup_table(entry ->type, recordType::TYPE_CLASS);
 			assert (entry);
 			dotTable = entry -> symTab;
@@ -2769,7 +2771,7 @@ void Parasite::genAC()
 			{
 				params.insert(params.begin(), dotRecord);
 				inst.field_1 = "param";
-				inst.field_2 = dotRecord -> name;
+				inst.field_2 = dotRecord_1 -> name;
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 				nparams ++;
@@ -2841,6 +2843,7 @@ void Parasite::genAC()
 
 		dotTable = NULL;
 		dotRecord = NULL;
+		dotRecord_1 = NULL;
 
 	}
 
@@ -2964,14 +2967,7 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
-			tmp = newTmp();
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = "*(" + t2 + ")";
-			inst.field_4 = "";
-			inst.field_5 = "";
-			inst.label = newLabel();
-			threeAC.push_back(inst);
+			tmp = "*(" + t2 + ")";
 		}
 
 
@@ -3004,6 +3000,7 @@ void Parasite::genAC()
 			tmp = children[2] -> tmp;
 			dotTable = NULL;
 			dotRecord = NULL;
+			dotRecord_1 = NULL;
 		}
 
 	}

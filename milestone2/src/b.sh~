@@ -1,0 +1,8 @@
+i=$1
+./ParselTongue.sh "../tests/milestone2/strivial/${i}tc.py"
+file="../output/${i}tc.txt"
+echo ""
+cat "../tests/milestone2/strivial/${i}tc.py"
+echo ""
+cat | tail -n +71 $file
+echo ""
