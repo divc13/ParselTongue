@@ -291,11 +291,15 @@ void generateAST(TreeNode *root, int flag)
 			continue;
 		}
 
-		if (((child->name).compare("in") == 0) && flag == 3 && SkipToken1.find(root->name) == SkipToken1.end() && (root->type).compare("IDENTIFIER") != 0)
+		if (((child->name).compare("in") == 0) && flag == 3 && (root->type).compare("IDENTIFIER") != 0)
 		{
-			if (root -> name == "for_expr" && root -> type == "NON_TERMINAL")
+			// if (SkipToken1.find(root -> name) == SkipToken1.end())
+			if (root -> name == "for_expr" && root -> type == "NON_TERMINAL" && (root -> children).size() == 3)
+			{
 				ConstrainedExchange(root, nchild, 2);
-			continue;
+				continue;
+			}
+			// else ExchangeWithChild(root, nchild);
 		}
 
 		// third iteration

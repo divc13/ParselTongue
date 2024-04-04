@@ -1,7 +1,4 @@
-def f(a:int, b:float)->int:
-    return 1
+a:int = 10
+if a in range (11):
+    print(a)
 
-def f(a:float, b:int)->int:
-    return 1
-
-f(1., 2.)

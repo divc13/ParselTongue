@@ -2281,12 +2281,110 @@ void Parasite::genAC()
 			tmp = children[0] -> tmp; 
 		}
 
-		// else if (children.size() == 3 && children[2] -> name == "in")
-		// {
-		// 	code inst;
-		// 	string t1 = newTmp();
-		// 	inst.field_1 = 
-		// }
+		else if (children.size() == 3 && children[1] -> name == "in")
+		{
+			tmp = newTmp();
+			code inst;
+
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = "0";
+			inst.field_4 = ""; 
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t1 = newTmp();
+			inst.field_1 = t1;
+			inst.field_2 = "=";
+			inst.field_3 = "*(" + children[2] -> tmp + ")";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t2 = newTmp();
+			inst.field_1 = t2;
+			inst.field_2 = "=";
+			inst.field_3 = "1";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string label = newLabel();
+			string t3 = newTmp();
+			inst.field_1 = t3;
+			inst.field_2 = "=";
+			inst.field_3 = t2;
+			inst.field_4 = "*";
+			inst.field_5 = "8";
+			inst.label = label;
+			threeAC.push_back(inst);
+
+			string t4 = newTmp();
+			inst.field_1 = t4;
+			inst.field_2 = "=";
+			inst.field_3 = children[2] -> tmp;
+			inst.field_4 = "+";
+			inst.field_5 = t3;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t5 = newTmp();
+			inst.field_1 = t5;
+			inst.field_2 = "=";
+			inst.field_3 = "*(" + t4 + ")";
+			inst.field_4 = ""; 
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = "(" + children[0] -> tmp;
+			inst.field_4 = "=="; 
+			inst.field_5 = t5 + ")";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string label2 = newLabel();
+			inst.field_1 = "if";
+			inst.field_2 = tmp;
+			inst.field_3 = "goto";
+			inst.field_4 = "@FILL_LATER@"; 
+			inst.field_5 = "";
+			inst.label = label2;
+			threeAC.push_back(inst);
+
+			inst.field_1 = t2;
+			inst.field_2 = "=";
+			inst.field_3 = t2;
+			inst.field_4 = "+";
+			inst.field_5 = "1";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t7 = newTmp();
+			inst.field_1 = t7;
+			inst.field_2 = "=";
+			inst.field_3 = t2;
+			inst.field_4 = "<"; 
+			inst.field_5 = t1;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string label3 = newLabel();
+			inst.field_1 = "if";
+			inst.field_2 = t7;
+			inst.field_3 = "goto";
+			inst.field_4 = label;
+			inst.field_5 = "";
+			inst.label = label3;
+			threeAC.push_back(inst);
+
+			filler.push_back({label2, label3});
+		}
 
 		else if (children.size() == 3)
 		{
@@ -2837,8 +2935,15 @@ void Parasite::genAC()
 			inst.field_5 = to_string(entry -> offset);
 			inst.label = newLabel();
 			threeAC.push_back(inst);
-			
-			tmp = "*(" + t2 + ")";
+
+			tmp = newTmp();
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = "*(" + t2 + ")";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
 		}
 
 
