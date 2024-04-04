@@ -23,7 +23,7 @@ void init_error()
 	ErrorMap[ERR::UNKNOWN_TYPE] 				=		"Use of an unknown type ";
 	ErrorMap[ERR::TYPE_MISMATCH] 				=		"mismatched types, cannot perform operation ";
 	ErrorMap[ERR::NOT_ITERABLE] 				=		"object not iterable ";
-	ErrorMap[ERR::NOT_ITERATOR] 				=		"iterator cannot be made from object ";
+	ErrorMap[ERR::NOT_ITERATOR] 				=		"iterator cannot be made from constant ";
 	ErrorMap[ERR::TYPE_NOT_DECL_PARAM] 			=		"Type was not declared for the parameter ";
 	ErrorMap[ERR::KEYWORD_DECL] 				=		"Variable cannot be declared with the name as keyword ";
 	ErrorMap[ERR::NOT_GLOBAL]	 				=		"No global declaration found for ";
