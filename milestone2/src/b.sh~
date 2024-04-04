@@ -4,5 +4,5 @@ file="../output/${i}tc.txt"
 echo ""
 cat "../tests/milestone2/strivial/${i}tc.py"
 echo ""
-cat | tail -n +71 $file
+cat | tail -n +72 $file
 echo ""
