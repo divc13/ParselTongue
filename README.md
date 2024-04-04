@@ -10,7 +10,7 @@ Here we come to help you, and provide you with the magical powers to talk to ser
 
 The analogy becomes clearer if you consider your daily language to be Python and ParselTongue, the languages of serpents, to be the x86-64 assembly code. It is much easier for us to program in a high level language like Python, but it would be tremendous amount of work to program directly in assembly. Hence our objective and motivation for this project is to create a compiler to translate specifically Python 3.12 to x86-64 assembly code.  
 
-## Roadmap: Building the superpower for you
+## Milestones: Building the superpower for you
 
 We aim to build the translator in three phases as below:
 
@@ -18,12 +18,22 @@ We aim to build the translator in three phases as below:
 In this milestone, we constructed a scanner and a parser for a statically typed subset of the Python language. The output of the compiler is a graphical representation of the abstract syntax tree of the input program. 
 
 - [x] [Milestone 2: From Abstract Syntax Tree to 3AC IR]()
- In this milestone, we genrated 3AC IR for the input source program and add runtime support for making function calls. We also
+ In this milestone, we generated 3AC IR for the input source program and add runtime support for making function calls. We also
 (i) implemented support for the symbol table
 (ii) perform semantic analysis to do limited error checking on types and function signatures. 
 
 - [ ] [Milestone 3: From 3AC IR to x86-64]()
 In this milestone, we plan to generate the correct x86_64 assembly from the 3AC which can be run via GAS on Linux.
+
+## Roadmap: How we built?
+
+1. Formulated the patterns for converting lexemes into tokens and built a lexer
+2. Modifed the [grammar of Python 3.12](https://docs.python.org/3/reference/grammar.html) for the required statically typed subset of Python.
+3. Removed all the shift-reduce and reduce-reduce conflicts int grammar to use the Bison-LALR parser.
+4. Interfaced the lexer and parser and added semantic actions to the lexer to return appropriate tokens to the parser.
+5. Developed another lexer to add semantic actions to the parser directly to generate the parse tree.
+6. Cleaned up the parse tree in a systematic way to build an abstrct syntax tree (AST) out of it.
+7. Generated DOT code from the AST and visualized the AST.
 
 ## Language Features Supported:
 
@@ -60,6 +70,24 @@ To acquire the superpower for speaking to serpents, you must have the following 
 
 
 ## Usage: Using the superpower
-While the development is in progress, you can refer to [milestone 1](https://git.cse.iitk.ac.in/divyanshc/python-compiler/-/tree/main/milestone2) documentation for building the abstract syntax tree.
+The source files for milestone 1 are all inside the directory milestone1/src. A bash wrapper ```ParselTongue.sh``` is provided for compilation and execution. This wrapper uses the Makefile for compilation and also refactors command line arguments for the main compiler.
+The options provided are as follows:
+* ```-h``` or ```-help``` or ```--help``` : Shows a manual for usage of compiler
+* ```-i``` or ```-input``` or ```--input``` : One can specify multiple input Python files for compiler
+* ```-o``` or ```-output``` or ```--output``` : One can specify multiple output PDF files for compiler
+* ```-v``` or ```-verbose``` or ```--verbose``` : Passing this option will generate a Parse Tree at the output file instead of classic AST
+
+## Execution Examples
+
+Inside ```milestone1/src``` :
+* ```./ParselTongue.sh ../tests/test1.py```
+* ```./ParselTongue.sh test1.py```
+* ```./ParselTongue.sh -i ../tests/test1.py```
+* ```./ParselTongue.sh -i ../tests/test1.py -o ../output/test1.pdf```
+* ```./ParselTongue.sh -v -i ../tests/test1.py -o ../output/test1.pdf```
+* ```./ParselTongue.sh ../tests/test1.py ../tests/test2.py -o ../output/test1.pdf```
+* ```./ParselTongue.sh ../tests/test1.py -v -i ../tests/test2.py -o ../output/test1.pdf```
+
+Parsel Tongue will make new output file with the help of input files if there are not enough output files. All the files specified before ```-o``` are by default taken as input files. If an input file is not found in the specified-path, then the script looks for ```../tests/specified-path``` and takes the input file from there if it exists. File extensions are not checked in the script so one can even pass file not ending in ```.py``` and still get the desired output.
 
 <!-- ## Authors and acknowledgment -->
