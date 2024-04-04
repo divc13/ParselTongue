@@ -7,5 +7,5 @@ class A:
         
 def main():
     c: int = 10
-    a: A = A()
+    a: A = A(c)
     return

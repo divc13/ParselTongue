@@ -931,6 +931,12 @@ int handle_in(TreeNode* root)
 	// assert (left -> type == "IDENTIFIER" || left -> name == "." || left -> name == "list_access");
 	// assert (right -> type == "IDENTIFIER" || right -> name == "." || right -> name == "function_call");
 
+	if(left -> type == "INT_LITERAL" || left -> type == "FLOAT_LITERAL" || left -> type == "STRING_LITERAL" || (left->type == "KEYWORD" && (left->name == "True" || left->name == "False")))
+	{
+		raise_error(ERR::NOT_ITERATOR, (root -> children)[0]);
+		return -1;
+	}
+
 	if ((right->dataType).compare(0, 4, "list"))
 	{
 		raise_error(ERR::NOT_ITERABLE, (root -> children)[1]);
