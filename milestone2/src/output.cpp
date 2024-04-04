@@ -133,8 +133,12 @@ void tableRecord::dumpCSV(ofstream &CSV)
 void symbolTable::dumpCSV(ofstream &CSV)
 {
 	visitedCSV[this] = 1;
-	CSV << "# Table Name: " << name;
-	CSV << ", size = " << size;
+	CSV << "# Table Name: ";
+	if (tableType == tableType::CLASS)
+		CSV << "Class ";
+	if (tableType == tableType::FUNCTION)
+		CSV << "Function ";
+	CSV << name << ", size = " << size;
 	if (parentSymtable)
 		CSV << ", Parent Table: " << parentSymtable -> name;
 	

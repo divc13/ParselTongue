@@ -32,7 +32,7 @@ void init_error()
 	ErrorMap[ERR::RETURN_TYPE_MISMATCH]	 		=		"return type does not match the function definition ";
 	ErrorMap[ERR::NO_RET_TYPE]	 				=		"no return type specified for the function ";
 	ErrorMap[ERR::BAD_LVAL]	 					=		"value cannot be assigned to ";
-	ErrorMap[ERR::STRAY_CODE]	 				=		"Stray code is not supported such as <variable> ";
+	ErrorMap[ERR::STRAY_CODE]	 				=		"Stray code in class is not supported like ";
 
 
 	// root- -> name not printed

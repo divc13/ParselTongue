@@ -1,9 +1,7 @@
-if (False):
-    print ("")
+i:int
+
+for i in range(1, 3):
+    print(i)
     
-elif False:
-    print("af")
     
-else :
-    print("")
     

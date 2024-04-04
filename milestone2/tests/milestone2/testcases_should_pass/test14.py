@@ -1,7 +1,7 @@
-i:int
+def main():
+    while(True):
+        a:int = 1       # infinite loop
 
-for i in range(1, 3):
-    print(i)
-    
-    
-    
+
+if __name__ == "__main__":
+    main()

@@ -267,6 +267,8 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 		record -> offset = size;
 
 	// size of the table not updated when function entry
+	if(this->tableType == tableType::FUNCTION && this->currentIndex < this->numParams)
+		size -= __size;
 	if (recordType != recordType::TYPE_FUNCTION)
 		size += __size;
 	
