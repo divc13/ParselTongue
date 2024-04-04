@@ -14,21 +14,11 @@ class rect:
         self.perimeter = 2 * (self.length + self.width)
         return self.perimeter
 
-
-# class square(rect):
-
-#     def __init__(self, side: int):
-#         rect.__init__(self, side, side)
-
 def main():
     obj1: rect = rect(3, 4)
     print(obj1.find_area())
     print(obj1.find_perimeter())
     perimeter: int = obj1.find_perimeter()
-    # obj2 = square(4)
-    # print(obj2.find_area())
-    # print(obj2.find_perimeter())
-    
 
 if __name__ == "__main__":
   main()

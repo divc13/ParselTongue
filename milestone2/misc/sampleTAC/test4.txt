@@ -1,0 +1,124 @@
+1:              __name__ = "__main__"  
+2:              begin_function range@int   
+3:              pop_param $t1   
+4:              $t2 = $t1 + 1
+5:              $t3 = $t2 * 8
+6:              param $t3   
+7:              call alloc_mem 1  
+8:              $t4 = popparam  
+9:              *($t4) = $t1  
+10:             $t6 = 1  
+11:             $t8 = $t6 * 8
+12:             $t9 = $t4 + $t8
+13:             *($t9) = $t6 - 1
+14:             $t6 = $t6 + 1
+15:             $t7 = $t6 < $t2
+16:             if $t7 goto 11 
+17:             push $t4   
+18:             return    
+19:             end_function    
+20:             begin_function range@int@int   
+21:             pop_param $t10   
+22:             pop_param $t11   
+23:             $t12 = $t11 - $t10
+24:             $t13 = $t12 + 1
+25:             $t16 = $t13 * 8
+26:             param $t16   
+27:             call alloc_mem 1  
+28:             $t23 = popparam  
+29:             $t18 = $t10  
+30:             *($t23) = $t12  
+32:             $t21 = $t18 - $t10
+32:             $t15 = $t21 + 1
+33:             $t20 = $t15 * 8
+34:             $t22 = $t23 + $t20
+35:             *($t22) = $t18  
+36:             $t18 = $t18 + 1
+37:             $t19 = $t18 < $t11
+38:             if $t19 goto 32 
+39:             push $t23   
+40:             return    
+41:             end_function    
+42:             begin_function len@str   
+43:             pop_param $t24   
+44:             $t25 = *($t24)  
+45:             push $t25   
+46:             return    
+47:             end_function    
+48:             begin_function len@list[bool]   
+49:             pop_param $t26   
+50:             $t27 = *($t26)  
+51:             push $t27   
+52:             return    
+53:             end_function    
+54:             begin_function len@list[float]   
+55:             pop_param $t28   
+56:             $t29 = *($t28)  
+57:             push $t29   
+58:             return    
+59:             end_function    
+60:             begin_function len@list[int]   
+61:             pop_param $t30   
+62:             $t31 = *($t30)  
+63:             push $t31   
+64:             return    
+65:             end_function    
+66:             begin_function len@list[str]   
+67:             pop_param $t32   
+68:             $t33 = *($t32)  
+69:             push $t33   
+70:             return    
+71:             end_function    
+72:             begin_function fibonacci@int   
+73:             pop_param n%fibonacci   
+74:             $t34 = n%fibonacci <= 1
+75:             if_false $t34 goto 78 
+76:             push n%fibonacci   
+77:             return    
+78:             prev%fibonacci = 0  
+79:             curr%fibonacci = 1  
+80:             $t35 = n%fibonacci + 1
+81:             param $t35   
+82:             param 2   
+83:             call range@int@int 2  
+84:             $t36 = popparam  
+85:             $t39 = *($t36)  
+86:             $t40 = $t39 + 1
+87:             $t37 = 1  
+88:             $t38 = $t37 * 8
+89:             $t41 = $t36 + $t38
+90:             i%fibonacci = *($t41)  
+91:             $t37 = $t37 + 1
+92:             $t42 = $t37 < $t40
+93:             if_false $t42 goto 99 
+94:             temp%fibonacci = prev%fibonacci  
+95:             prev%fibonacci = curr%fibonacci  
+96:             $t43 = prev%fibonacci + temp%fibonacci
+97:             curr%fibonacci = $t43  
+98:             goto 88   
+99:             push curr%fibonacci   
+100:            return    
+101:            end_function    
+102:            begin_function main   
+103:            n%main = 5  
+104:            param n%main   
+105:            shift_sp -32   
+106:            call fibonacci@int 1  
+107:            shift_sp 32   
+108:            $t44 = popparam  
+109:            result%main = $t44  
+110:            param result%main   
+111:            call print@int 1  
+112:            end_function    
+113:            param 17   
+114:            call alloc_mem 1  
+115:            $t45 = popparam  
+116:            *($t45) = 9  
+117:            $t46 = $t45 + 8
+118:            *($t46) = "__main__"  
+119:            $t47 = __name__ == $t45
+120:            if_false $t47 goto END 
+121:            shift_sp -16   
+122:            call main 0  
+123:            shift_sp 16   
+END                 
