@@ -2754,7 +2754,8 @@ void Parasite::genAC()
 		tempExprs.clear();
 
 		tableRecord* entry = globTable -> lookup_table(children[0] -> name);
-		if (entry && (entry -> recordType == recordType::TYPE_CLASS || entry -> recordType == recordType::CLASS_CONSTRUCTOR))
+
+		if (entry && (entry -> recordType == recordType::TYPE_CLASS))
 		{
 			// this is the constructor
 			int width = entry -> size;
@@ -2766,7 +2767,7 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 			nparams ++;
-			funcEntry = entry ->symTab -> lookup_table("__init__");
+			funcEntry = entry -> symTab -> lookup_table("__init__");
 		}
 
 		else {

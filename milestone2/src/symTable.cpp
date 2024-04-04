@@ -45,7 +45,16 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		for (auto &i: indices)
 		{
 			// return any matching entry with type other than function or class
-			if (entries[i] -> recordType != recordType::TYPE_FUNCTION)
+
+			if (entries[i] -> recordType != recordType::TYPE_FUNCTION && doInsert == 1)
+			{
+				if (entries[i] -> recordType == recordType::CONST_STRING)
+					continue;
+
+				return entries[i];
+			}
+
+			else if (entries[i] -> recordType != recordType::TYPE_FUNCTION && entries[i] -> recordType != recordType::TYPE_CLASS && doInsert == 0)
 			{
 				if (entries[i] -> recordType == recordType::CONST_STRING)
 					continue;
@@ -60,11 +69,19 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 		for (auto &i: indices)
 		{
 			// the type must now be class or function
-			if (entries[i] -> recordType == recordType::TYPE_FUNCTION && params)
+			if ((entries[i] -> recordType == recordType::TYPE_FUNCTION || entries[i] -> recordType == recordType::TYPE_CLASS) && params)
 			{
 				bool match = true;
 				tableRecord* entry = entries[i];
 				symbolTable* table = entry -> symTab;
+
+				if (entries[i] -> recordType == recordType::TYPE_CLASS)
+				{
+					tableRecord* entry2 = table -> lookup_table("__init__");
+					if (!entry2) return NULL;
+					table = entry2 -> symTab;
+					params -> insert(params -> begin(), entry);
+				}
 
 				if (params -> size() != table -> numParams) continue;
 
@@ -94,6 +111,7 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 						break;
 					
 				}
+
 				if (num == params -> size()) 
 				{
 					if (!match)
@@ -126,22 +144,6 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 			{
 				return entries[index[0]];
 			}
-		}
-
-		return NULL;
-	}
-
-	if (recordType == recordType::CLASS_CONSTRUCTOR)
-	{
-		for (auto &i: indices)
-		{
-			if (entries[i] -> recordType == recordType::TYPE_CLASS)
-				continue;
-
-			if (entries[i] -> recordType == recordType::CONST_STRING)
-				continue;
-
-			return entries[i];
 		}
 
 		return NULL;
@@ -245,11 +247,10 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	tableRecord* record = new tableRecord(name, type, __size, lineno, column, recordType);
 	record -> symTab = this;
 
-	if ((recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION || recordType == recordType::CLASS_CONSTRUCTOR))
+	if ((recordType == recordType::TYPE_CLASS || recordType == recordType::TYPE_FUNCTION))
 	{
 		record -> symTab = funcTable;
-		if(record -> recordType != recordType::CLASS_CONSTRUCTOR)
-			childIndices.push_back(currentIndex);
+		childIndices.push_back(currentIndex);
 	}
 
 	inputRecord -> symTab = record -> symTab;
@@ -890,7 +891,7 @@ int handle_type_declarations(TreeNode* root)
 	else if(tempTable -> tableType == tableType::CLASS)
 	{
 		recordType = recordType::CLASS_ATTRIBUTE;
-		raise_error(ERR::STRAY_CODE, (root ->children)[0]);
+		raise_error(ERR::CLASS_ATTRIBUTE_DECL_CTOR, (root ->children)[0]);
 		return -1;
 	}
 	
@@ -1260,9 +1261,6 @@ string handle_function_call(TreeNode* root)
 	tableRecord* funcEntry = currTable -> lookup((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
 	if (tempDotTable) funcEntry = tempDotTable -> lookup_table((root -> children)[0] -> name, recordType::TYPE_FUNCTION, &params);
 	tempDotTable = NULL;
-
-	for (auto &i: params)
-		free(i);
 		
 	if (!funcEntry)
 	{
@@ -1554,11 +1552,11 @@ int generate_symtable(TreeNode *root)
 				raise_error(ERR::CLASS_CTOR, (root->children)[0]);
 				return -1;
 			}
-			string name = entry -> symTab -> parentSymtable -> name;
-			tableRecord* record = new tableRecord(name, name, entry -> size, entry -> lineno, entry -> column, recordType::CLASS_CONSTRUCTOR);
-			int ret = globTable -> insert(record, entry -> symTab);
-			if (ret < 0)
-				return -1;
+			// string name = entry -> symTab -> parentSymtable -> name;
+			// tableRecord* record = new tableRecord(name, name, entry -> size, entry -> lineno, entry -> column, recordType::CLASS_CONSTRUCTOR);
+			// int ret = globTable -> insert(record, entry -> symTab);
+			// if (ret < 0)
+			// 	return -1;
 			initPresence = true;
 		}
 		
