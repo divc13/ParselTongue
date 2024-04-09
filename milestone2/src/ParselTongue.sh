@@ -7,9 +7,9 @@ verbose_flag=0
 dot_flag=0
 ast_flag=0
 ptree_flag=0
-csv_flag=1
+csv_flag=0
 md_flag=0
-tac_flag=1
+tac_flag=0
 exe_flag=1
 output_flag=0
 

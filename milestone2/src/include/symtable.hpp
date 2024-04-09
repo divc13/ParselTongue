@@ -18,9 +18,9 @@ using namespace std;
 
 enum regs{
 	RAX,
+	RDX,
 	RBX,
 	RCX,
-	RDX,
 	RBP,
 	RSP,
 	RDI,
@@ -194,3 +194,24 @@ void dumpAC(string file);
 void generate_assembly();
 
 void dump_x86_64(string file);
+
+
+
+
+typedef struct reg_struct
+{
+	string var = "";
+	string name = "";
+	int next = -1;
+	bool free = true;
+	void freeReg();
+
+} reg_struct;
+
+typedef struct var_struct
+{
+	string name = "";
+	int death = INT_MAX;
+	int reg = -1;
+
+} var_struct;

@@ -1,5 +1,6 @@
 #include "include/symtable.hpp"
 #include "include/error.hpp"
+#define REG_CNT 16
 
 
 extern symbolTable *globTable;
@@ -13,7 +14,7 @@ extern map<string, int> StringToToken;
 extern map<string, string> TokenNameToString;
 extern map<string, string> opType;
 
-reg_struct regMap[REG_CNT];
+extern reg_struct regMap[REG_CNT];
 
 void init_error()
 {
@@ -508,20 +509,25 @@ void init_token_map()
 	opType[">>="] = "OP_ASSIGNMENT";
 
 
-	regMap[RAX] = "%rax";
-	regMap[RBX] = "%rbx";
-	regMap[RCX] = "%rcx";
-	regMap[RDX] = "%rdx";
-	regMap[RSI] = "%rsi";
-	regMap[RDI] = "%rdi";
-	regMap[RBP] = "%rbp";
-	regMap[R8] = "%r8";
-	regMap[R9] = "%r9";
-	regMap[R10] = "%r10";
-	regMap[R11] = "%r11";
-	regMap[R12] = "%r12";
-	regMap[R13] = "%r13";
-	regMap[R14] = "%r14";
-	regMap[R15] = "%r15";
+	regMap[RAX].name = "%rax";
+	regMap[RBX].name = "%rbx";
+	regMap[RCX].name = "%rcx";
+	regMap[RDX].name = "%rdx";
+	regMap[RBP].name = "%rbp";
+	regMap[RBP].free = false;
+	regMap[RBP].next = INT_MAX;
+	regMap[RSP].name = "%rsp";
+	regMap[RSP].free = false;
+	regMap[RSP].next = INT_MAX;
+	regMap[RDI].name = "%rdi";
+	regMap[RSI].name = "%rsi";
+	regMap[R8].name = "%r8";
+	regMap[R9].name = "%r9";
+	regMap[R10].name = "%r10";
+	regMap[R11].name = "%r11";
+	regMap[R12].name = "%r12";
+	regMap[R13].name = "%r13";
+	regMap[R14].name = "%r14";
+	regMap[R15].name = "%r15";
 
 }
