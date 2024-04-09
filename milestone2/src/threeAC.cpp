@@ -1,4 +1,4 @@
-#include "include/threeAC.hpp"
+#include "include/symtable.hpp"
 
 extern symbolTable* globTable;
 extern map<string, int> typeMap;
@@ -136,6 +136,942 @@ void Parasite::genAC()
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
+
+		/* print@int */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@int";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"%lld\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "2";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		/* print@float */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@float";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"%lf\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "2";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+
+		/* print@str */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@str";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = print_val;
+		inst.field_2 = "=";
+		inst.field_3 = print_val;
+		inst.field_4 = "+";
+		inst.field_5 = "8";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"%s\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "2";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		/* print@bool */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@bool";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"%lld\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "2";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		/* print@list[int] */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@list[int]";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string print1 = newTmp();
+		inst.field_1 = print1;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print_val + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string print2 = newTmp();
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"[\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string printLab = newLabel();
+		string print5 = newTmp();
+		inst.field_1 = print5;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "*";
+		inst.field_5 = "8";
+		inst.label = printLab;
+		threeAC.push_back(inst);
+
+		string print3 = newTmp();
+		inst.field_1 = print3;
+		inst.field_2 = "=";
+		inst.field_3 = print_val;
+		inst.field_4 = "+";
+		inst.field_5 = print5;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string print4 = newTmp();
+		inst.field_1 = print4;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print3 + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print4;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "print@int";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\", \"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		string print6 = newTmp();
+		inst.field_1 = print6;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "<";
+		inst.field_5 = print_val;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "if";
+		inst.field_2 = print6;
+		inst.field_3 = "goto";
+		inst.field_4 = printLab;
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
+		inst.field_1 = "param";
+		inst.field_2 = "\"]\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		/* print@list[str] */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@list[str]";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print1 = newTmp();
+		inst.field_1 = print1;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print_val + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print2 = newTmp();
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"[\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		printLab = newLabel();
+		print5 = newTmp();
+		inst.field_1 = print5;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "*";
+		inst.field_5 = "8";
+		inst.label = printLab;
+		threeAC.push_back(inst);
+
+		print3 = newTmp();
+		inst.field_1 = print3;
+		inst.field_2 = "=";
+		inst.field_3 = print_val;
+		inst.field_4 = "+";
+		inst.field_5 = print5;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print4 = newTmp();
+		inst.field_1 = print4;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print3 + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print4;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "print@str";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\", \"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print6 = newTmp();
+		inst.field_1 = print6;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "<";
+		inst.field_5 = print_val;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "if";
+		inst.field_2 = print6;
+		inst.field_3 = "goto";
+		inst.field_4 = printLab;
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
+		inst.field_1 = "param";
+		inst.field_2 = "\"]\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+
+		/* print@list[float] */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@list[float]";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print1 = newTmp();
+		inst.field_1 = print1;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print_val + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print2 = newTmp();
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"[\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		printLab = newLabel();
+		print5 = newTmp();
+		inst.field_1 = print5;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "*";
+		inst.field_5 = "8";
+		inst.label = printLab;
+		threeAC.push_back(inst);
+
+		print3 = newTmp();
+		inst.field_1 = print3;
+		inst.field_2 = "=";
+		inst.field_3 = print_val;
+		inst.field_4 = "+";
+		inst.field_5 = print5;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print4 = newTmp();
+		inst.field_1 = print4;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print3 + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print4;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "print@float";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\", \"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print6 = newTmp();
+		inst.field_1 = print6;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "<";
+		inst.field_5 = print_val;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "if";
+		inst.field_2 = print6;
+		inst.field_3 = "goto";
+		inst.field_4 = printLab;
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
+		inst.field_1 = "param";
+		inst.field_2 = "\"]\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		/* print@list[float] */
+
+		inst.field_1 = "begin_function";
+		inst.field_2 = tableHash(globTable) + "print@list[bool]";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print_val = newTmp();
+		inst.field_1 = "pop_param";
+		inst.field_2 = print_val;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print1 = newTmp();
+		inst.field_1 = print1;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print_val + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print2 = newTmp();
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+
+		inst.field_1 = "param";
+		inst.field_2 = "\"[\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		printLab = newLabel();
+		print5 = newTmp();
+		inst.field_1 = print5;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "*";
+		inst.field_5 = "8";
+		inst.label = printLab;
+		threeAC.push_back(inst);
+
+		print3 = newTmp();
+		inst.field_1 = print3;
+		inst.field_2 = "=";
+		inst.field_3 = print_val;
+		inst.field_4 = "+";
+		inst.field_5 = print5;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print4 = newTmp();
+		inst.field_1 = print4;
+		inst.field_2 = "=";
+		inst.field_3 = "*(" + print3 + ")";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = print4;
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "print@bool";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "param";
+		inst.field_2 = "\", \"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = print2;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "+";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		print6 = newTmp();
+		inst.field_1 = print6;
+		inst.field_2 = "=";
+		inst.field_3 = print2;
+		inst.field_4 = "<";
+		inst.field_5 = print_val;
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "if";
+		inst.field_2 = print6;
+		inst.field_3 = "goto";
+		inst.field_4 = printLab;
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
+		inst.field_1 = "param";
+		inst.field_2 = "\"]\"";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "call";
+		inst.field_2 = "printf";
+		inst.field_3 = "1";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "return";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
+		inst.field_1 = "end_function";
+		inst.field_2 = "";
+		inst.field_3 = "";
+		inst.field_4 = "";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 
 		inst.field_1 = "begin_function";
 		inst.field_2 = tableHash(globTable) + "range@int";
@@ -3141,7 +4077,7 @@ void Parasite::genAC()
 		{
 			formatString(children[0]->tmp);
 			formatString(children[1]->tmp);
-			tmp = "\"" + children[0]->tmp + children[1]->tmp + "\"";
+			tmp = "\"" + children[0]->tmp + children[1]->tmp + "\\0\"";
 		}
 		else
 		{

@@ -9,6 +9,8 @@ ast_flag=0
 ptree_flag=0
 csv_flag=1
 md_flag=0
+tac_flag=1
+exe_flag=1
 output_flag=0
 
 display_help() {
@@ -23,6 +25,7 @@ display_help() {
 	echo -e "	-p,	--ptree				: Output a Parse Tree pdf file at the output folder"
 	echo -e "	-c,	--csv				: Output a CSV file containing Symbol Tables at the output folder"
 	echo -e "	-m,	--markdown			: Output a MD file containing Symbol Tables at the output folder"
+	echo -e "	-t,	--tac				: Output a .txt file containing Three Address Code instructions at the output folder"
 	echo -e "	-h,	--help				: Display this help message\e[0m"
 	echo ""
 }
@@ -171,7 +174,7 @@ if [ "${#input_files[@]}" -eq "${#output_files[@]}" ]; then
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}" "${tac_flag}"
 	done
 elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 	echo -e "\e[33mWarning: Less input files provided than output files. The additional output files wont be used.\e[0m"
@@ -182,7 +185,7 @@ elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}" "${tac_flag}"
 	done
 else
 	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
@@ -198,7 +201,7 @@ else
 		output_file2="${output_files_without_extention[$i]}"
 
 		echo ""
-		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}"
+		./runner "$input_file" "$output_file1" "$output_file2" "${verbose_flag}" "${ast_flag}" "${ptree_flag}" "${csv_flag}" "${md_flag}" "${tac_flag}"
 	done	
 fi
 
@@ -250,3 +253,17 @@ if [ "$dot_flag" -eq 0 ]; then
 fi
 
 wait
+
+if [ "$exe_flag" -eq 1 ]; then
+	for ((i = 0; i < ${#input_files[@]}; i++)); do
+		output_file_without_extention="${output_files_without_extention[$i]}"
+
+		x86_output_file="${output_file_without_extention}.s"
+
+		if [ -f "$x86_output_file" ]; then
+			gcc "${x86_output_file}" -o test.o
+			gcc "test.o" -o "${output_file_without_extention}"
+			rm "test.o"
+		fi
+	done
+fi

@@ -1,6 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
 #define YELLOW "\033[1;33m"

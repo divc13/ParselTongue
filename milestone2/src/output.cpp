@@ -3,6 +3,7 @@
 
 extern map<int, string> recordTypeMap;
 extern vector<code> threeAC;
+extern vector<instruction> assembly;
 
 map<symbolTable*, int> visitedMD;
 map<symbolTable*, int> visitedCSV;
@@ -514,10 +515,24 @@ void dumpAC(string file)
 	}
 	for (auto child : threeAC)
 	{
-
 		TAC << setw(16) << left << child.label << child.field_1;
 		TAC << " " << child.field_2 << " " << child.field_3 << " " << child.field_4 << " " << child.field_5 << endl;
 	}
 	TAC.close();
+	return;
+}
+
+void dump_x86_64(string file)
+{
+	ofstream x86(file);
+	if (!x86.is_open()) {
+		cout << RED << "Error: Unable to open file " << file << RESET << endl;
+		return;
+	}
+	for (auto child : assembly)
+	{
+		x86 << setw(20) << left << child.label << child.first << " " << child.second << " " << child.third << endl;
+	}
+	x86.close();
 	return;
 }

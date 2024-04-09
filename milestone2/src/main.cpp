@@ -1,7 +1,5 @@
-#include <bits/stdc++.h>
-using namespace std;
 #include "parser.tab.h"
-#include "include/threeAC.hpp"
+#include "include/symtable.hpp"
 #include "include/error.hpp"
 
 
@@ -9,8 +7,6 @@ map<string, int> StringToToken;
 map<string, string> TokenNameToString;
 map<string, string> opType;
 
-
-// #include "include/token_map.hpp"
 
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
@@ -58,7 +54,7 @@ int main(int argc, char **argv)
 	int ptree_flag = atoi(argv[5]);
 	int csv_flag = atoi(argv[6]);
 	int md_flag = atoi(argv[7]);
-	int tac_flag = atoi(argv[6]);
+	int tac_flag = atoi(argv[8]);
 
 	FILE* file = fopen(inputFile.c_str(), "r");
 
@@ -158,6 +154,10 @@ int main(int argc, char **argv)
 	{
 		dumpAC(noExtentionOutputFile + ".txt");
 	}
+
+	generate_assembly();
+
+	dump_x86_64(noExtentionOutputFile + ".s");
 
 	fclose(yyin);
 

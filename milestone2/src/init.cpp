@@ -13,6 +13,8 @@ extern map<string, int> StringToToken;
 extern map<string, string> TokenNameToString;
 extern map<string, string> opType;
 
+reg_struct regMap[REG_CNT];
+
 void init_error()
 {
 	// root- -> name printed
@@ -504,4 +506,22 @@ void init_token_map()
 	opType["^="] = "OP_ASSIGNMENT";
 	opType["<<="] = "OP_ASSIGNMENT";
 	opType[">>="] = "OP_ASSIGNMENT";
+
+
+	regMap[RAX] = "%rax";
+	regMap[RBX] = "%rbx";
+	regMap[RCX] = "%rcx";
+	regMap[RDX] = "%rdx";
+	regMap[RSI] = "%rsi";
+	regMap[RDI] = "%rdi";
+	regMap[RBP] = "%rbp";
+	regMap[R8] = "%r8";
+	regMap[R9] = "%r9";
+	regMap[R10] = "%r10";
+	regMap[R11] = "%r11";
+	regMap[R12] = "%r12";
+	regMap[R13] = "%r13";
+	regMap[R14] = "%r14";
+	regMap[R15] = "%r15";
+
 }

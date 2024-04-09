@@ -16,6 +16,25 @@ using namespace std;
 #define SIZE_STRING(x) (1 + (x))
 #define SIZE_LIST(x) (8 * ((x)-2))
 
+enum regs{
+	RAX,
+	RBX,
+	RCX,
+	RDX,
+	RBP,
+	RSP,
+	RDI,
+	RSI,
+	R8,
+	R9,
+	R10,
+	R11,
+	R12,
+	R13,
+	R14,
+	R15,
+};
+
 enum tableType{
 	
 	FUNCTION,
@@ -97,6 +116,26 @@ typedef struct symTable {
 
 } symbolTable;
 
+typedef struct address_code {
+
+	string label = "";
+	string field_1 = "";
+	string field_2 = "";
+	string field_3 = "";
+	string field_4 = "";
+	string field_5 = "";
+
+} code;
+
+typedef struct x86_code
+{
+	string label = "";
+	string first = "";
+	string second = "";
+	string third = "";
+
+} instruction;
+
 #include "node.hpp"
 
 /* genrates the symbol table */
@@ -149,3 +188,9 @@ int handle_to(TreeNode* root);
 int handle_identifier(TreeNode* root);
 
 void formatString(string &name);
+
+void dumpAC(string file);
+
+void generate_assembly();
+
+void dump_x86_64(string file);
