@@ -18,13 +18,13 @@ using namespace std;
 
 enum regs{
 	RAX,
-	RDX,
 	RBX,
-	RCX,
 	RBP,
 	RSP,
 	RDI,
 	RSI,
+	RDX,
+	RCX,
 	R8,
 	R9,
 	R10,
@@ -33,6 +33,7 @@ enum regs{
 	R13,
 	R14,
 	R15,
+	REG_MAX,
 };
 
 enum tableType{
@@ -196,13 +197,10 @@ void generate_assembly();
 void dump_x86_64(string file);
 
 
-
-
 typedef struct reg_struct
 {
 	string var = "";
 	string name = "";
-	int next = -1;
 	bool free = true;
 	void freeReg();
 
@@ -213,5 +211,7 @@ typedef struct var_struct
 	string name = "";
 	int death = INT_MAX;
 	int reg = -1;
+	vector<int> locations;
+	int offset = -1;
 
 } var_struct;

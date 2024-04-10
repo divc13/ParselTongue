@@ -123,19 +123,8 @@ void Parasite::genAC()
 				| statements ENDMARK 
 
 		*/
-
-
-		/* range (int x) */
 		
 		code inst;
-
-		inst.field_1 = "__name__";
-		inst.field_2 = "=";
-		inst.field_3 = "\"__main__\"";
-		inst.field_4 = "";
-		inst.field_5 = "";
-		inst.label = newLabel();
-		threeAC.push_back(inst);
 
 		/* print@int */
 
@@ -3639,8 +3628,6 @@ void Parasite::genAC()
 		*/
 
 
-
-
 		if (children.size() == 1)
 		{
 			tmp = children[0] -> tmp; 
@@ -3653,10 +3640,66 @@ void Parasite::genAC()
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
-			inst.field_4 = children[1] -> name;
-			inst.field_5 = children[2] -> tmp;
+			inst.field_4 = "";
+			inst.field_5 = "";
 			inst.label = newLabel();
 			threeAC.push_back(inst);
+
+			string tmp1 = newTmp();
+			inst.field_1 = tmp1;
+			inst.field_2 = "=";
+			inst.field_3 = children[2] -> tmp;
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string label = newLabel();
+			string tmp2 = newTmp();
+			inst.field_1 = tmp2;
+			inst.field_2 = "=";
+			inst.field_3 = tmp1;
+			inst.field_4 = ">";
+			inst.field_5 = "0";
+			inst.label = label;
+			threeAC.push_back(inst);
+
+			string label1 = newLabel();
+			inst.field_1 = "if_false";
+			inst.field_2 = tmp2;
+			inst.field_3 = "goto";
+			inst.field_4 = "@FILL_LATER@";			// fill
+			inst.field_5 = "";
+			inst.label = label1;
+			threeAC.push_back(inst);
+
+			inst.field_1 = tmp;
+			inst.field_2 = "=";
+			inst.field_3 = tmp;
+			inst.field_4 = "*";				
+			inst.field_5 = children[0] -> tmp;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = tmp1;
+			inst.field_2 = "=";
+			inst.field_3 = tmp1;
+			inst.field_4 = "-";				
+			inst.field_5 = "1";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+
+			string label3 = newLabel();
+			inst.field_1 = "goto";
+			inst.field_2 = label;
+			inst.field_3 = "";
+			inst.field_4 = "";				
+			inst.field_5 = "";
+			inst.label = label3;
+			threeAC.push_back(inst);
+
+			filler.push_back({label1, label3});
 		}
 
 	}
