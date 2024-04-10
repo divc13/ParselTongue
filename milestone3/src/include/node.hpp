@@ -54,3 +54,5 @@ void AST_Maker(TreeNode* root);
 bool isOperator(TreeNode* root);
 
 void init_token_map();
+
+void clear_tree(Parasite* root);

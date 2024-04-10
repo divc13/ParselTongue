@@ -515,10 +515,8 @@ void init_token_map()
 	regMap[RDX].name = "%rdx";
 	regMap[RBP].name = "%rbp";
 	regMap[RBP].free = false;
-	regMap[RBP].next = INT_MAX;
 	regMap[RSP].name = "%rsp";
 	regMap[RSP].free = false;
-	regMap[RSP].next = INT_MAX;
 	regMap[RDI].name = "%rdi";
 	regMap[RSI].name = "%rsi";
 	regMap[R8].name = "%r8";

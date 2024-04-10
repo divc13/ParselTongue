@@ -105,6 +105,7 @@ int main(int argc, char **argv)
 		root->make_dot(noExtentionOutputFile + "_ptree.dot");
 
 	parasiticRoot = root -> make_tree();
+	clear_tree(parasiticRoot);
 
 	AST_Maker(root);
 
@@ -149,7 +150,7 @@ int main(int argc, char **argv)
 	}
 
 	parasiticRoot -> genCode();
-
+	
 	if (tac_flag)
 	{
 		dumpAC(noExtentionOutputFile + ".txt");

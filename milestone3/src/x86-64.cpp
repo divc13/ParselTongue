@@ -8,11 +8,13 @@ set<int> BB_leaders;
 int now = 0;
 int numParams = 0;
 int code_itr = 0;
+int string_index = 0;
 
 // indicates the difference between rsp and rbp at curr time
 int gap = 0;
 
 map <string, var_struct> varMap;
+map <string, string> stringMap;
 reg_struct regMap[REG_MAX];
 
 void reg_struct::freeReg()
@@ -434,6 +436,40 @@ void pre_process_assembly()
 	x86.third = "";
 	assembly.push_back(x86);
 
+	for (int i = 0; i < globTable->size; i++)
+	{
+		tableRecord* entry = (globTable->entries)[i];
+		if (entry->recordType == recordType::VARIABLE)
+		{
+			x86.label = ".comm";
+			x86.first = entry->name + ",";
+			x86.second = entry->size;
+			x86.third = "";
+			assembly.push_back(x86);
+		}
+
+		if (entry->recordType == recordType::CONST_STRING)
+		{
+			x86.label = ".section";
+			x86.first = ".rodata";
+			x86.second = "";
+			x86.third = "";
+			assembly.push_back(x86);
+			x86.label = ".LC" + to_string(string_index);
+			x86.first = "";
+			x86.second = "";
+			x86.third = "";
+			assembly.push_back(x86);
+			x86.label = ".string";
+			x86.first = "\"" + entry->name + "\"" + ",0";
+			x86.second = "";
+			x86.third = "";
+			assembly.push_back(x86);
+
+			stringMap["\"" + entry->name + "\""] = ".LC" + to_string(string_index);
+		}
+	}
+	
 	x86.label = ".text";
 	x86.first = "";
 	x86.second = "";
@@ -779,6 +815,25 @@ void modifier(code tac)
 
 		if (tac.field_4 == "")
 		{
+
+			if ((tac.field_2)[0] == '\"')
+			{
+				int reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (varMap[tac.field_3].death <= now)
+				{
+					regMap[reg1].freeReg();
+				}
+				var_struct var = varMap[tac.field_1];
+				int reg3 = ensure(var, tac.label);
+				x86::Move(regMap[reg1].name, regMap[RDI].name, tac.label);
+				x86::Move(regMap[reg3].name, regMap[RSI].name, tac.label);
+
+
+				// PUSH REGISTERS???
+
+				x86::Call("strcpy", tac.label);
+			}
+
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
@@ -829,7 +884,8 @@ void modifier(code tac)
 		
 		while(code_itr <= index)
 		{
-			x86::Push(threeAC[code_itr].field_2, threeAC[code_itr].label);
+			reg = ensure(varMap[threeAC[code_itr].field_2], threeAC[code_itr].label);
+			x86::Push(regMap[reg].name, threeAC[code_itr].label);
 			code_itr++;
 		}
 
@@ -1070,7 +1126,7 @@ void update_var_struct(string name, int time)
 
 
 		// handle method overloading
-		vector<tableRecord*> params;				// donot free params, may lead to segfault
+		vector<tableRecord*> params;				// do not free params, may lead to segfault
 		vector<int> a_indices;
 		for (int i=0; i<name.length(); i++)
 		{
