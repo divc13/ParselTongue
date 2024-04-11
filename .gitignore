@@ -11,5 +11,6 @@ action_adder
 output/
 toutput/
 run.sh
+a.txt
 runner
 scripts
