@@ -156,6 +156,10 @@ void initTypes()
 	tempRecord -> name = "__name__";
 	tempRecord -> type = "str";
 	globTable -> insert(tempRecord, globTable);
+
+	tempRecord -> name = "\"%lld\"";
+	tempRecord -> recordType = recordType::CONST_STRING;
+	globTable -> insert(tempRecord, globTable);
 	free(tempRecord);
 
 

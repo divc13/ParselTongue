@@ -5,6 +5,8 @@ extern symbolTable* globTable;
 vector<instruction> assembly;
 set<int> BB_leaders;
 
+#define REG_START RDI
+
 int now = 0;
 int numParams = 0;
 int code_itr = 0;
@@ -308,7 +310,7 @@ void x86::Spill(int reg, string label)
 int allocate(var_struct &var, string label)
 {
 	// free the registers for died variables
-	for (int i = R10; i < REG_MAX; i++)
+	for (int i = REG_START; i < REG_MAX; i++)
 	{
 		if (!regMap[i].free && varMap[regMap[i].var].death < now)
 		{
@@ -317,7 +319,7 @@ int allocate(var_struct &var, string label)
 	}
 
 	// find any free registers
-	for (int i = R10; i < REG_MAX; i++)
+	for (int i = REG_START; i < REG_MAX; i++)
 	{
 		if (regMap[i].free)
 		{
@@ -337,10 +339,10 @@ int allocate(var_struct &var, string label)
 	}
 
 	// no free register found, spill the register
-	int farthest = R10;
+	int farthest = REG_START;
 	vector<int> locs = varMap[regMap[farthest].var].locations;
 	int last_next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
-	for (int i = R10; i < REG_MAX; i++)
+	for (int i = REG_START; i < REG_MAX; i++)
 	{
 		locs = varMap[regMap[i].var].locations;
 		int next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
@@ -372,7 +374,7 @@ int allocate(var_struct &var, string label)
 
 int ensure(var_struct var, string label)
 {
-	for (int i = R10; i < REG_MAX; i++)
+	for (int i = REG_START; i < REG_MAX; i++)
 	{
 		if (regMap[i].var == var.name)
 		{
@@ -439,15 +441,6 @@ void pre_process_assembly()
 	for (int i = 0; i < globTable->size; i++)
 	{
 		tableRecord* entry = (globTable->entries)[i];
-		if (entry->recordType == recordType::VARIABLE)
-		{
-			x86.label = ".comm";
-			x86.first = entry->name + ",";
-			x86.second = entry->size;
-			x86.third = "";
-			assembly.push_back(x86);
-		}
-
 		if (entry->recordType == recordType::CONST_STRING)
 		{
 			x86.label = ".section";
@@ -486,156 +479,184 @@ void modifier(code tac)
 		if (tac.field_4 == "+")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
+			x86::Add(regMap[reg2].name, regMap[RAX].name, tac.label);
+
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-			x86::Add(regMap[reg2].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
 		if (tac.field_4 == "-")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
+			x86::Sub(regMap[reg2].name, regMap[RAX].name, tac.label);
+
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-			x86::Sub(regMap[reg2].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
 		if (tac.field_4 == "*")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
+			x86::Mul(regMap[reg2].name, regMap[RAX].name, tac.label);
+
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-			x86::Mul(regMap[reg2].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
 		if (tac.field_4 == "/" || tac.field_4 == "//")
 		{
+			if (regMap[RDX].free == false)
+				x86::Spill(RDX, tac.label);
+			regMap[RDX].free = false;
+
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			
+			x86::Move("$0", regMap[RDX].name, tac.label);
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move("$0", regMap[RDX].name, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			x86::CLTD(tac.label);
 			x86::Div(regMap[reg2].name, tac.label);
+			
+			var_struct var = varMap[tac.field_1];
+			int reg3 = ensure(var, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			regMap[RDX].free = true;
 		}
 
 		if (tac.field_4 == "%")
 		{
+			if (regMap[RDX].free == false)
+				x86::Spill(RDX, tac.label);
+			regMap[RDX].free = false;
+
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			
+			x86::Move("$0", regMap[RDX].name, tac.label);
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move("$0", regMap[RDX].name, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			x86::CLTD(tac.label);
 			x86::Div(regMap[reg2].name, tac.label);
+
+			var_struct var = varMap[tac.field_1];
+			int reg3 = ensure(var, tac.label);
 			x86::Move(regMap[RDX].name, regMap[reg3].name, tac.label);
+			regMap[RDX].free = true;
 		}
 
 		if (tac.field_4 == "and" || tac.field_4 == "&")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
+			x86::And(regMap[reg2].name, regMap[RAX].name, tac.label);
+
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-			x86::And(regMap[reg2].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
 		if (tac.field_4 == "or" || tac.field_4 == "|")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
+			x86::Or(regMap[reg2].name, regMap[RAX].name, tac.label);
+
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-			x86::Or(regMap[reg2].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
 		if (tac.field_4 == "^")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
+			x86::Xor(regMap[reg2].name, regMap[RAX].name, tac.label);
+
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-			x86::Xor(regMap[reg2].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
@@ -646,68 +667,77 @@ void modifier(code tac)
 			{
 				regMap[reg1].freeReg();
 			}
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
 			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			x86::Not(regMap[RAX].name, tac.label);
+
+			var_struct var = varMap[tac.field_1];
+			int reg3 = ensure(var, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 		}
 
 		if (tac.field_4 == "<<")
 		{
+			if (regMap[RCX].free == false)
+				x86::Spill(RCX, tac.label);
+			regMap[RCX].free = false;
+
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
 			x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
 			x86::Shl("\%cl", regMap[RAX].name, tac.label);
+
+			var_struct var = varMap[tac.field_1];
+			int reg3 = ensure(var, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+
+			regMap[RCX].free = true;
 		}
 
 		if (tac.field_4 == ">>")
 		{
+			if (regMap[RCX].free == false)
+				x86::Spill(RCX, tac.label);
+			regMap[RCX].free = false;
+
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
+			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+
+			int reg2 = ensure(varMap[tac.field_5], tac.label);
 			if (varMap[tac.field_5].death <= now)
 			{
 				regMap[reg2].freeReg();
 			}
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
 			x86::Shr("\%cl", regMap[RAX].name, tac.label);
+
+			var_struct var = varMap[tac.field_1];
+			int reg3 = ensure(var, tac.label);
 			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			regMap[RCX].free = true;
 		}
 
 		if (tac.field_4 == "==")
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
+			x86::Move("$1", regMap[RAX].name, tac.label);
 			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			if (varMap[tac.field_5].death <= now)
-			{
-				regMap[reg2].freeReg();
-			}
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
-			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", regMap[reg3].name, tac.label);
 			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
 			x86::Cmove(regMap[RAX].name, regMap[reg3].name, tac.label);
@@ -717,14 +747,6 @@ void modifier(code tac)
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
 			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			if (varMap[tac.field_5].death <= now)
-			{
-				regMap[reg2].freeReg();
-			}
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -737,14 +759,6 @@ void modifier(code tac)
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
 			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			if (varMap[tac.field_5].death <= now)
-			{
-				regMap[reg2].freeReg();
-			}
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -757,14 +771,6 @@ void modifier(code tac)
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
 			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			if (varMap[tac.field_5].death <= now)
-			{
-				regMap[reg2].freeReg();
-			}
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -777,14 +783,6 @@ void modifier(code tac)
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
 			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			if (varMap[tac.field_5].death <= now)
-			{
-				regMap[reg2].freeReg();
-			}
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -797,14 +795,6 @@ void modifier(code tac)
 		{
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
 			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			if (varMap[tac.field_5].death <= now)
-			{
-				regMap[reg2].freeReg();
-			}
 			var_struct var = varMap[tac.field_1];
 			int reg3 = ensure(var, tac.label);
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -823,9 +813,9 @@ void modifier(code tac)
 				{
 					regMap[reg1].freeReg();
 				}
+				x86::Move(regMap[reg1].name, regMap[RDI].name, tac.label);
 				var_struct var = varMap[tac.field_1];
 				int reg3 = ensure(var, tac.label);
-				x86::Move(regMap[reg1].name, regMap[RDI].name, tac.label);
 				x86::Move(regMap[reg3].name, regMap[RSI].name, tac.label);
 
 
@@ -835,13 +825,13 @@ void modifier(code tac)
 			}
 
 			int reg1 = ensure(varMap[tac.field_3], tac.label);
+			var_struct var = varMap[tac.field_1];
+			int reg3 = ensure(var, tac.label);
+			x86::Move(regMap[reg1].name, regMap[reg3].name, tac.label);
 			if (varMap[tac.field_3].death <= now)
 			{
 				regMap[reg1].freeReg();
 			}
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[reg3].name, tac.label);
 		}
 
 
@@ -857,18 +847,6 @@ void modifier(code tac)
 				break;
 			}
 		}
-
-///////////////////////////////////////////////////////////////////TODO////////////////////////
-		// Push caller saved registers into stack
-		x86::Push(regMap[R10].name, tac.label);
-		x86::Push(regMap[R11].name, tac.label);
-		x86::Push(regMap[R12].name, tac.label);
-		x86::Push(regMap[R13].name, tac.label);
-		x86::Push(regMap[R14].name, tac.label);
-		x86::Push(regMap[R15].name, tac.label);
-
-		// handle 'gap' also 
-///////////////////////////////////////////////////////////////////TODO////////////////////////
 		
 		int cnt = code_itr - tmp;
 		int num = min(cnt, 6);
@@ -878,27 +856,22 @@ void modifier(code tac)
 		for (int i = 0; i < num; i++)
 		{
 			reg = ensure(varMap[threeAC[index].field_2], threeAC[index].label);
-			x86::Move(regMap[reg].name, regMap[R9 - i].name, threeAC[index].label);
+			x86::Move(regMap[reg].name, regMap[RDI + num - i].name, threeAC[index].label);
 			index++;
 		}
-		
+		index = tmp - num;
 		while(code_itr <= index)
 		{
 			reg = ensure(varMap[threeAC[code_itr].field_2], threeAC[code_itr].label);
 			x86::Push(regMap[reg].name, threeAC[code_itr].label);
+			gap = gap + 8;
 			code_itr++;
 		}
 
 		code_itr = tmp;
 		now = code_itr + 1;
 
-
-		// for (int i = 0; i < cnt && i < 6; i++)
-		// {
-		// 	int index = code_itr + cnt - i - 1;
-		// 	x86::Move();
-		// }
-		
+		// save caller saved registers
 	}
 
 	if (tac.field_1 == "pop_param")
@@ -912,15 +885,7 @@ void modifier(code tac)
 			}
 		}
 
-		x86::Push(regMap[RBP].name, tac.label);
-		x86::Move(regMap[RSP].name, regMap[RBP].name, tac.label);
-		x86::Push(regMap[RBX].name, tac.label);
-		x86::Push(regMap[RDI].name, tac.label);
-		x86::Push(regMap[RSI].name, tac.label);
-		x86::Push(regMap[R12].name, tac.label);
-		x86::Push(regMap[R13].name, tac.label);
-		x86::Push(regMap[R14].name, tac.label);
-		x86::Push(regMap[R15].name, tac.label);
+		
 
 	}
 
@@ -933,6 +898,19 @@ void modifier(code tac)
 	if (tac.field_1 == "begin_function")
 	{
 		x86::Label(tac.field_2);
+		x86::Push(regMap[RBP].name, tac.label);
+		x86::Move(regMap[RSP].name, regMap[RBP].name, tac.label);
+		x86::Push(regMap[RBX].name, tac.label);
+		x86::Push(regMap[R12].name, tac.label);
+		x86::Push(regMap[R13].name, tac.label);
+		x86::Push(regMap[R14].name, tac.label);
+		x86::Push(regMap[R15].name, tac.label);
+	}
+
+	// for taking the return values
+	if (tac.field_1 == "popparam")
+	{
+		// DO NOTHING
 	}
 
 	if (tac.field_1 == "end_function")
@@ -972,7 +950,7 @@ void modifier(code tac)
 	// handle spilling of registers at end of BBs 
 	if (BB_leaders.find(now) != BB_leaders.end())
 	{
-		for (int i=R10; i<REG_MAX; i++)
+		for (int i=REG_START; i<REG_MAX; i++)
 		{
 			if (!regMap[i].free)
 			{
@@ -1002,6 +980,7 @@ void update_var_struct(string name, int time)
 		return;
 	}
 
+
 	// variables
 	int loc_percent = -1;
 	int loc_dot = -1;
@@ -1018,7 +997,7 @@ void update_var_struct(string name, int time)
 	if (loc_percent == -1)
 	{
 		assert(loc_dot == -1);
-
+		cout << name << endl;
 		// first encounter
 		if (varMap.find(name) == varMap.end())
 		{
@@ -1035,6 +1014,7 @@ void update_var_struct(string name, int time)
 		return;
 	}
 
+	string real_id = name.substr(0, loc_percent);
 	// variable inside a function or a class
 	if (loc_percent != -1 && loc_dot == -1)
 	{
@@ -1053,7 +1033,7 @@ void update_var_struct(string name, int time)
 			// inside class
 			if (entry -> symTab -> tableType == tableType::CLASS)
 			{
-				entry = (entry -> symTab) -> lookup_table(name);
+				entry = (entry -> symTab) -> lookup_table(real_id);
 				assert (entry);
 				var_struct first;
 				first.name = name;
@@ -1091,12 +1071,12 @@ void update_var_struct(string name, int time)
 					params.push_back(entry);
 				}
 
-				entry = globTable -> lookup_table(name, recordType::TYPE_FUNCTION, &params);
+				entry = globTable -> lookup_table(funcName, recordType::TYPE_FUNCTION, &params);
 				assert (entry);
 				assert (entry -> symTab);
 
 
-				entry = (entry -> symTab) -> lookup_table(name);
+				entry = (entry -> symTab) -> lookup_table(real_id);
 				assert (entry);
 				var_struct first;
 				first.name = name;
@@ -1134,6 +1114,8 @@ void update_var_struct(string name, int time)
 				a_indices.push_back(i);
 		}
 
+		cout << name;
+
 		for(int i=0; i < a_indices.size(); i++)
 		{
 			string type;
@@ -1156,11 +1138,15 @@ void update_var_struct(string name, int time)
 		assert (entry);
 		assert (entry -> symTab);
 
-		entry = (entry -> symTab) -> lookup_table(name, recordType::TYPE_FUNCTION, &params);
+		cout << funcName << endl;
+		cout << params.size() << endl;
+		cout << a_indices.size() << endl;
+
+		entry = (entry -> symTab) -> lookup_table(funcName, recordType::TYPE_FUNCTION, &params);
 		assert (entry);
 		assert (entry -> symTab);
 
-		entry = (entry -> symTab) -> lookup_table(name);
+		entry = (entry -> symTab) -> lookup_table(real_id);
 		assert (entry);
 		var_struct first;
 		first.name = name;
@@ -1174,21 +1160,41 @@ void update_var_struct(string name, int time)
 
 }
 
+bool is_name_var(string &name)
+{
+	cout << name << endl;
+	int len = name.length();
+	if (name[0] == '\"') return false;
+	if (name == "popparam") return false;
+
+	if (name[0] == '*')
+	{
+		name = name.substr(2, name.length() - 3);
+	}
+	for (int i=0; i<len; i++)
+	{
+		if (name[i] > '9' || name[i] < '0') return true;
+	}
+	return false;
+}
+
 void handle_var_init(code tac, int time)
 {
 
 	if (tac.field_1 == "param" || tac.field_1 == "push" || tac.field_1 == "pop_param" || tac.field_1 == "if_false" || tac.field_1 == "if")
 	{
 		string name = tac.field_2;
-		update_var_struct(name, time);
+		if (is_name_var(name))
+			update_var_struct(name, time);
 	}
 
 	if (tac.field_2 == "=")
 	{
 		string name = tac.field_3;
-		update_var_struct(name, time);
+		if (is_name_var(name))
+			update_var_struct(name, time);
 		name = tac.field_5;
-		if (name.length())
+		if (name.length() && is_name_var(name))
 			update_var_struct(name, time);
 	}
 
@@ -1226,8 +1232,38 @@ void identify_BB()
 }
 
 // handle label management and $ for constants
+
+bool is_num(string val)
+{
+	for (auto i : val)
+		if (i < '0' || i > '9')
+			return false;
+	return true;
+}
+
 void post_process_assembly()
 {
+	for (auto inst : assembly)
+	{
+		if (is_num(inst.first))
+			inst.first = "$" + inst.first;
+		if (is_num(inst.label))
+			inst.label = "$" + inst.label;
+		if (is_num(inst.second))
+			inst.second = "$" + inst.second;
+		if (is_num(inst.third))
+			inst.third = "$" + inst.third;
+	}
+
+	string prev = "";
+
+	for (auto inst : assembly)
+	{
+		if (inst.label == prev)
+			inst.label = "";
+		else
+			prev = inst.label;
+	}
 
 }
 

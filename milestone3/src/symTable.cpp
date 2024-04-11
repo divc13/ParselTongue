@@ -1543,13 +1543,13 @@ int generate_symtable(TreeNode *root)
 		assert(currTable -> parentSymtable);
 		tableRecord* entry = currTable -> parentSymtable -> lookup_table((root->children)[0]->name, recordType::TYPE_FUNCTION, &params);
 		assert(entry);
+
+
 		entry -> size = currTable -> size;
-
-
-		for (int i = 0; i < entry->symTab->numParams; i++)
-		{
-			entry -> size -= (entry->symTab->entries)[i]->size;
-		}
+		// for (int i = 0; i < entry->symTab->numParams; i++)
+		// {
+		// 	entry -> size -= (entry->symTab->entries)[i]->size;
+		// }
 
 		// setting the class constructor function
 		if(entry -> name == "__init__")
