@@ -30,6 +30,7 @@ extern Parasite *parasiticRoot;
 extern symbolTable* currTable;
 extern symbolTable* globTable;
 vector<string> lines;
+extern map<symbolTable*, int> visited;
 
 int verbose = 0;
 string tokenString = "";
@@ -130,8 +131,8 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		
+		visited.clear();
 		CSV << "# File Name: " << inputFile << endl;
-
 		globTable->dumpCSV(CSV);
 		CSV.close();
 	}
@@ -144,13 +145,13 @@ int main(int argc, char **argv)
 			return 0;
 		}
 
+		visited.clear();
     	MD << "<span style=\"font-size: 25px;\">__File Name: " << inputFile << "__</span>\n";
 		globTable->dumpMD(MD);
 		MD.close();
 	}
 
 	parasiticRoot -> genCode();
-	
 	if (tac_flag)
 	{
 		dumpAC(noExtentionOutputFile + ".txt");

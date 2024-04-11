@@ -15,6 +15,7 @@ int fun_call = 0;
 string self_type = "";
 int funcInClass = 0;
 bool initPresence = false;
+extern map<symbolTable*, int> visited;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -284,7 +285,7 @@ int symbolTable::insert(tableRecord* inputRecord, symbolTable* funcTable)
 	if (!isValidType(record -> type) && (record -> recordType == recordType::TYPE_CLASS))
 	{
 		typeMap[record -> type] = type_offset++;
-		string list_type = "list[" + record->type + "]";
+		string list_type = "list_" + record->type + "_";
 		typeMap[list_type] = type_offset++;
 
 		// set up table for len
@@ -739,7 +740,7 @@ int handle_const_strings(TreeNode* root)
 	tableRecord* record;
 	string str_type = "str";
 	formatString(root -> name);
-	record = new tableRecord(root -> name, str_type, SIZE_STRING((root -> name).length()), root -> lineno, root -> column, recordType::CONST_STRING);
+	record = new tableRecord(root -> name, str_type, SIZE_PTR, root -> lineno, root -> column, recordType::CONST_STRING);
 	if(!globTable -> lookup(record -> name, recordType::CONST_STRING))
 		globTable -> insert(record, NULL);
 
@@ -828,7 +829,7 @@ string validateType(TreeNode* root)
 	if ((root -> name).compare("list_access") == 0)
 	{
 		assert((root -> children).size() > 3);
-		type = (root -> children)[0] -> name + "[" + (root -> children)[2] -> name + "]";
+		type = (root -> children)[0] -> name + "_" + (root -> children)[2] -> name + "_";
 		assert((root -> children)[0] -> name == "list"); 
 		(root -> children)[0] -> type = "LIST";
 	}
@@ -982,7 +983,7 @@ int handle_list(TreeNode* root)
 			return -1;
 		}
 	}
-	root -> dataType = "list[" + type1 + "]";
+	root -> dataType = "list_" + type1 + "_";
 	return 0;
 }
 
@@ -1546,10 +1547,12 @@ int generate_symtable(TreeNode *root)
 
 
 		entry -> size = currTable -> size;
-		// for (int i = 0; i < entry->symTab->numParams; i++)
 		// {
 		// 	entry -> size -= (entry->symTab->entries)[i]->size;
 		// }
+
+		// for (int index = 0; index < Table->numParams; index++)
+		
 
 		// setting the class constructor function
 		if(entry -> name == "__init__")
@@ -1607,8 +1610,37 @@ int generate_symtable(TreeNode *root)
 	return 0;
 }
 
+void post_process_symtables(symbolTable *Table)
+{
+	visited[Table] = 1;
+	for(auto child : Table->childIndices) 
+	{
+		assert((Table->entries)[child] -> symTab);
+		if (visited.find((Table->entries)[child] -> symTab) == visited.end())
+			post_process_symtables(((Table->entries)[child]) -> symTab);
+	}
+
+	if (Table->tableType == tableType::FUNCTION)
+	{
+		for (int index = 0; index < Table->numParams; index++)
+		{
+			if (index < 6)
+				(Table->entries)[index]->offset = (Table->size + index * 8);
+			else
+				(Table->entries)[index]->offset = - ((index - 6) * 8 + 24);
+		}
+	}
+	
+}
+
+
 int symTable_Maker(TreeNode *root)
 {
 	globTable -> tableType = tableType::GLOBAL;
-	return generate_symtable(root);
+	int ret = generate_symtable(root);
+	if (ret < 0)
+		return ret;
+	visited.clear();
+	post_process_symtables(globTable);
+	return ret;
 }

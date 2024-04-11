@@ -5,8 +5,7 @@ extern map<int, string> recordTypeMap;
 extern vector<code> threeAC;
 extern vector<instruction> assembly;
 
-map<symbolTable*, int> visitedMD;
-map<symbolTable*, int> visitedCSV;
+map<symbolTable*, int> visited;
 
 void print_name(ofstream &MD, string temp)
 {
@@ -67,7 +66,7 @@ void tableRecord::dumpMD(ofstream &MD)
 
 void symbolTable::dumpMD(ofstream &MD)
 {
-	visitedMD[this] = 1;
+	visited[this] = 1;
 	MD << "\n<br /><br />\n<span style=\"font-size: 25px;\">__Table Name: ";
 	if (tableType == tableType::CLASS)
 		MD << "Class ";
@@ -117,7 +116,7 @@ void symbolTable::dumpMD(ofstream &MD)
 	{
 		MD << "\n\n\n";
 		assert(entries[child] -> symTab);
-		if (visitedMD.find(entries[child] -> symTab) == visitedMD.end())
+		if (visited.find(entries[child] -> symTab) == visited.end())
 			((entries[child]) -> symTab) -> dumpMD(MD);
 	}
 
@@ -133,7 +132,7 @@ void tableRecord::dumpCSV(ofstream &CSV)
 
 void symbolTable::dumpCSV(ofstream &CSV)
 {
-	visitedCSV[this] = 1;
+	visited[this] = 1;
 	CSV << "# Table Name: ";
 	if (tableType == tableType::CLASS)
 		CSV << "Class ";
@@ -172,7 +171,7 @@ void symbolTable::dumpCSV(ofstream &CSV)
 	{
 		CSV << ",\n,\n,\n";
 		assert(entries[child] -> symTab);
-		if (visitedCSV.find(entries[child] -> symTab) == visitedCSV.end())
+		if (visited.find(entries[child] -> symTab) == visited.end())
 			((entries[child]) -> symTab) -> dumpCSV(CSV);
 	}
 
@@ -531,7 +530,24 @@ void dump_x86_64(string file)
 	}
 	for (auto child : assembly)
 	{
-		x86 << setw(20) << left << child.label << child.first << " " << child.second << " " << child.third << endl;
+		if((child.label).length() != 0) x86 << endl;
+		if((child.label).length() != 0) 
+		{
+			string num = ((child.label).substr(0, (child.label).size() - 1));
+			if (is_num(num))
+			{
+				code inst = threeAC[atoi(((child.label).substr(0, (child.label).size() - 1)).c_str()) - 1];
+				x86 << setw(20) << left << " ";
+				x86 << "#";
+				x86 << inst.field_1 << " " << inst.field_2 << " " << inst.field_3 << " " << inst.field_4 << " " << inst.field_5 << endl;
+			}
+		}
+		x86 << setw(20) << left << child.label;
+		if((child.first).length() != 0) x86 << "\t " << child.first;
+		if((child.second).length() != 0) x86 << "\t " << child.second;
+		if((child.third).length() != 0) x86 << ",\t " << child.third;
+		x86 << endl;
+
 	}
 	x86.close();
 	return;

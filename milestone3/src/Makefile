@@ -1,6 +1,6 @@
 all: runner 
 
-runner: lex.yy.c parser.tab.c main.cpp parser.tab.h error.cpp output.cpp init.cpp include/parsing_error.hpp x86-64.cpp include/error.hpp include/token_map.hpp threeAC.cpp include/node.hpp node.cpp include/error.hpp symTable.cpp include/symtable.hpp
+runner: lex.yy.c parser.tab.c main.cpp parser.tab.h error.cpp output.cpp init.cpp include/parsing_error.hpp x86-64.cpp include/error.hpp threeAC.cpp include/node.hpp node.cpp include/error.hpp symTable.cpp include/symtable.hpp
 	g++ main.cpp lex.yy.c parser.tab.c node.cpp symTable.cpp error.cpp output.cpp init.cpp threeAC.cpp x86-64.cpp -o runner
 
 lex.yy.c: lexer.l

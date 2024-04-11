@@ -11,13 +11,15 @@ int now = 0;
 int numParams = 0;
 int code_itr = 0;
 int string_index = 0;
+int sp_shift = 0;
 
-// indicates the difference between rsp and rbp at curr time
+// top indicates the difference between rsp and rbp at curr time
 int gap = 0;
+int gap_bx = 0;
 
 map <string, var_struct> varMap;
 map <string, string> stringMap;
-reg_struct regMap[REG_MAX];
+vector<reg_struct> regMap(REG_MAX);
 
 void reg_struct::freeReg()
 {
@@ -41,6 +43,7 @@ namespace x86
 	void Shl(string arg1, string arg2, string label);
 	void Shr(string arg1, string arg2, string label);
 	void Push(string arg1, string label);
+	void Pop(string arg1, string label);
 	void Label(string label);
 	void Call(string arg1, string label);
 	void Ret(string label);
@@ -52,6 +55,7 @@ namespace x86
 	void Cmovge(string arg1, string arg2, string label);
 	void Cmovle(string arg1, string arg2, string label);
 	void Je(string arg1, string label);
+	void Jmp(string arg1, string label);
 	void Jne(string arg1, string label);
 	void Spill(int reg, string label);
 }
@@ -182,12 +186,23 @@ void x86::Push(string arg1, string label)
 	inst.first = "pushq";
 	inst.second = arg1;
 	assembly.push_back(inst);
+	gap = gap + 8;
+}
+
+void x86::Pop(string arg1, string label)
+{
+	instruction inst;
+	inst.label = label;
+	inst.first = "popq";
+	inst.second = arg1;
+	assembly.push_back(inst);
+	gap = gap - 8;
 }
 
 void x86::Label(string label)
 {
 	instruction inst;
-	inst.label = label;
+	inst.label = label + ":";
 	assembly.push_back(inst);
 }
 
@@ -271,6 +286,14 @@ void x86::Cmovle(string arg1, string arg2, string label)
 	inst.third = arg2;
 	assembly.push_back(inst);
 }
+void x86::Jmp(string arg1, string label)
+{
+	instruction inst;
+	inst.label = label;
+	inst.first = "jmp";
+	inst.second = arg1;
+	assembly.push_back(inst);
+}
 void x86::Je(string arg1, string label)
 {
 	instruction inst;
@@ -283,13 +306,16 @@ void x86::Jne(string arg1, string label)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "je";
+	inst.first = "jne";
 	inst.second = arg1;
 	assembly.push_back(inst);
 }
 
 void x86::Spill(int reg, string label)
 {
+	if(regMap[reg].free) return;
+	cout << "SPILL LABEL: " << label << endl;
+	if(!regMap[reg].allocatable) return;
 	string var = regMap[reg].var;
 	int offset = varMap[var].offset;
 
@@ -297,12 +323,11 @@ void x86::Spill(int reg, string label)
 	if (offset == -1)
 	{
 		x86::Push(regMap[reg].name, label);
-		gap = gap + 8;
 		varMap[var].offset = gap;
 		return;
 	}
-
-	string first = "-" + to_string(offset) + "(%rbp)";
+	string first = to_string(-1 * offset) + "(%rbp)";
+		
 	x86::Move(regMap[reg].name, first, label);
 	regMap[reg].freeReg();
 }
@@ -312,7 +337,7 @@ int allocate(var_struct &var, string label)
 	// free the registers for died variables
 	for (int i = REG_START; i < REG_MAX; i++)
 	{
-		if (!regMap[i].free && varMap[regMap[i].var].death < now)
+		if (!regMap[i].free && varMap[regMap[i].var].death < now && (regMap[i]).allocatable)
 		{
 			regMap[i].freeReg();
 		}
@@ -323,6 +348,7 @@ int allocate(var_struct &var, string label)
 	{
 		if (regMap[i].free)
 		{
+			assert((regMap[i]).allocatable);
 			var.reg = i;
 			regMap[i].free = false;
 			regMap[i].var = var.name;
@@ -331,7 +357,7 @@ int allocate(var_struct &var, string label)
 			if (var.offset != -1)
 			{
 				// load instruction here
-				string first = "-" + to_string(var.offset) + "(%rbp)";
+				string first = to_string(-1 * var.offset) + "(%rbp)";
 				x86::Move(first, regMap[i].name, label);
 			}
 			return i;
@@ -344,6 +370,8 @@ int allocate(var_struct &var, string label)
 	int last_next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
 	for (int i = REG_START; i < REG_MAX; i++)
 	{
+		if(!regMap[i].allocatable) continue;
+
 		locs = varMap[regMap[i].var].locations;
 		int next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
 		if (next > last_next)
@@ -365,15 +393,24 @@ int allocate(var_struct &var, string label)
 	if (var.offset != -1)
 	{
 		// load instruction here
-		string first = "-" + to_string(var.offset) + "(%rbp)";
+		string first = to_string(-1 * var.offset) + "(%rbp)";
 		x86::Move(first, regMap[farthest].name, label);
 	}
 	return farthest;
-
 }
 
 int ensure(var_struct var, string label)
 {
+	if(is_num(var.name))
+	{
+		reg_struct regis;
+		regis.free = false;
+		regis.name = "$" + var.name;
+		regis.var = "$" + var.name;
+		regMap.push_back(regis);
+		return regMap.size() - 1;
+	}
+
 	for (int i = REG_START; i < REG_MAX; i++)
 	{
 		if (regMap[i].var == var.name)
@@ -438,9 +475,10 @@ void pre_process_assembly()
 	x86.third = "";
 	assembly.push_back(x86);
 
-	for (int i = 0; i < globTable->size; i++)
+	for (int i = 0; i < globTable->currentIndex; i++)
 	{
 		tableRecord* entry = (globTable->entries)[i];
+		assert(entry);
 		if (entry->recordType == recordType::CONST_STRING)
 		{
 			x86.label = ".section";
@@ -448,18 +486,19 @@ void pre_process_assembly()
 			x86.second = "";
 			x86.third = "";
 			assembly.push_back(x86);
-			x86.label = ".LC" + to_string(string_index);
+			x86.label = ".LC" + to_string(string_index) + ":";
 			x86.first = "";
 			x86.second = "";
 			x86.third = "";
 			assembly.push_back(x86);
 			x86.label = ".string";
-			x86.first = "\"" + entry->name + "\"" + ",0";
+			x86.first = "\"" + entry->name + "\"";
 			x86.second = "";
 			x86.third = "";
 			assembly.push_back(x86);
 
 			stringMap["\"" + entry->name + "\""] = ".LC" + to_string(string_index);
+			string_index++;
 		}
 	}
 	
@@ -471,6 +510,8 @@ void pre_process_assembly()
 
 }
 
+
+
 void modifier(code tac)
 {
 
@@ -478,65 +519,125 @@ void modifier(code tac)
 	{
 		if (tac.field_4 == "+")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Add(regMap[reg2].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Add("(" + regMap[reg2].name + ")", regMap[RAX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Add(regMap[reg2].name, regMap[RAX].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_4 == "-")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Sub(regMap[reg2].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Sub("(" + regMap[reg2].name + ")", regMap[RAX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Sub(regMap[reg2].name, regMap[RAX].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_4 == "*")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Mul(regMap[reg2].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Mul("(" + regMap[reg2].name + ")", regMap[RAX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Mul(regMap[reg2].name, regMap[RAX].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_4 == "/" || tac.field_4 == "//")
@@ -544,27 +645,48 @@ void modifier(code tac)
 			if (regMap[RDX].free == false)
 				x86::Spill(RDX, tac.label);
 			regMap[RDX].free = false;
-
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			
 			x86::Move("$0", regMap[RDX].name, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			int reg1, reg2, reg3;
+
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
+
 			x86::CLTD(tac.label);
-			x86::Div(regMap[reg2].name, tac.label);
-			
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Div("(" + regMap[reg2].name + ")", tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Div(regMap[reg2].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
+
 			regMap[RDX].free = true;
 		}
 
@@ -573,106 +695,203 @@ void modifier(code tac)
 			if (regMap[RDX].free == false)
 				x86::Spill(RDX, tac.label);
 			regMap[RDX].free = false;
-
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			
 			x86::Move("$0", regMap[RDX].name, tac.label);
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::CLTD(tac.label);
-			x86::Div(regMap[reg2].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RDX].name, regMap[reg3].name, tac.label);
+			x86::CLTD(tac.label);
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Div("(" + regMap[reg2].name + ")", tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Div(regMap[reg2].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RDX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RDX].name, regMap[reg3].name, tac.label);
+			}
+
 			regMap[RDX].free = true;
 		}
 
 		if (tac.field_4 == "and" || tac.field_4 == "&")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::And(regMap[reg2].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::And("(" + regMap[reg2].name + ")", regMap[RAX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::And(regMap[reg2].name, regMap[RAX].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_4 == "or" || tac.field_4 == "|")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Or(regMap[reg2].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Or("(" + regMap[reg2].name + ")", regMap[RAX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Or(regMap[reg2].name, regMap[RAX].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_4 == "^")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			int reg1, reg2, reg3;
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Xor(regMap[reg2].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Xor("(" + regMap[reg2].name + ")", regMap[RAX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Xor(regMap[reg2].name, regMap[RAX].name, tac.label);
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_3 == "~" || tac.field_3 == "not")
 		{
-			int reg1 = ensure(varMap[tac.field_4], tac.label);
-			if (varMap[tac.field_4].death <= now)
+			int reg1, reg2, reg3;
+
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg1].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
+
 			x86::Not(regMap[RAX].name, tac.label);
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 		}
 
 		if (tac.field_4 == "<<")
@@ -680,26 +899,46 @@ void modifier(code tac)
 			if (regMap[RCX].free == false)
 				x86::Spill(RCX, tac.label);
 			regMap[RCX].free = false;
+			
+			int reg1, reg2, reg3;
 
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg1].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
-
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			else
 			{
-				regMap[reg2].freeReg();
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
 
-			x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg2].name + ")", regMap[RCX].name, tac.label);
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
+			}
+
 			x86::Shl("\%cl", regMap[RAX].name, tac.label);
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
 
 			regMap[RCX].free = true;
 		}
@@ -709,98 +948,330 @@ void modifier(code tac)
 			if (regMap[RCX].free == false)
 				x86::Spill(RCX, tac.label);
 			regMap[RCX].free = false;
+			
+			int reg1, reg2, reg3;
 
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			if (varMap[tac.field_3].death <= now)
+			if((tac.field_3)[0] == '*')
 			{
-				regMap[reg1].freeReg();
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
-			x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
+			}
 
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			if (varMap[tac.field_5].death <= now)
+			if((tac.field_5)[0] == '*')
 			{
-				regMap[reg2].freeReg();
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				x86::Move("(" + regMap[reg2].name + ")", regMap[RCX].name, tac.label);
 			}
-			x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
+			}
+
 			x86::Shr("\%cl", regMap[RAX].name, tac.label);
 
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				x86::Move(regMap[RAX].name, "(" + regMap[reg3].name + ")", tac.label);
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
+			}
+
 			regMap[RCX].free = true;
 		}
 
 		if (tac.field_4 == "==")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
+			int reg1, reg2, reg3;
+			string reg_name1 = "", reg_name2 = "", reg_name3 = "";
+
+			if((tac.field_3)[0] == '*')
+			{
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				reg_name2 = "(" + regMap[reg2].name + ")";
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				reg_name2 = regMap[reg2].name;
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				reg_name3 = "(" + regMap[reg3].name + ")";
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				reg_name3 = regMap[reg3].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move("$0", regMap[reg3].name, tac.label);
-			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
-			x86::Cmove(regMap[RAX].name, regMap[reg3].name, tac.label);
+			x86::Move("$0", reg_name3, tac.label);
+			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
 		}
 
 		if (tac.field_4 == "!=")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
+			int reg1, reg2, reg3;
+			string reg_name1 = "", reg_name2 = "", reg_name3 = "";
+
+			if((tac.field_3)[0] == '*')
+			{
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				reg_name2 = "(" + regMap[reg2].name + ")";
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				reg_name2 = regMap[reg2].name;
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				reg_name3 = "(" + regMap[reg3].name + ")";
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				reg_name3 = regMap[reg3].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", regMap[reg3].name, tac.label);
-			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
-			x86::Cmovne(regMap[RAX].name, regMap[reg3].name, tac.label);
+			x86::Move("$0", reg_name3, tac.label);
+			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmovne(regMap[RAX].name, reg_name3, tac.label);
 		}
 
 		if (tac.field_4 == ">")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
+			int reg1, reg2, reg3;
+			string reg_name1 = "", reg_name2 = "", reg_name3 = "";
+
+			if((tac.field_3)[0] == '*')
+			{
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				reg_name2 = "(" + regMap[reg2].name + ")";
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				reg_name2 = regMap[reg2].name;
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				reg_name3 = "(" + regMap[reg3].name + ")";
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				reg_name3 = regMap[reg3].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", regMap[reg3].name, tac.label);
-			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
-			x86::Cmovg(regMap[RAX].name, regMap[reg3].name, tac.label);
+			x86::Move("$0", reg_name3, tac.label);
+			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmovg(regMap[RAX].name, reg_name3, tac.label);
 		}
 
 		if (tac.field_4 == "<")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
+			int reg1, reg2, reg3;
+			string reg_name1 = "", reg_name2 = "", reg_name3 = "";
+
+			if((tac.field_3)[0] == '*')
+			{
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				reg_name2 = "(" + regMap[reg2].name + ")";
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				reg_name2 = regMap[reg2].name;
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				reg_name3 = "(" + regMap[reg3].name + ")";
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				reg_name3 = regMap[reg3].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", regMap[reg3].name, tac.label);
-			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
-			x86::Cmovl(regMap[RAX].name, regMap[reg3].name, tac.label);
+			x86::Move("$0", reg_name3, tac.label);
+			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmovl(regMap[RAX].name, reg_name3, tac.label);
 		}
 
 		if (tac.field_4 == ">=")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
+			int reg1, reg2, reg3;
+			string reg_name1 = "", reg_name2 = "", reg_name3 = "";
+
+			if((tac.field_3)[0] == '*')
+			{
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				reg_name2 = "(" + regMap[reg2].name + ")";
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				reg_name2 = regMap[reg2].name;
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				reg_name3 = "(" + regMap[reg3].name + ")";
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				reg_name3 = regMap[reg3].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", regMap[reg3].name, tac.label);
-			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
-			x86::Cmovge(regMap[RAX].name, regMap[reg3].name, tac.label);
+			x86::Move("$0", reg_name3, tac.label);
+			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmovge(regMap[RAX].name, reg_name3, tac.label);
 		}
 
 		if (tac.field_4 == "<=")
 		{
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			int reg2 = ensure(varMap[tac.field_5], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
+			int reg1, reg2, reg3;
+			string reg_name1 = "", reg_name2 = "", reg_name3 = "";
+
+			if((tac.field_3)[0] == '*')
+			{
+				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if((tac.field_5)[0] == '*')
+			{
+				string var_name = tac.field_5.substr(2, tac.field_5.length() - 3);
+				reg2 = ensure(varMap[var_name], tac.label);
+				reg_name2 = "(" + regMap[reg2].name + ")";
+			}
+			else
+			{
+				reg2 = ensure(varMap[tac.field_5], tac.label);
+				reg_name2 = regMap[reg2].name;
+			}
+
+			if((tac.field_1)[0] == '*')
+			{
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg3 = ensure(varMap[var_name], tac.label);
+				reg_name3 = "(" + regMap[reg3].name + ")";
+			}
+			else
+			{
+				reg3 = ensure(varMap[tac.field_1], tac.label);
+				reg_name3 = regMap[reg3].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", regMap[reg3].name, tac.label);
-			x86::Cmp(regMap[reg1].name, regMap[reg2].name, tac.label);
-			x86::Cmovle(regMap[RAX].name, regMap[reg3].name, tac.label);
+			x86::Move("$0", reg_name3, tac.label);
+			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
 		}
 
 		if (tac.field_4 == "")
@@ -837,6 +1308,7 @@ void modifier(code tac)
 
 	}
 
+	
 	if (tac.field_1 == "param")
 	{
 		int tmp = code_itr;
@@ -848,30 +1320,44 @@ void modifier(code tac)
 			}
 		}
 		
-		int cnt = code_itr - tmp;
+		int cnt = tmp - code_itr;
 		int num = min(cnt, 6);
 		int index = tmp - num;
 		int reg;
 
+		cout << cnt << endl;
+
+		for (int i = 0; i < 6; i++)
+		{
+			x86::Spill(RDI + i, tac.label);
+			regMap[RDI + i].free = false;
+			regMap[RDI + i].allocatable = false;
+		}
+		
 		for (int i = 0; i < num; i++)
 		{
 			reg = ensure(varMap[threeAC[index].field_2], threeAC[index].label);
-			x86::Move(regMap[reg].name, regMap[RDI + num - i].name, threeAC[index].label);
+			x86::Move(regMap[reg].name, regMap[RDI + num - i - 1].name, threeAC[index].label);
 			index++;
 		}
+
 		index = tmp - num;
-		while(code_itr <= index)
+		while(code_itr < index)
 		{
 			reg = ensure(varMap[threeAC[code_itr].field_2], threeAC[code_itr].label);
 			x86::Push(regMap[reg].name, threeAC[code_itr].label);
-			gap = gap + 8;
 			code_itr++;
 		}
 
-		code_itr = tmp;
-		now = code_itr + 1;
+		for (int i = 0; i < 6; i++)
+		{
+			regMap[RDI + i].allocatable = true;
+			if(i >= num)
+				regMap[RDI + i].free = true;
+		}
 
-		// save caller saved registers
+		code_itr = tmp - 1;
+		now = code_itr + 1;
 	}
 
 	if (tac.field_1 == "pop_param")
@@ -879,13 +1365,43 @@ void modifier(code tac)
 		int tmp = code_itr;
 		for (;tmp < threeAC.size(); tmp++)
 		{
-			if (threeAC[tmp].field_1 != "param")
+			if (threeAC[tmp].field_1 != "pop_param")
 			{
 				break;
 			}
 		}
 
-		
+		int cnt = tmp - code_itr;
+		int num = min(6, cnt);
+		int reg;
+
+		for (int i = 0; i < 6; i++)
+		{
+			x86::Push(regMap[RDI + i].name, tac.label);
+			regMap[RDI + i].freeReg();
+		}
+
+		code_itr += num;
+		while(code_itr < tmp)
+		{
+			var_struct var = varMap[threeAC[code_itr].field_2];
+			reg = ensure(var, threeAC[code_itr].label);
+			int offset = var.offset;
+			x86::Move(to_string(-1 * offset) + "(%rbp)", regMap[reg].name, threeAC[code_itr].label);
+			code_itr++;
+		}
+
+		code_itr--;
+		now = code_itr + 1;
+
+		// callee saved registers
+		x86::Push(regMap[RBX].name, tac.label);
+		x86::Push(regMap[R12].name, tac.label);
+		x86::Push(regMap[R13].name, tac.label);
+		x86::Push(regMap[R14].name, tac.label);
+		x86::Push(regMap[R15].name, tac.label);
+		x86::Move(regMap[RSP].name, regMap[RBX].name, tac.label);
+		gap_bx = gap;
 
 	}
 
@@ -900,36 +1416,85 @@ void modifier(code tac)
 		x86::Label(tac.field_2);
 		x86::Push(regMap[RBP].name, tac.label);
 		x86::Move(regMap[RSP].name, regMap[RBP].name, tac.label);
-		x86::Push(regMap[RBX].name, tac.label);
-		x86::Push(regMap[R12].name, tac.label);
-		x86::Push(regMap[R13].name, tac.label);
-		x86::Push(regMap[R14].name, tac.label);
-		x86::Push(regMap[R15].name, tac.label);
+		gap = 0;
+		if (sp_shift > 0)
+		{
+			x86::Sub(regMap[RSP].name, to_string(sp_shift), tac.label);
+			gap = sp_shift;
+			sp_shift = 0;
+		}
+
 	}
 
 	// for taking the return values
-	if (tac.field_1 == "popparam")
+	if (tac.field_3 == "popparam")
 	{
-		// DO NOTHING
+		int reg = ensure(varMap[tac.field_1], tac.label);
+		x86::Move(regMap[RAX].name, regMap[reg].name, tac.label);
 	}
 
 	if (tac.field_1 == "end_function")
 	{
-		// DO NOTHING
+		if (threeAC[code_itr - 1].field_1 != "return")
+		{
+			x86::Move(regMap[RBX].name, regMap[RSP].name, tac.label);
+			gap = gap_bx;
+			x86::Pop(regMap[R15].name, tac.label);
+			x86::Pop(regMap[R14].name, tac.label);
+			x86::Pop(regMap[R13].name, tac.label);
+			x86::Pop(regMap[R12].name, tac.label);
+			x86::Pop(regMap[RBX].name, tac.label);
+
+			// popping the register values
+			for(int i = 0; i < 6; i++)
+			{
+				x86::Pop(regMap[R9 - i].name, tac.label);
+			}
+
+			x86::Move(regMap[RBP].name, regMap[RSP].name, tac.label);
+			gap = 0;
+
+			x86::Ret(tac.label);
+		}
+		gap = 0;
 	}
 
 	if (tac.field_1 == "shift_sp")
 	{
-		
+		int shift = atoi((tac.field_2).c_str());
+		if (shift < 0)
+		{
+			sp_shift = -1 * shift;
+		}
 	}
 
 	if (tac.field_1 == "call")
 	{
+		x86::Spill(R10, tac.label);
+		x86::Spill(R11, tac.label);
 		x86::Call(tac.field_2, tac.label);
 	}
 
 	if (tac.field_1 == "return")
 	{
+		// caller saved registers
+		x86::Move(regMap[RBX].name, regMap[RSP].name, tac.label);
+		gap = gap_bx;
+		x86::Pop(regMap[R15].name, tac.label);
+		x86::Pop(regMap[R14].name, tac.label);
+		x86::Pop(regMap[R13].name, tac.label);
+		x86::Pop(regMap[R12].name, tac.label);
+		x86::Pop(regMap[RBX].name, tac.label);
+
+		// popping the register values
+		for(int i = 0; i < 6; i++)
+		{
+			x86::Pop(regMap[R9 - i].name, tac.label);
+		}
+
+		x86::Move(regMap[RBP].name, regMap[RSP].name, tac.label);
+		gap = 0;
+
 		x86::Ret(tac.label);
 	}
 
@@ -937,14 +1502,21 @@ void modifier(code tac)
 	{
 		int reg = ensure(varMap[tac.field_2], tac.label);
 		x86::Cmp("$0", regMap[reg].name, tac.label);
-		x86::Je(tac.field_5, tac.label);
+		x86::Je(tac.field_4, tac.label);
+	}
+
+	if (tac.field_1 == "goto")
+	{
+		int reg = ensure(varMap[tac.field_2], tac.label);
+		x86::Cmp("$0", regMap[reg].name, tac.label);
+		x86::Jmp(tac.field_2, tac.label);
 	}
 
 	if (tac.field_1 == "if")
 	{
 		int reg = ensure(varMap[tac.field_2], tac.label);
 		x86::Cmp("$0", regMap[reg].name, tac.label);
-		x86::Jne(tac.field_5, tac.label);
+		x86::Jne(tac.field_4, tac.label);
 	}
 
 	// handle spilling of registers at end of BBs 
@@ -952,10 +1524,7 @@ void modifier(code tac)
 	{
 		for (int i=REG_START; i<REG_MAX; i++)
 		{
-			if (!regMap[i].free)
-			{
-				x86::Spill(i, tac.label);
-			}
+			x86::Spill(i, tac.label);
 		}
 	}
 
@@ -980,6 +1549,21 @@ void update_var_struct(string name, int time)
 		return;
 	}
 
+	if (is_num(name))
+	{
+		// first encounter
+		if (varMap.find(name) == varMap.end())
+		{
+			var_struct first;
+			first.name = name;
+			varMap[name] = first;
+		}
+		(varMap[name].locations).push_back(time);
+		varMap[name].death = -1;
+
+		return;
+	}
+
 
 	// variables
 	int loc_percent = -1;
@@ -989,7 +1573,7 @@ void update_var_struct(string name, int time)
 		if (name[i] == '%')
 			loc_percent = i;
 
-		if (name[i] == '.')
+		if (i < name.length() - 2 && name[i] == '_' && name[i + 1] == 'C' && name[i + 2] == 'c')
 			loc_dot = i;
 	}
 
@@ -997,7 +1581,6 @@ void update_var_struct(string name, int time)
 	if (loc_percent == -1)
 	{
 		assert(loc_dot == -1);
-		cout << name << endl;
 		// first encounter
 		if (varMap.find(name) == varMap.end())
 		{
@@ -1022,8 +1605,24 @@ void update_var_struct(string name, int time)
 		if (varMap.find(name) == varMap.end())
 		{
 			string funcName = "";
-			for(int i=loc_percent + 1;i < name.length(); i++){
+			bool check = true;
+			for(int i=loc_percent + 1;i < name.length() - 2; i++){
+				if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+				{
+					check = false;
+					break;
+				}
+				if (name[i] == '_' && name[i + 1] == 'N' && name[i + 2] == 'n')
+				{
+					check = false;
+					break;
+				}
 				funcName += name[i];
+			}
+
+			if (check)
+			{
+				funcName += name[name.length() - 2]  + name[name.length() - 1];
 			}
 
 			tableRecord* entry = globTable -> lookup_table(funcName);
@@ -1037,7 +1636,7 @@ void update_var_struct(string name, int time)
 				assert (entry);
 				var_struct first;
 				first.name = name;
-				first.offset = entry -> offset;
+				first.offset = entry -> offset + 8;
 				varMap[name] = first;
 			}
 
@@ -1047,10 +1646,10 @@ void update_var_struct(string name, int time)
 				// handle function overloading
 				vector<tableRecord*> params;				// donot free params, may lead to segfault
 				vector<int> a_indices;
-				for (int i=0; i<name.length(); i++)
+				for (int i=0; i<name.length() - 2; i++)
 				{
-					if (name[i] == '@')
-						a_indices.push_back(i);
+					if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+						a_indices.push_back(i + 2);
 				}
 
 				for(int i=0; i < a_indices.size(); i++)
@@ -1059,18 +1658,20 @@ void update_var_struct(string name, int time)
 					int last;
 					if (i == a_indices.size() - 1)
 					{
-						last = name.length();
+						last = name.length() - 5;
 					}
 					else 
 					{
-						last = a_indices[i + 1];
+						last = a_indices[i + 1] - 3;
 					}
-					type = name.substr(a_indices[i], last - a_indices[i]);
+					type = name.substr(a_indices[i] + 1, last - a_indices[i]);
 					tableRecord* entry = new tableRecord();
 					entry -> type = type;
 					params.push_back(entry);
+					cout << type << " " << type.length() << endl;
 				}
 
+				
 				entry = globTable -> lookup_table(funcName, recordType::TYPE_FUNCTION, &params);
 				assert (entry);
 				assert (entry -> symTab);
@@ -1080,7 +1681,7 @@ void update_var_struct(string name, int time)
 				assert (entry);
 				var_struct first;
 				first.name = name;
-				first.offset = entry -> offset;
+				first.offset = entry -> offset + 8;
 				varMap[name] = first;
 			}
 
@@ -1098,10 +1699,25 @@ void update_var_struct(string name, int time)
 		for(int i=loc_percent + 1;i < loc_dot; i++){
 			className += name[i];
 		}
-
+		bool check = true;
 		string funcName = "";
-		for(int i=loc_dot + 1;i < name.length(); i++){
+		for(int i=loc_dot + 3;i < name.length() - 2; i++){
+			if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+			{
+				check = false;
+				break;
+			}
+			if (name[i] == '_' && name[i + 1] == 'N' && name[i + 2] == 'n')
+			{
+				check = false;
+				break;
+			}
 			funcName += name[i];
+		}
+
+		if (check)
+		{
+			funcName += name[name.length() - 2]  + name[name.length() - 1];
 		}
 
 
@@ -1110,11 +1726,9 @@ void update_var_struct(string name, int time)
 		vector<int> a_indices;
 		for (int i=0; i<name.length(); i++)
 		{
-			if (name[i] == '@')
-				a_indices.push_back(i);
+			if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+				a_indices.push_back(i + 2);
 		}
-
-		cout << name;
 
 		for(int i=0; i < a_indices.size(); i++)
 		{
@@ -1122,25 +1736,22 @@ void update_var_struct(string name, int time)
 			int last;
 			if (i == a_indices.size() - 1)
 			{
-				last = name.length();
+				last = name.length() - 5;
 			}
 			else 
 			{
-				last = a_indices[i + 1];
+				last = a_indices[i + 1] - 3;
 			}
-			type = name.substr(a_indices[i], last - a_indices[i]);
+			type = name.substr(a_indices[i] + 1, last - a_indices[i]);
 			tableRecord* entry = new tableRecord();
 			entry -> type = type;
+			entry -> name = type;
 			params.push_back(entry);
 		}
 
 		tableRecord* entry = globTable -> lookup_table(className);
 		assert (entry);
 		assert (entry -> symTab);
-
-		cout << funcName << endl;
-		cout << params.size() << endl;
-		cout << a_indices.size() << endl;
 
 		entry = (entry -> symTab) -> lookup_table(funcName, recordType::TYPE_FUNCTION, &params);
 		assert (entry);
@@ -1150,7 +1761,7 @@ void update_var_struct(string name, int time)
 		assert (entry);
 		var_struct first;
 		first.name = name;
-		first.offset = entry -> offset;
+		first.offset = entry -> offset + 8;
 		varMap[name] = first;
 	}
 
@@ -1164,18 +1775,18 @@ bool is_name_var(string &name)
 {
 	cout << name << endl;
 	int len = name.length();
+	if (!len) return false;
 	if (name[0] == '\"') return false;
+	if (name[0] == '-') return false;
+	if (name[0] == '~') return false;
 	if (name == "popparam") return false;
+	if (name == "not") return false;
 
 	if (name[0] == '*')
 	{
 		name = name.substr(2, name.length() - 3);
 	}
-	for (int i=0; i<len; i++)
-	{
-		if (name[i] > '9' || name[i] < '0') return true;
-	}
-	return false;
+	return true;
 }
 
 void handle_var_init(code tac, int time)
@@ -1235,6 +1846,8 @@ void identify_BB()
 
 bool is_num(string val)
 {
+	if (val.size() == 0)
+		return false;
 	for (auto i : val)
 		if (i < '0' || i > '9')
 			return false;
@@ -1256,8 +1869,7 @@ void post_process_assembly()
 	}
 
 	string prev = "";
-
-	for (auto inst : assembly)
+	for (auto &inst : assembly)
 	{
 		if (inst.label == prev)
 			inst.label = "";
@@ -1269,15 +1881,23 @@ void post_process_assembly()
 
 void generate_assembly()
 {
+	cout << "START" << endl;
 	identify_BB();
+	cout << "1" << endl;
 	init_var_struct();
+	cout << "2" << endl;
 	pre_process_assembly();
+	cout << "3" << endl;
+
 	for (code_itr=0; code_itr< threeAC.size(); code_itr++)
 	{
+		cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;
 		modifier(threeAC[code_itr]);
 	}
+	cout << "4" << endl;
 	post_process_assembly();
+	cout << "5" << endl;
 }
 
 /* NOTE : TAKE OFFSET ONLY FROM RBP */

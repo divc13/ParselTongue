@@ -14,7 +14,7 @@ extern map<string, int> StringToToken;
 extern map<string, string> TokenNameToString;
 extern map<string, string> opType;
 
-extern reg_struct regMap[REG_CNT];
+extern vector<reg_struct> regMap;
 
 void init_error()
 {
@@ -157,7 +157,7 @@ void initTypes()
 	tempRecord -> type = "str";
 	globTable -> insert(tempRecord, globTable);
 
-	tempRecord -> name = "\"%lld\"";
+	tempRecord -> name = "%lld";
 	tempRecord -> recordType = recordType::CONST_STRING;
 	globTable -> insert(tempRecord, globTable);
 	free(tempRecord);
@@ -218,7 +218,7 @@ void initTypes()
 	symbolTable* print_int_list = new symbolTable("print", globTable);
 	print_int_list -> numParams = 1;
 	print_int_list -> tableType = tableType::FUNCTION;
-	tempRecord_int -> type = "list[int]";
+	tempRecord_int -> type = "list_int_";
 	print_int_list -> insert(tempRecord_int);
 	print_int_list->size = 0;
 	globTable -> insert(tempRecord, print_int_list);
@@ -226,7 +226,7 @@ void initTypes()
 	symbolTable* print_float_list = new symbolTable("print", globTable);
 	print_float_list -> numParams = 1;
 	print_float_list -> tableType = tableType::FUNCTION;
-	tempRecord_float -> type = "list[float]";
+	tempRecord_float -> type = "list_float_";
 	print_float_list -> insert(tempRecord_float);
 	print_float_list->size = 0;
 	globTable -> insert(tempRecord, print_float_list);
@@ -234,7 +234,7 @@ void initTypes()
 	symbolTable* print_bool_list = new symbolTable("print", globTable);
 	print_bool_list -> numParams = 1;
 	print_bool_list -> tableType = tableType::FUNCTION;
-	tempRecord_bool -> type = "list[bool]";
+	tempRecord_bool -> type = "list_bool_";
 	print_bool_list -> insert(tempRecord_bool);
 	print_bool_list->size = 0;
 	globTable -> insert(tempRecord, print_bool_list);
@@ -242,7 +242,7 @@ void initTypes()
 	symbolTable* print_str_list = new symbolTable("print", globTable);
 	print_str_list -> numParams = 1;
 	print_str_list -> tableType = tableType::FUNCTION;
-	tempRecord_str -> type = "list[str]";
+	tempRecord_str -> type = "list_str_";
 	print_str_list -> insert(tempRecord_str);
 	print_str_list -> size = 0;
 	globTable -> insert(tempRecord, print_str_list);
@@ -250,7 +250,7 @@ void initTypes()
 
 
 	tempRecord -> name = "range";
-	tempRecord -> type = "list[int]";
+	tempRecord -> type = "list_int_";
 	tempRecord_int -> type = "int";
 
 	symbolTable* range_two_args = new symbolTable("range", globTable);
@@ -512,15 +512,21 @@ void init_token_map()
 	opType["<<="] = "OP_ASSIGNMENT";
 	opType[">>="] = "OP_ASSIGNMENT";
 
-
+	
 	regMap[RAX].name = "%rax";
+	regMap[RAX].free = false;
+	regMap[RAX].allocatable = false;
 	regMap[RBX].name = "%rbx";
+	regMap[RBX].free = false;
+	regMap[RBX].allocatable = false;
 	regMap[RCX].name = "%rcx";
 	regMap[RDX].name = "%rdx";
 	regMap[RBP].name = "%rbp";
 	regMap[RBP].free = false;
+	regMap[RBP].allocatable = false;
 	regMap[RSP].name = "%rsp";
 	regMap[RSP].free = false;
+	regMap[RSP].allocatable = false;
 	regMap[RDI].name = "%rdi";
 	regMap[RSI].name = "%rsi";
 	regMap[R8].name = "%r8";

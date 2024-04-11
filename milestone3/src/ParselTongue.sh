@@ -11,6 +11,7 @@ csv_flag=0
 md_flag=0
 tac_flag=1
 exe_flag=0
+run_flag=0
 output_flag=0
 
 display_help() {
@@ -123,6 +124,9 @@ for ((i=1; i<=$#; i++)); do
 				;;
 			m)
 				md_flag=1
+				;;
+			r)
+				run_flag=1
 				;;
 			*)
 				echo -e "\e[31mUnknown flag: -${arg:j:1}\e[0m"
@@ -254,14 +258,14 @@ fi
 
 wait
 
-if [ "$exe_flag" -eq 1 ]; then
+if [ "$run_flag" -eq 1 ]; then
 	for ((i = 0; i < ${#input_files[@]}; i++)); do
 		output_file_without_extention="${output_files_without_extention[$i]}"
 
 		x86_output_file="${output_file_without_extention}.s"
 
 		if [ -f "$x86_output_file" ]; then
-			gcc "${x86_output_file}" -o test.o
+			gcc -c "${x86_output_file}" -o "test.o"
 			gcc "test.o" -o "${output_file_without_extention}"
 			rm "test.o"
 		fi

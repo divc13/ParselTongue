@@ -35,11 +35,19 @@ string tableHash(symbolTable* curr)
 	if(curr -> name != "__GLOBAL__")
 	{
 		name = curr -> name;
+		if (curr -> tableType == tableType::FUNCTION)
+		{
+			for(int i=0; i<curr->numParams; i++)
+			{
+				name += "_Zz" + ((curr -> entries)[i])-> type;
+			}
+			name += "_Nn" + to_string(curr->numParams);
+		}
 	}
 	while(curr -> parentSymtable && curr -> parentSymtable -> name != "__GLOBAL__")
 	{
 		curr = curr -> parentSymtable;
-		name = curr -> name + "." + name;
+		name = curr -> name + "_Cc" + name;
 	}
 	return name;
 }
@@ -47,6 +55,7 @@ string tableHash(symbolTable* curr)
 // only for variables and not for functions
 string mangle(string name)
 {
+	if (name[0] == '$') return name;
 	tableRecord* entry = table -> lookup(name);
 	assert(entry);
 	string t1 = tableHash(entry -> symTab);
@@ -94,7 +103,7 @@ void allocate_mem(string size)
 	threeAC.push_back(inst);
 
 	inst.field_1 = "call";
-	inst.field_2 = "alloc_mem";
+	inst.field_2 = "malloc";
 	inst.field_3 = "1";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -126,17 +135,17 @@ void Parasite::genAC()
 		
 		code inst;
 
-		/* print@int */
+		/* print_int */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@int";
+		inst.field_2 = tableHash(globTable) + "print_Zzint_Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		string print_val = newTmp();
+		string print_val = "#var1\%print_Zzint_Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -185,17 +194,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		/* print@float */
+		/* print_float */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@float";
+		inst.field_2 = tableHash(globTable) + "print_Zzfloat_Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzfloat_Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -246,17 +255,17 @@ void Parasite::genAC()
 
 
 
-		/* print@str */
+		/* print_str */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@str";
+		inst.field_2 = tableHash(globTable) + "print_Zzstr_Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzstr_Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -313,17 +322,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		/* print@bool */
+		/* print_bool */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@bool";
+		inst.field_2 = tableHash(globTable) + "print_Zzbool_Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzbool_Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -373,17 +382,17 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 
-		/* print@list[int] */
+		/* print_list[int] */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@list[int]";
+		inst.field_2 = tableHash(globTable) + "print_Zzlist_int__Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzlist_int__Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -464,7 +473,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "call";
-		inst.field_2 = "print@int";
+		inst.field_2 = "print_Zzint_Nn1";
 		inst.field_3 = "1";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -545,17 +554,17 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 
-		/* print@list[str] */
+		/* print_list[str] */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@list[str]";
+		inst.field_2 = tableHash(globTable) + "print_Zzlist_str__Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzlist_str__Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -636,7 +645,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "call";
-		inst.field_2 = "print@str";
+		inst.field_2 = "print_Zzstr_Nn1";
 		inst.field_3 = "1";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -718,17 +727,17 @@ void Parasite::genAC()
 
 
 
-		/* print@list[float] */
+		/* print_list[float] */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@list[float]";
+		inst.field_2 = tableHash(globTable) + "print_Zzlist_float__Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzlist_float__Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -809,7 +818,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "call";
-		inst.field_2 = "print@float";
+		inst.field_2 = "print_Zzfloat_Nn1";
 		inst.field_3 = "1";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -890,17 +899,17 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 
-		/* print@list[float] */
+		/* print_list[float] */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "print@list[bool]";
+		inst.field_2 = tableHash(globTable) + "print_Zzlist_bool__Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		print_val = newTmp();
+		print_val = "#var1\%print_Zzlist_bool__Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = print_val;
 		inst.field_3 = "";
@@ -981,7 +990,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "call";
-		inst.field_2 = "print@bool";
+		inst.field_2 = "print_Zzbool_Nn1";
 		inst.field_3 = "1";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -1063,14 +1072,14 @@ void Parasite::genAC()
 
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "range@int";
+		inst.field_2 = tableHash(globTable) + "range_Zzint_Nn1";
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		string val = newTmp();
+		string val = "#var2\%range_Zzint_Nn1";
 		inst.field_1 = "pop_param";
 		inst.field_2 = val;
 		inst.field_3 = "";
@@ -1200,12 +1209,12 @@ void Parasite::genAC()
 		/* range (int x, int y) */
 		
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "range@int@int";
+		inst.field_2 = tableHash(globTable) + "range_Zzint_Zzint_Nn2";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		string val1 = newTmp();
-		string val2 = newTmp();
+		string val1 = "#var1\%range_Zzint_Zzint_Nn2";
+		string val2 = "#var2\%range_Zzint_Zzint_Nn2";
 		string val3 = newTmp();
 		tmpry_2 = newTmp();
 		string tmpry_3 = newTmp();
@@ -1371,11 +1380,11 @@ void Parasite::genAC()
 		/* len (str) */
 
 		inst.field_1 = "begin_function";
-		inst.field_2 = tableHash(globTable) + "len@str";
+		inst.field_2 = tableHash(globTable) + "len_Zzstr_Nn1";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		string val7 = newTmp();
+		string val7 = "#var1\%len_Zzstr_Nn1";
 		string val4 = newTmp();
 
 		inst.field_1 = "pop_param";
@@ -1426,11 +1435,11 @@ void Parasite::genAC()
 				string type = i.first;
 
 				inst.field_1 = "begin_function";
-				inst.field_2 = tableHash(globTable) + "len@" + type;
+				inst.field_2 = tableHash(globTable) + "len_Zz" + type + "_Nn1";
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 
-				string val5 = newTmp();
+				string val5 = "#len\%len_Zz" + type + "_Nn1";
 				string val6 = newTmp();
 
 				inst.field_1 = "pop_param";
@@ -1698,7 +1707,7 @@ void Parasite::genAC()
 		/* class constructors are not an issue here */
 
 		string funcName = tableHash(table);
-		if (funcName.length()) funcName += ".";
+		if (funcName.length()) funcName += "_Cc";
 		funcName += children[1] -> name;
 
 		tableRecord* entry = table -> lookup(children[1] -> name);
@@ -1710,8 +1719,14 @@ void Parasite::genAC()
 
 		for (int i = 0; i < table -> numParams; i++)
 		{
-			funcName += "@" + (table -> entries)[i] -> type;
+			funcName += "_Zz" + (table -> entries)[i] -> type;
 		}
+
+		funcName += "_Nn" + to_string(table -> numParams);
+
+		cout << "FUNCNAME: " << funcName << endl;
+
+		if(table -> name == "main") funcName = "main";
 
 		code inst;
 		inst.field_1 = "begin_function";
@@ -3718,19 +3733,6 @@ void Parasite::genAC()
 		vector<tableRecord*> params;
 		code inst;
 		tableRecord* funcEntry = NULL;
-		for(int i = nparams -1; i >= 0; i--)
-		{
-			TreeNode* node = ((host -> children)[2] -> children)[i];
-			tableRecord* record = new tableRecord(node -> name, node -> dataType);
-			params.insert(params.begin(), record);
-
-			inst.field_1 = "param";
-			inst.field_2 = tempExprs[i];
-			inst.label = newLabel();
-			threeAC.push_back(inst);
-		}
-
-		tempExprs.clear();
 
 		tableRecord* entry = globTable -> lookup_table(children[0] -> name);
 
@@ -3740,7 +3742,26 @@ void Parasite::genAC()
 			int width = entry -> size;
 			allocate_mem(to_string(width));
 			tmp = MemRg;
+		}
 
+		for(int i = nparams -1; i >= 0; i--)
+		{
+			TreeNode* node = ((host -> children)[2] -> children)[i];
+			tableRecord* record = new tableRecord(node -> name, node -> dataType);
+			params.insert(params.begin(), record);
+
+			inst.field_1 = "param";
+			inst.field_2 = mangle(tempExprs[i]);
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+		}
+
+		tempExprs.clear();
+
+
+		if (entry && (entry -> recordType == recordType::TYPE_CLASS))
+		{
+			// this is the constructor
 			inst.field_1 = "param";
 			inst.field_2 = tmp;
 			inst.label = newLabel();
@@ -3755,7 +3776,7 @@ void Parasite::genAC()
 			{
 				params.insert(params.begin(), dotRecord);
 				inst.field_1 = "param";
-				inst.field_2 = dotRecord_1 -> name;
+				inst.field_2 = mangle(dotRecord_1 -> name);
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 				nparams ++;
@@ -3791,14 +3812,18 @@ void Parasite::genAC()
 			funcName = tableHash(dotTable);
 		}
 
-		if (funcName.length()) funcName += ".";
+		if (funcName.length()) funcName += "_Cc";
 		funcName += funcEntry -> name;
 
 		symbolTable* funcTable = funcEntry -> symTab;
 		for (int i = 0; i < nparams; i++)
 		{
-			funcName += "@" + (funcTable -> entries)[i] -> type;
+			funcName += "_Zz" + (funcTable -> entries)[i] -> type;
 		}
+		funcName += "_Nn" + to_string(nparams);
+
+		if(funcTable -> name == "main") funcName = "main";
+
 
 		inst.field_1 = "call";
 		inst.field_2 = funcName;
