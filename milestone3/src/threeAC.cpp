@@ -5,7 +5,7 @@ extern map<string, int> typeMap;
 
 int label = 0;
 int tmp = 0;
-
+map <string, string> stringMap;
 symbolTable* table = globTable;
 symbolTable* dotTable = NULL;
 tableRecord* dotRecord = NULL;
@@ -18,6 +18,21 @@ bool allocate = false;
 vector<string> tempExprs;
 string isReturn = "";
 vector<pair<string, string>> filler;
+
+void fill_stringMap()
+{
+	int string_index = 0;
+	for (int i = 0; i < globTable->currentIndex; i++)
+	{
+		tableRecord* entry = (globTable->entries)[i];
+		assert(entry);
+		if (entry->recordType == recordType::CONST_STRING)
+		{
+			stringMap["\"" + entry->name + "\""] = ".LC" + to_string(string_index);
+			string_index++;
+		}
+	}
+}
 
 string newLabel()
 {
@@ -154,8 +169,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		string a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "integer_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"%lld\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -213,8 +237,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "float_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"%lf\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -274,16 +307,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		inst.field_1 = print_val;
+		a1 = newTmp();
+		inst.field_1 = a1;
 		inst.field_2 = "=";
-		inst.field_3 = print_val;
-		inst.field_4 = "+";
-		inst.field_5 = "8";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "string_format";
+		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = "\"%s\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -341,8 +375,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "integer_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"%lld\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -419,9 +462,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_start_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = "\"[\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -480,8 +531,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "comma_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\", \"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -520,9 +580,18 @@ void Parasite::genAC()
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
+
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_end_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 		
 		inst.field_1 = "param";
-		inst.field_2 = "\"]\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -592,8 +661,17 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_start_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"[\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -652,8 +730,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "comma_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
 		inst.field_1 = "param";
-		inst.field_2 = "\", \"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -693,8 +780,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 		
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_end_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"]\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -765,8 +861,17 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_start_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"[\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -825,8 +930,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "comma_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
 		inst.field_1 = "param";
-		inst.field_2 = "\", \"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -866,8 +980,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 		
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_end_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"]\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -937,8 +1060,17 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_start_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"[\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -997,8 +1129,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "comma_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+		
 		inst.field_1 = "param";
-		inst.field_2 = "\", \"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -1038,8 +1179,17 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 		
+		a1 = newTmp();
+		inst.field_1 = a1;
+		inst.field_2 = "=";
+		inst.field_3 = "findAddress";
+		inst.field_4 = "list_end_format";
+		inst.field_5 = "";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = "param";
-		inst.field_2 = "\"]\"";
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -1395,6 +1545,14 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
+		inst.field_1 = val7;
+		inst.field_2 = "=";
+		inst.field_3 = val7;
+		inst.field_4 = "-";
+		inst.field_5 = "8";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
+
 		inst.field_1 = val4;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + val7 + ")";
@@ -1418,7 +1576,6 @@ void Parasite::genAC()
 		inst.field_5 = "";
 		inst.label = newLabel();
 		threeAC.push_back(inst);
-
 
 		inst.field_1 = "end_function";
 		inst.field_2 = "";
@@ -4044,9 +4201,7 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
-			string t1 = newTmp();
-
-			inst.field_1 = t1;
+			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = tmp;
 			inst.field_4 = "+";
@@ -4054,9 +4209,34 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
-			inst.field_1 = "*(" + t1 + ")";
+			string a1 = newTmp();
+			inst.field_1 = a1;
 			inst.field_2 = "=";
-			inst.field_3 = (children[0] -> tmp);
+			inst.field_3 = "findAddress";
+			inst.field_4 = stringMap[children[0] -> tmp];
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "param";
+			inst.field_2 = tmp;
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "param";
+			inst.field_2 = a1;
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "call";
+			inst.field_2 = "strcpy";
+			inst.field_3 = "";
 			inst.field_4 = "";
 			inst.field_5 = "";
 			inst.label = newLabel();
@@ -4273,6 +4453,7 @@ void Parasite::genCode()
 {
 	map<string, string> labelMap;
 
+	fill_stringMap();
 	genAC();
 	formFirstLast();
 	fillCode();

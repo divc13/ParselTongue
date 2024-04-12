@@ -10,7 +10,6 @@ set<int> BB_leaders;
 int now = 0;
 int numParams = 0;
 int code_itr = 0;
-int string_index = 0;
 int sp_shift = 0;
 
 // top indicates the difference between rsp and rbp at curr time
@@ -18,7 +17,7 @@ int gap = 0;
 int gap_bx = 0;
 
 map <string, var_struct> varMap;
-map <string, string> stringMap;
+extern map <string, string> stringMap;
 vector<reg_struct> regMap(REG_MAX);
 
 void reg_struct::freeReg()
@@ -30,291 +29,332 @@ void reg_struct::freeReg()
 
 namespace x86
 {
-	void Move(string arg1, string arg2, string label);
-	void Add(string arg1, string arg2, string label);
-	void Sub(string arg1, string arg2, string label);
-	void Cmp(string arg1, string arg2, string label);
-	void Mul(string arg1, string arg2, string label);
-	void Div(string arg1, string label);
-	void And(string arg1, string arg2, string label);
-	void Or(string arg1, string arg2, string label);
-	void Xor(string arg1, string arg2, string label);
-	void Not(string arg1, string label);
-	void Shl(string arg1, string arg2, string label);
-	void Shr(string arg1, string arg2, string label);
-	void Push(string arg1, string label);
-	void Pop(string arg1, string label);
-	void Label(string label);
-	void Call(string arg1, string label);
-	void Ret(string label);
-	void CLTD(string label);
-	void Cmove(string arg1, string arg2, string label);
-	void Cmovne(string arg1, string arg2, string label);
-	void Cmovg(string arg1, string arg2, string label);
-	void Cmovl(string arg1, string arg2, string label);
-	void Cmovge(string arg1, string arg2, string label);
-	void Cmovle(string arg1, string arg2, string label);
-	void Je(string arg1, string label);
-	void Jmp(string arg1, string label);
-	void Jne(string arg1, string label);
-	void Spill(int reg, string label);
+	void Move(string arg1, string arg2, string label, string comment = "");
+	void Add(string arg1, string arg2, string label, string comment = "");
+	void Sub(string arg1, string arg2, string label, string comment = "");
+	void Cmp(string arg1, string arg2, string label, string comment = "");
+	void Mul(string arg1, string arg2, string label, string comment = "");
+	void Div(string arg1, string label, string comment = "");
+	void And(string arg1, string arg2, string label, string comment = "");
+	void Or(string arg1, string arg2, string label, string comment = "");
+	void Xor(string arg1, string arg2, string label, string comment = "");
+	void Not(string arg1, string label, string comment = "");
+	void Shl(string arg1, string arg2, string label, string comment = "");
+	void Shr(string arg1, string arg2, string label, string comment = "");
+	void Push(string arg1, string label, string comment = "");
+	void Pop(string arg1, string label, string comment = "");
+	void Label(string label, string comment = "");
+	void Call(string arg1, string label, string comment = "");
+	void Ret(string label, string comment = "");
+	void CLTD(string label, string comment = "");
+	void Cmove(string arg1, string arg2, string label, string comment = "");
+	void Cmovne(string arg1, string arg2, string label, string comment = "");
+	void Cmovg(string arg1, string arg2, string label, string comment = "");
+	void Cmovl(string arg1, string arg2, string label, string comment = "");
+	void Cmovge(string arg1, string arg2, string label, string comment = "");
+	void Cmovle(string arg1, string arg2, string label, string comment = "");
+	void Je(string arg1, string label, string comment = "");
+	void Jmp(string arg1, string label, string comment = "");
+	void Jne(string arg1, string label, string comment = "");
+	void Lea(string arg1, string arg2, string label, string comment = "");
+	void Spill(int reg, string label, string comment = "");
 }
 
-void x86::Move(string arg1, string arg2, string label)
+void x86::Move(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "movq";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Add(string arg1, string arg2, string label)
+void x86::Add(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "addq";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Sub(string arg1, string arg2, string label)
+void x86::Sub(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "subq";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Cmp(string arg1, string arg2, string label)
+void x86::Cmp(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmp";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Mul(string arg1, string arg2, string label)
+void x86::Mul(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "imul";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Div(string arg1, string label)
+void x86::Div(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "idiv";
 	inst.second = arg1;
 	inst.third = "";
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::And(string arg1, string arg2, string label)
+void x86::And(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "and";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Or(string arg1, string arg2, string label)
+void x86::Or(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "or";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Xor(string arg1, string arg2, string label)
+void x86::Xor(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "xor";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Not(string arg1, string label)
+void x86::Not(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "not";
 	inst.second = arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Shl(string arg1, string arg2, string label)
+void x86::Shl(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "shl";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Shr(string arg1, string arg2, string label)
+void x86::Shr(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "shr";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Push(string arg1, string label)
+void x86::Push(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "pushq";
 	inst.second = arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 	gap = gap + 8;
 }
 
-void x86::Pop(string arg1, string label)
+void x86::Pop(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "popq";
 	inst.second = arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 	gap = gap - 8;
 }
 
-void x86::Label(string label)
+void x86::Label(string label, string comment)
 {
 	instruction inst;
 	inst.label = label + ":";
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Call(string arg1, string label)
+void x86::Call(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "call";
+	inst.first = "callq";
 	inst.second = arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Ret(string label)
+void x86::Ret(string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "leave";
+	inst.comment = comment;
 	assembly.push_back(inst);
 	inst.first = "ret";
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::CLTD(string label)
+void x86::CLTD(string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cldt";
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Cmove(string arg1, string arg2, string label)
+void x86::Cmove(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmove";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Cmovne(string arg1, string arg2, string label)
+void x86::Cmovne(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmovne";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Cmovg(string arg1, string arg2, string label)
+void x86::Cmovg(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmovg";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Cmovl(string arg1, string arg2, string label)
+void x86::Cmovl(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmovl";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Cmovge(string arg1, string arg2, string label)
+void x86::Cmovge(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmovge";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Cmovle(string arg1, string arg2, string label)
+void x86::Cmovle(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "cmovle";
 	inst.second = arg1;
 	inst.third = arg2;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Jmp(string arg1, string label)
+void x86::Jmp(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "jmp";
-	inst.second = arg1;
+	inst.second = ".L" + arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Je(string arg1, string label)
+
+void x86::Je(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "je";
-	inst.second = arg1;
+	inst.second = ".L" + arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
-void x86::Jne(string arg1, string label)
+
+void x86::Jne(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
 	inst.first = "jne";
-	inst.second = arg1;
+	inst.second = ".L" + arg1;
+	inst.comment = comment;
 	assembly.push_back(inst);
 }
 
-void x86::Spill(int reg, string label)
+void x86::Lea(string arg1, string arg2, string label, string comment)
+{
+	instruction inst;
+	inst.label = label;
+	inst.first = "leaq";
+	inst.second = arg1 + "(%rip)";
+	inst.third = arg2;
+	inst.comment = comment;
+	assembly.push_back(inst);
+}
+
+void x86::Spill(int reg, string label, string comment)
 {
 	if(regMap[reg].free) return;
-	cout << "SPILL LABEL: " << label << endl;
 	if(!regMap[reg].allocatable) return;
 	string var = regMap[reg].var;
 	int offset = varMap[var].offset;
@@ -322,13 +362,13 @@ void x86::Spill(int reg, string label)
 	// a temporary which is not on the stack
 	if (offset == -1)
 	{
-		x86::Push(regMap[reg].name, label);
+		x86::Push(regMap[reg].name, label, "SPILL 1  " + var);
 		varMap[var].offset = gap;
 		return;
 	}
 	string first = to_string(-1 * offset) + "(%rbp)";
 		
-	x86::Move(regMap[reg].name, first, label);
+	x86::Move(regMap[reg].name, first, label, "SPILL 2  " + var);
 	regMap[reg].freeReg();
 }
 
@@ -358,7 +398,7 @@ int allocate(var_struct &var, string label)
 			{
 				// load instruction here
 				string first = to_string(-1 * var.offset) + "(%rbp)";
-				x86::Move(first, regMap[i].name, label);
+				x86::Move(first, regMap[i].name, label, "ALLOCATE " + var.name);
 			}
 			return i;
 		}
@@ -445,6 +485,12 @@ void pre_process_assembly()
 	x86.third = "";
 	assembly.push_back(x86);
 
+	x86.label = "float_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"%lf\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
 	x86.label = "list_start_format:";
 	x86.first = ".asciz";
 	x86.second = ", \"[\"";
@@ -475,6 +521,7 @@ void pre_process_assembly()
 	x86.third = "";
 	assembly.push_back(x86);
 
+	int string_index = 0;
 	for (int i = 0; i < globTable->currentIndex; i++)
 	{
 		tableRecord* entry = (globTable->entries)[i];
@@ -496,8 +543,6 @@ void pre_process_assembly()
 			x86.second = "";
 			x86.third = "";
 			assembly.push_back(x86);
-
-			stringMap["\"" + entry->name + "\""] = ".LC" + to_string(string_index);
 			string_index++;
 		}
 	}
@@ -1276,38 +1321,51 @@ void modifier(code tac)
 
 		if (tac.field_4 == "")
 		{
-
-			if ((tac.field_2)[0] == '\"')
+			int reg1, reg3;
+			string reg_name1, reg_name3;
+			if((tac.field_1)[0] == '*')
 			{
-				int reg1 = ensure(varMap[tac.field_3], tac.label);
-				if (varMap[tac.field_3].death <= now)
+				string var_name = tac.field_1.substr(2, tac.field_1.length() - 3);
+				reg1 = ensure(varMap[var_name], tac.label);
+				reg_name1 = "(" + regMap[reg1].name + ")";
+			}
+			else
+			{
+				reg1 = ensure(varMap[tac.field_1], tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
+			if (tac.field_3 == "popparam")
+			{
+				x86::Move(regMap[RAX].name, reg_name1, tac.label);
+			}
+
+			else{
+
+				if((tac.field_3)[0] == '*')
 				{
-					regMap[reg1].freeReg();
+					string var_name = tac.field_1.substr(2, tac.field_3.length() - 3);
+					reg3 = ensure(varMap[var_name], tac.label);
+					reg_name3 = "(" + regMap[reg3].name + ")";
 				}
-				x86::Move(regMap[reg1].name, regMap[RDI].name, tac.label);
-				var_struct var = varMap[tac.field_1];
-				int reg3 = ensure(var, tac.label);
-				x86::Move(regMap[reg3].name, regMap[RSI].name, tac.label);
+				else
+				{
+					reg3 = ensure(varMap[tac.field_3], tac.label);
+					reg_name3 = regMap[reg3].name;
+				}
 
-
-				// PUSH REGISTERS???
-
-				x86::Call("strcpy", tac.label);
+				x86::Move(reg_name3, reg_name1, tac.label);
 			}
 
-			int reg1 = ensure(varMap[tac.field_3], tac.label);
-			var_struct var = varMap[tac.field_1];
-			int reg3 = ensure(var, tac.label);
-			x86::Move(regMap[reg1].name, regMap[reg3].name, tac.label);
-			if (varMap[tac.field_3].death <= now)
-			{
-				regMap[reg1].freeReg();
-			}
 		}
-
 
 	}
 
+	if (tac.field_3 == "findAddress")
+	{
+		int reg1 = ensure(varMap[tac.field_1], tac.label);
+		x86::Lea(tac.field_4, regMap[reg1].name, tac.label);
+	}
 	
 	if (tac.field_1 == "param")
 	{
@@ -1325,12 +1383,11 @@ void modifier(code tac)
 		int index = tmp - num;
 		int reg;
 
-		cout << cnt << endl;
-
 		for (int i = 0; i < 6; i++)
 		{
 			x86::Spill(RDI + i, tac.label);
 			regMap[RDI + i].free = false;
+			regMap[RDI + i].var = "";
 			regMap[RDI + i].allocatable = false;
 		}
 		
@@ -1346,6 +1403,7 @@ void modifier(code tac)
 		{
 			reg = ensure(varMap[threeAC[code_itr].field_2], threeAC[code_itr].label);
 			x86::Push(regMap[reg].name, threeAC[code_itr].label);
+			regMap[reg].freeReg();
 			code_itr++;
 		}
 
@@ -1362,6 +1420,30 @@ void modifier(code tac)
 
 	if (tac.field_1 == "pop_param")
 	{
+		// do nothing, handled by begin_function
+	}
+
+	if (tac.field_1 == "push")
+	{
+		int reg = ensure(varMap[tac.field_2], tac.label);
+		x86::Move(regMap[reg].name, regMap[RAX].name, tac.label);
+	}
+
+	if (tac.field_1 == "begin_function")
+	{
+		x86::Label(tac.field_2);
+		x86::Push(regMap[RBP].name, tac.label);
+		x86::Move(regMap[RSP].name, regMap[RBP].name, tac.label);
+		gap = 0;
+		if (sp_shift > 0)
+		{
+			x86::Sub(regMap[RSP].name, to_string(sp_shift), tac.label);
+			gap += sp_shift;
+			sp_shift = 0;
+		}
+
+		code_itr ++;
+		now ++;
 		int tmp = code_itr;
 		for (;tmp < threeAC.size(); tmp++)
 		{
@@ -1381,6 +1463,20 @@ void modifier(code tac)
 			regMap[RDI + i].freeReg();
 		}
 
+		// callee saved registers
+		x86::Push(regMap[RBX].name, tac.label);
+		regMap[RBX].freeReg();
+		x86::Push(regMap[R12].name, tac.label);
+		regMap[R12].freeReg();
+		x86::Push(regMap[R13].name, tac.label);
+		regMap[R13].freeReg();
+		x86::Push(regMap[R14].name, tac.label);
+		regMap[R14].freeReg();
+		x86::Push(regMap[R15].name, tac.label);
+		regMap[R15].freeReg();
+		x86::Move(regMap[RSP].name, regMap[RBX].name, tac.label);
+		gap_bx = gap;
+
 		code_itr += num;
 		while(code_itr < tmp)
 		{
@@ -1393,44 +1489,6 @@ void modifier(code tac)
 
 		code_itr--;
 		now = code_itr + 1;
-
-		// callee saved registers
-		x86::Push(regMap[RBX].name, tac.label);
-		x86::Push(regMap[R12].name, tac.label);
-		x86::Push(regMap[R13].name, tac.label);
-		x86::Push(regMap[R14].name, tac.label);
-		x86::Push(regMap[R15].name, tac.label);
-		x86::Move(regMap[RSP].name, regMap[RBX].name, tac.label);
-		gap_bx = gap;
-
-	}
-
-	if (tac.field_1 == "push")
-	{
-		int reg = ensure(varMap[tac.field_2], tac.label);
-		x86::Move(regMap[reg].name, regMap[RAX].name, tac.label);
-	}
-
-	if (tac.field_1 == "begin_function")
-	{
-		x86::Label(tac.field_2);
-		x86::Push(regMap[RBP].name, tac.label);
-		x86::Move(regMap[RSP].name, regMap[RBP].name, tac.label);
-		gap = 0;
-		if (sp_shift > 0)
-		{
-			x86::Sub(regMap[RSP].name, to_string(sp_shift), tac.label);
-			gap = sp_shift;
-			sp_shift = 0;
-		}
-
-	}
-
-	// for taking the return values
-	if (tac.field_3 == "popparam")
-	{
-		int reg = ensure(varMap[tac.field_1], tac.label);
-		x86::Move(regMap[RAX].name, regMap[reg].name, tac.label);
 	}
 
 	if (tac.field_1 == "end_function")
@@ -1473,6 +1531,14 @@ void modifier(code tac)
 		x86::Spill(R10, tac.label);
 		x86::Spill(R11, tac.label);
 		x86::Call(tac.field_2, tac.label);
+
+		// post call (free the used regs)
+		for (int i = 0; i < 6; i++)
+		{
+			regMap[RDI + i].allocatable = true;
+			regMap[RDI + i].free = true;
+		}
+
 	}
 
 	if (tac.field_1 == "return")
@@ -1668,7 +1734,6 @@ void update_var_struct(string name, int time)
 					tableRecord* entry = new tableRecord();
 					entry -> type = type;
 					params.push_back(entry);
-					cout << type << " " << type.length() << endl;
 				}
 
 				
@@ -1773,7 +1838,6 @@ void update_var_struct(string name, int time)
 
 bool is_name_var(string &name)
 {
-	cout << name << endl;
 	int len = name.length();
 	if (!len) return false;
 	if (name[0] == '\"') return false;
@@ -1797,6 +1861,14 @@ void handle_var_init(code tac, int time)
 		string name = tac.field_2;
 		if (is_name_var(name))
 			update_var_struct(name, time);
+	}
+
+	if (tac.field_3 == "findAddress")
+	{
+		string name = tac.field_1;
+		if (is_name_var(name))
+			update_var_struct(name, time);
+		return;
 	}
 
 	if (tac.field_2 == "=")
@@ -1874,7 +1946,11 @@ void post_process_assembly()
 		if (inst.label == prev)
 			inst.label = "";
 		else
+		{
 			prev = inst.label;
+			if (is_num((inst.label).substr(0, (inst.label).length() - 1)))
+				inst.label = ".L" + inst.label;
+		}
 	}
 
 }

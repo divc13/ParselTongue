@@ -134,6 +134,7 @@ typedef struct x86_code
 	string first = "";
 	string second = "";
 	string third = "";
+	string comment = "";
 
 } instruction;
 

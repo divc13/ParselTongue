@@ -533,10 +533,10 @@ void dump_x86_64(string file)
 		if((child.label).length() != 0) x86 << endl;
 		if((child.label).length() != 0) 
 		{
-			string num = ((child.label).substr(0, (child.label).size() - 1));
+			string num = ((child.label).substr(2, (child.label).size() - 3));
 			if (is_num(num))
 			{
-				code inst = threeAC[atoi(((child.label).substr(0, (child.label).size() - 1)).c_str()) - 1];
+				code inst = threeAC[atoi(num.c_str()) - 1];
 				x86 << setw(20) << left << " ";
 				x86 << "#";
 				x86 << inst.field_1 << " " << inst.field_2 << " " << inst.field_3 << " " << inst.field_4 << " " << inst.field_5 << endl;
@@ -546,6 +546,7 @@ void dump_x86_64(string file)
 		if((child.first).length() != 0) x86 << "\t " << child.first;
 		if((child.second).length() != 0) x86 << "\t " << child.second;
 		if((child.third).length() != 0) x86 << ",\t " << child.third;
+		if((child.comment).length() != 0) x86 << "\t\t # " << child.comment;
 		x86 << endl;
 
 	}
