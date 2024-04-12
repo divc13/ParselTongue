@@ -265,7 +265,7 @@ if [ "$run_flag" -eq 1 ]; then
 		x86_output_file="${output_file_without_extention}.s"
 
 		if [ -f "$x86_output_file" ]; then
-			gcc -c "${x86_output_file}" -o "test.o"
+			gcc -c -g "${x86_output_file}" -o "test.o"
 			gcc "test.o" -o "${output_file_without_extention}"
 			rm "test.o"
 		fi

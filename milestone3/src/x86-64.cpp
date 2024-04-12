@@ -223,6 +223,7 @@ void x86::Label(string label, string comment)
 
 void x86::Call(string arg1, string label, string comment)
 {
+	Xor(regMap[RAX].name, regMap[RAX].name, label);
 	instruction inst;
 	inst.label = label;
 	inst.first = "callq";
@@ -377,7 +378,7 @@ int allocate(var_struct &var, string label)
 	// free the registers for died variables
 	for (int i = REG_START; i < REG_MAX; i++)
 	{
-		if (!regMap[i].free && varMap[regMap[i].var].death < now && (regMap[i]).allocatable)
+		if (!regMap[i].free && varMap[regMap[i].var].death < now - 1 && (regMap[i]).allocatable)
 		{
 			regMap[i].freeReg();
 		}
@@ -908,19 +909,19 @@ void modifier(code tac)
 			}
 		}
 
-		if (tac.field_3 == "~" || tac.field_3 == "not")
+		if (tac.field_3 == "~" || tac.field_3 == "not" || tac.field_3 == "-")
 		{
 			int reg1, reg2, reg3;
 
-			if((tac.field_3)[0] == '*')
+			if((tac.field_4)[0] == '*')
 			{
-				string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
+				string var_name = tac.field_4.substr(2, tac.field_4.length() - 3);
 				reg1 = ensure(varMap[var_name], tac.label);
 				x86::Move("(" + regMap[reg1].name + ")", regMap[RAX].name, tac.label);
 			}
 			else
 			{
-				reg1 = ensure(varMap[tac.field_3], tac.label);
+				reg1 = ensure(varMap[tac.field_4], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
 
@@ -1344,7 +1345,7 @@ void modifier(code tac)
 
 				if((tac.field_3)[0] == '*')
 				{
-					string var_name = tac.field_1.substr(2, tac.field_3.length() - 3);
+					string var_name = tac.field_3.substr(2, tac.field_3.length() - 3);
 					reg3 = ensure(varMap[var_name], tac.label);
 					reg_name3 = "(" + regMap[reg3].name + ")";
 				}
@@ -1425,8 +1426,17 @@ void modifier(code tac)
 
 	if (tac.field_1 == "push")
 	{
-		int reg = ensure(varMap[tac.field_2], tac.label);
-		x86::Move(regMap[reg].name, regMap[RAX].name, tac.label);
+		if((tac.field_2)[0] == '*')
+		{
+			string var_name = tac.field_2.substr(2, tac.field_2.length() - 3);
+			int reg = ensure(varMap[var_name], tac.label);
+			x86::Move("(" + regMap[reg].name + ")", regMap[RAX].name, tac.label);
+		}
+		else
+		{
+			int reg = ensure(varMap[tac.field_2], tac.label);
+			x86::Move(regMap[reg].name, regMap[RAX].name, tac.label);
+		}
 	}
 
 	if (tac.field_1 == "begin_function")
@@ -1599,7 +1609,7 @@ void modifier(code tac)
 void update_var_struct(string name, int time)
 {
 
-	// a temporaray
+	// a temporary
 	if (name[0] == '$')
 	{
 		// first encounter
@@ -1850,6 +1860,7 @@ bool is_name_var(string &name)
 	{
 		name = name.substr(2, name.length() - 3);
 	}
+	
 	return true;
 }
 
@@ -1873,9 +1884,18 @@ void handle_var_init(code tac, int time)
 
 	if (tac.field_2 == "=")
 	{
-		string name = tac.field_3;
+		string name = tac.field_1;
 		if (is_name_var(name))
 			update_var_struct(name, time);
+		name = tac.field_3;
+		if (is_name_var(name))
+			update_var_struct(name, time);
+		if (name == "-" || name == "not" || name == "~")
+		{
+			name = tac.field_4;
+			if (is_name_var(name))
+				update_var_struct(name, time);
+		}
 		name = tac.field_5;
 		if (name.length() && is_name_var(name))
 			update_var_struct(name, time);

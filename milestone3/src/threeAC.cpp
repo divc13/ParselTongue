@@ -18,6 +18,7 @@ bool allocate = false;
 vector<string> tempExprs;
 string isReturn = "";
 vector<pair<string, string>> filler;
+map<string, string> tempType;
 
 void fill_stringMap()
 {
@@ -170,6 +171,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -179,7 +181,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = a1;
+		inst.field_2 = print_val;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -187,7 +189,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = print_val;
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -238,6 +240,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -247,7 +250,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = a1;
+		inst.field_2 = print_val;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -255,7 +258,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = print_val;
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -308,6 +311,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -317,7 +321,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = a1;
+		inst.field_2 = print_val;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -325,7 +329,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = print_val;
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -376,6 +380,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -385,7 +390,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = a1;
+		inst.field_2 = print_val;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -393,7 +398,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		inst.field_1 = "param";
-		inst.field_2 = print_val;
+		inst.field_2 = a1;
 		inst.field_3 = "";
 		inst.field_4 = "";
 		inst.field_5 = "";
@@ -445,6 +450,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string print1 = newTmp();
+		tempType[print1] = "int";
 		inst.field_1 = print1;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print_val + ")";
@@ -454,6 +460,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string print2 = newTmp();
+		tempType[print2] = "int";
 		inst.field_1 = print2;
 		inst.field_2 = "=";
 		inst.field_3 = "1";
@@ -463,6 +470,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -489,6 +497,7 @@ void Parasite::genAC()
 
 		string printLab = newLabel();
 		string print5 = newTmp();
+		tempType[print5] = "int";
 		inst.field_1 = print5;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -498,6 +507,8 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string print3 = newTmp();
+		tempType[print3] = "list_int_";
+		tempType["*(" + print3 + ")"] = "int";
 		inst.field_1 = print3;
 		inst.field_2 = "=";
 		inst.field_3 = print_val;
@@ -507,6 +518,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string print4 = newTmp();
+		tempType[print4] = "int";
 		inst.field_1 = print4;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print3 + ")";
@@ -532,6 +544,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -565,6 +578,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string print6 = newTmp();
+		tempType[print6] = "bool";
 		inst.field_1 = print6;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -582,6 +596,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -643,6 +658,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print1 = newTmp();
+		tempType[print1] = "str";
 		inst.field_1 = print1;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print_val + ")";
@@ -652,6 +668,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print2 = newTmp();
+		tempType[print2] = "int";
 		inst.field_1 = print2;
 		inst.field_2 = "=";
 		inst.field_3 = "1";
@@ -662,6 +679,7 @@ void Parasite::genAC()
 
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -688,6 +706,7 @@ void Parasite::genAC()
 
 		printLab = newLabel();
 		print5 = newTmp();
+		tempType[print5] = "int";
 		inst.field_1 = print5;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -697,6 +716,8 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print3 = newTmp();
+		tempType[print3] = "list_str_";
+		tempType["*(" + print3 + ")"] = "str";
 		inst.field_1 = print3;
 		inst.field_2 = "=";
 		inst.field_3 = print_val;
@@ -706,6 +727,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print4 = newTmp();
+		tempType[print4] = "str";
 		inst.field_1 = print4;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print3 + ")";
@@ -731,6 +753,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -764,6 +787,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print6 = newTmp();
+		tempType[print6] = "bool";
 		inst.field_1 = print6;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -781,6 +805,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 		
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -843,6 +868,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print1 = newTmp();
+		tempType[print1] = "float";
 		inst.field_1 = print1;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print_val + ")";
@@ -852,6 +878,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print2 = newTmp();
+		tempType[print2] = "int";
 		inst.field_1 = print2;
 		inst.field_2 = "=";
 		inst.field_3 = "1";
@@ -862,6 +889,7 @@ void Parasite::genAC()
 
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -888,6 +916,7 @@ void Parasite::genAC()
 
 		printLab = newLabel();
 		print5 = newTmp();
+		tempType[print5] = "int";
 		inst.field_1 = print5;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -897,6 +926,8 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print3 = newTmp();
+		tempType[print3] = "list_str_";
+		tempType["*(" + print3 + ")"] = "float";
 		inst.field_1 = print3;
 		inst.field_2 = "=";
 		inst.field_3 = print_val;
@@ -906,6 +937,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print4 = newTmp();
+		tempType[print4] = "float";
 		inst.field_1 = print4;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print3 + ")";
@@ -931,6 +963,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -964,6 +997,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print6 = newTmp();
+		tempType[print6] = "bool";
 		inst.field_1 = print6;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -981,6 +1015,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 		
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -1042,6 +1077,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print1 = newTmp();
+		tempType[print1] = "bool";
 		inst.field_1 = print1;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print_val + ")";
@@ -1051,6 +1087,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print2 = newTmp();
+		tempType[print2] = "int";
 		inst.field_1 = print2;
 		inst.field_2 = "=";
 		inst.field_3 = "1";
@@ -1061,6 +1098,7 @@ void Parasite::genAC()
 
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -1087,6 +1125,7 @@ void Parasite::genAC()
 
 		printLab = newLabel();
 		print5 = newTmp();
+		tempType[print5] = "int";
 		inst.field_1 = print5;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -1096,6 +1135,8 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print3 = newTmp();
+		tempType[print3] = "list_bool_";
+		tempType["*(" + print3 + ")"] = "bool";
 		inst.field_1 = print3;
 		inst.field_2 = "=";
 		inst.field_3 = print_val;
@@ -1105,6 +1146,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print4 = newTmp();
+		tempType[print4] = "bool";
 		inst.field_1 = print4;
 		inst.field_2 = "=";
 		inst.field_3 = "*(" + print3 + ")";
@@ -1130,6 +1172,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -1163,6 +1206,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		print6 = newTmp();
+		tempType[print6] = "bool";
 		inst.field_1 = print6;
 		inst.field_2 = "=";
 		inst.field_3 = print2;
@@ -1180,6 +1224,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 		
 		a1 = newTmp();
+		tempType[a1] = "str";
 		inst.field_1 = a1;
 		inst.field_2 = "=";
 		inst.field_3 = "findAddress";
@@ -1239,6 +1284,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string tmpry = newTmp();
+		tempType[tmpry] = "int";
 		inst.field_1 = tmpry;
 		inst.field_2 = "=";
 		inst.field_3 = val;
@@ -1248,6 +1294,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string tmpry_2 = newTmp();
+		tempType[tmpry_2] = "int";
 		inst.field_1 = tmpry_2;
 		inst.field_2 = "=";
 		inst.field_3 = tmpry;
@@ -1260,9 +1307,14 @@ void Parasite::genAC()
 
 		string l1 = newLabel();
 		string t1 = newTmp();
+		tempType[t1] = "list_int_";
+		tempType["*(" + t1 + ")"] = "int";
 		string t2 = newTmp();
+		tempType[t2] = "int";
 		string t3 = newTmp();
+		tempType[t3] = "bool";
 		string t4 = newTmp();
+		tempType[t4] = "int";
 		t1 = MemRg;
 
 		inst.field_1 = "*(" + t1 + ")";
@@ -1290,6 +1342,8 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		string loc = newTmp();
+		tempType[loc] = "list_int_";
+		tempType["*(" + loc + ")"] = "int";
 		inst.field_1 = loc;
 		inst.field_2 = "=";
 		inst.field_3 = t1;
@@ -1366,9 +1420,13 @@ void Parasite::genAC()
 		string val1 = "#var1\%range_Zzint_Zzint_Nn2";
 		string val2 = "#var2\%range_Zzint_Zzint_Nn2";
 		string val3 = newTmp();
+		tempType[val3] = "int";
 		tmpry_2 = newTmp();
+		tempType[tmpry_2] = "int";
 		string tmpry_3 = newTmp();
+		tempType[tmpry_3] = "int";
 		string tmpry_4 = newTmp();
+		tempType[tmpry_4] = "int";
 
 		inst.field_1 = "pop_param";
 		inst.field_2 = val1;
@@ -1402,7 +1460,6 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		tmpry_3 = newTmp();
 		inst.field_1 = tmpry_3;
 		inst.field_2 = "=";
 		inst.field_3 = tmpry_2;
@@ -1413,11 +1470,19 @@ void Parasite::genAC()
 
 		string l2 = newLabel();
 		string t5 = newTmp();
+		tempType[t5] = "list_int_";
+		tempType["*(" + t5 +  ")"] = "list_int_";
 		string t6 = newTmp();
+		tempType[t6] = "int";
 		string t7 = newTmp();
+		tempType[t7] = "bool";
 		string t8 = newTmp();
+		tempType[t8] = "int";
 		string t9 = newTmp();
+		tempType[t9] = "int";
 		string t10 = newTmp();
+		tempType[t10] = "list_int_";
+		tempType["*(" + t10 +  ")"] = "list_int_";
 
 		allocate_mem(tmpry_3);
 		t5 = MemRg;
@@ -1536,6 +1601,7 @@ void Parasite::genAC()
 
 		string val7 = "#var1\%len_Zzstr_Nn1";
 		string val4 = newTmp();
+		tempType[val4] = "int";
 
 		inst.field_1 = "pop_param";
 		inst.field_2 = val7;
@@ -1598,6 +1664,7 @@ void Parasite::genAC()
 
 				string val5 = "#len\%len_Zz" + type + "_Nn1";
 				string val6 = newTmp();
+				tempType[t10] = type;
 
 				inst.field_1 = "pop_param";
 				inst.field_2 = val5;
@@ -3192,10 +3259,15 @@ void Parasite::genAC()
 		
 
 		string t1 = newTmp();
+		tempType[t1] = "int";
 		string t2 = newTmp();
+		tempType[t2] = tempType[t1];
 		string t3 = newTmp();
+		tempType[t3] = tempType[t1];
 		string t4 = newTmp();
+		tempType[t4] = tempType[t1];
 		string t5 = newTmp();
+		tempType[t5] = tempType[children[2] -> tmp];
 
 		code inst;
 		inst.field_1 = t3;
@@ -3255,6 +3327,7 @@ void Parasite::genAC()
 		threeAC.push_back(inst);
 
 		tmp = newTmp();
+		tempType[tmp] = "bool";
 		inst.field_1 = tmp;
 		inst.field_2 = "=";
 		inst.field_3 = t1;
@@ -3322,6 +3395,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = "bool";
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3354,6 +3428,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = "bool";
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3385,6 +3460,7 @@ void Parasite::genAC()
 		if (children.size() == 2)
 		{
 			tmp = newTmp();
+			tempType[tmp] = "bool";
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3415,6 +3491,7 @@ void Parasite::genAC()
 		else if (children.size() == 3 && children[1] -> name == "in")
 		{
 			tmp = newTmp();
+			tempType[tmp] = "bool";
 			code inst;
 
 			inst.field_1 = tmp;
@@ -3426,6 +3503,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string t1 = newTmp();
+			tempType[t1] = tempType["*(" + children[2] -> tmp + ")"];
 			inst.field_1 = t1;
 			inst.field_2 = "=";
 			inst.field_3 = "*(" + children[2] -> tmp + ")";
@@ -3435,6 +3513,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string t2 = newTmp();
+			tempType[t2] = "int";
 			inst.field_1 = t2;
 			inst.field_2 = "=";
 			inst.field_3 = "1";
@@ -3445,6 +3524,7 @@ void Parasite::genAC()
 
 			string label = newLabel();
 			string t3 = newTmp();
+			tempType[t3] = tempType[t2];
 			inst.field_1 = t3;
 			inst.field_2 = "=";
 			inst.field_3 = t2;
@@ -3454,6 +3534,8 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string t4 = newTmp();
+			tempType[t4] = tempType[children[2] -> tmp];
+			tempType["*(" + t4 + ")"] = tempType["*(" + children[2] -> tmp + ")"];
 			inst.field_1 = t4;
 			inst.field_2 = "=";
 			inst.field_3 = children[2] -> tmp;
@@ -3463,6 +3545,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string t5 = newTmp();
+			tempType[t5] = tempType["*(" + t4 + ")"];
 			inst.field_1 = t5;
 			inst.field_2 = "=";
 			inst.field_3 = "*(" + t4 + ")";
@@ -3497,6 +3580,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string t7 = newTmp();
+			tempType[t7] = "bool";
 			inst.field_1 = t7;
 			inst.field_2 = "=";
 			inst.field_3 = t2;
@@ -3520,6 +3604,7 @@ void Parasite::genAC()
 		else if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = "bool";
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3576,6 +3661,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = isCompatible(tempType[children[0] -> tmp], tempType[children[2] -> tmp]);
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3608,6 +3694,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = isCompatible(tempType[children[0] -> tmp], tempType[children[2] -> tmp]);
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3641,6 +3728,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = isCompatible(tempType[children[0] -> tmp], tempType[children[2] -> tmp]);
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3675,6 +3763,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = isCompatible(tempType[children[0] -> tmp], tempType[children[2] -> tmp]);
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3709,6 +3798,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = isCompatible(tempType[children[0] -> tmp], tempType[children[2] -> tmp]);
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3744,6 +3834,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = isCompatible(tempType[children[0] -> tmp], tempType[children[2] -> tmp]);
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3777,6 +3868,7 @@ void Parasite::genAC()
 		if (children.size() == 2)
 		{
 			tmp = newTmp();
+			tempType[tmp] = tempType[children[1] -> tmp];
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3808,6 +3900,7 @@ void Parasite::genAC()
 		if (children.size() == 3)
 		{
 			tmp = newTmp();
+			tempType[tmp] = "int";
 			code inst;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
@@ -3818,6 +3911,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string tmp1 = newTmp();
+			tempType[tmp1] = "int";
 			inst.field_1 = tmp1;
 			inst.field_2 = "=";
 			inst.field_3 = children[2] -> tmp;
@@ -3828,6 +3922,7 @@ void Parasite::genAC()
 
 			string label = newLabel();
 			string tmp2 = newTmp();
+			tempType[tmp2] = "bool";
 			inst.field_1 = tmp2;
 			inst.field_2 = "=";
 			inst.field_3 = tmp1;
@@ -4000,6 +4095,9 @@ void Parasite::genAC()
 		if (funcEntry -> type != "None" && funcEntry -> type != "")
 		{
 			tmp = newTmp();
+			tempType[tmp] = funcEntry -> type;
+			if ((funcEntry -> type).compare(0, 4, "list") == 0)
+				tempType["*(" + tmp + ")"] = (funcEntry -> type).substr(5, (funcEntry -> type).length() - 6);
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = "popparam";
@@ -4050,6 +4148,7 @@ void Parasite::genAC()
 			int size = entry -> size;
 			
 			string tmpry = newTmp();
+			tempType[tmpry] = "int";
 			code inst;
 			inst.field_1 = tmpry;
 			inst.field_2 = "=";
@@ -4068,6 +4167,9 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string t1 = newTmp();
+			tempType[t1] = type;
+			string dtype = type.substr(5, type.length() - 6);
+			tempType["*(" + t1 + ")"] = dtype;
 			inst.field_1 = t1;
 			inst.field_2 = "=";
 			inst.field_3 = mangle(children[0] -> name);
@@ -4077,6 +4179,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			tmp = newTmp();
+			tempType[tmp] = dtype;
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
 			inst.field_3 = "*(" + t1 + ")";
@@ -4114,6 +4217,7 @@ void Parasite::genAC()
 
 			code inst;
 			string t1 = newTmp();
+			tempType[t1] = entry -> type;
 			inst.field_1 = t1;
 			inst.field_2 = "=";
 			inst.field_3 = mangle(children[0] -> name);
@@ -4125,6 +4229,8 @@ void Parasite::genAC()
 			children[0] -> tmp = t1;
 
 			string t2 = newTmp();
+			tempType[t2] = "list_ " + children[2]->host->dataType + "_";
+			tempType["*(" + t2 + ")"] = children[2]->host->dataType;
 			inst.field_1 = t2;
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> tmp;
@@ -4193,6 +4299,8 @@ void Parasite::genAC()
 		{
 			allocate_mem(to_string((children[0] -> tmp).length() - 1 + 8));
 			tmp = MemRg;
+			tempType[tmp] = "list_int_";
+			tempType["*(" + tmp + ")"] = "int";
 			code inst;
 
 			inst.field_1 = "*(" + tmp + ")";
@@ -4210,6 +4318,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			string a1 = newTmp();
+			tempType[a1] = "str";
 			inst.field_1 = a1;
 			inst.field_2 = "=";
 			inst.field_3 = "findAddress";
@@ -4219,7 +4328,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			inst.field_1 = "param";
-			inst.field_2 = tmp;
+			inst.field_2 = a1;
 			inst.field_3 = "";
 			inst.field_4 = "";
 			inst.field_5 = "";
@@ -4227,7 +4336,7 @@ void Parasite::genAC()
 			threeAC.push_back(inst);
 
 			inst.field_1 = "param";
-			inst.field_2 = a1;
+			inst.field_2 = tmp;
 			inst.field_3 = "";
 			inst.field_4 = "";
 			inst.field_5 = "";
@@ -4351,9 +4460,13 @@ void Parasite::genAC()
 		allocate = false;
 		allocate_mem(to_string(size));
 		tmp = MemRg;
+		tempType[tmp] = host -> dataType;
+		tempType["*(" + tmp + ")"] = type;
 
 		code inst;
 		string location = newTmp();
+		tempType[location] = host -> dataType;
+		tempType["*(" + location + ")"] = type;
 
 		inst.field_1 = "*(" + tmp + ")";
 		inst.field_2 = "=";
