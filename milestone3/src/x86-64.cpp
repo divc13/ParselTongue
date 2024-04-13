@@ -1715,7 +1715,7 @@ void modifier(code tac)
 	}
 
 	// handle spilling of registers at end of BBs 
-	if (BB_leaders.find(now) != BB_leaders.end())
+	if (BB_leaders.find(now + 1) != BB_leaders.end())
 	{
 		for (int i=REG_START; i<REG_MAX; i++)
 		{
@@ -1973,8 +1973,8 @@ bool is_name_var(string &name)
 	int len = name.length();
 	if (!len) return false;
 	if (name[0] == '\"') return false;
-	if (name[0] == '-') return false;
-	if (name[0] == '~') return false;
+	if (name == "-") return false;
+	if (name == "~") return false;
 	if (name == "popparam") return false;
 	if (name == "not") return false;
 
@@ -2042,15 +2042,15 @@ void identify_BB()
 		code inst = threeAC[i];
 		if (inst.field_1 == "goto")
 		{
-			int lab = atoi(((inst.field_2).substr(0, (inst.field_2).length() - 1)).c_str());
-			BB_leaders.insert(i+1);
+			int lab = atoi((inst.field_2).c_str());
+			BB_leaders.insert(i+2);
 			BB_leaders.insert(lab);
 		}
 
 		if (inst.field_3 == "goto")
 		{
-			int lab = atoi(((inst.field_2).substr(0, (inst.field_2).length() - 1)).c_str());
-			BB_leaders.insert(i+1);
+			int lab = atoi((inst.field_4).c_str());
+			BB_leaders.insert(i+2);
 			BB_leaders.insert(lab);
 		}
 	}
@@ -2062,6 +2062,8 @@ bool is_num(string val)
 {
 	if (val.size() == 0)
 		return false;
+	if (val[0] == '-')
+		val = val.substr(1, val.length() -1);
 	for (auto i : val)
 		if (i < '0' || i > '9')
 			return false;
@@ -2070,17 +2072,17 @@ bool is_num(string val)
 
 void post_process_assembly()
 {
-	for (auto inst : assembly)
-	{
-		if (is_num(inst.first))
-			inst.first = "$" + inst.first;
-		if (is_num(inst.label))
-			inst.label = "$" + inst.label;
-		if (is_num(inst.second))
-			inst.second = "$" + inst.second;
-		if (is_num(inst.third))
-			inst.third = "$" + inst.third;
-	}
+	// for (auto inst : assembly)
+	// {
+	// 	if (is_num(inst.first))
+	// 		inst.first = "$" + inst.first;
+	// 	if (is_num(inst.label))
+	// 		inst.label = "$" + inst.label;
+	// 	if (is_num(inst.second))
+	// 		inst.second = "$" + inst.second;
+	// 	if (is_num(inst.third))
+	// 		inst.third = "$" + inst.third;
+	// }
 
 	string prev = "";
 	for (auto &inst : assembly)
@@ -2109,7 +2111,7 @@ void generate_assembly()
 
 	for (code_itr=0; code_itr< threeAC.size(); code_itr++)
 	{
-		cout << "LINE: "  << code_itr + 1 << endl;
+		// cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;
 		modifier(threeAC[code_itr]);
 	}

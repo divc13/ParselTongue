@@ -1708,6 +1708,8 @@ void Parasite::genAC()
 		tempType[t4] = tempType[t1];
 		string t5 = newTmp();
 		tempType[t5] = tempType[children[2] -> tmp];
+		string t6 = newTmp();
+		tempType[t6] = "int";
 
 		code inst;
 		inst.field_1 = t3;
@@ -1716,13 +1718,13 @@ void Parasite::genAC()
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
-		inst.field_1 = t4;
-		inst.field_2 = "=";
-		inst.field_3 = t3;
-		inst.field_4 = "+";
-		inst.field_5 = "1";
-		inst.label = newLabel();
-		threeAC.push_back(inst);
+		// inst.field_1 = t4;
+		// inst.field_2 = "=";
+		// inst.field_3 = t3;
+		// inst.field_4 = "";
+		// inst.field_5 = "";
+		// inst.label = newLabel();
+		// threeAC.push_back(inst);
 
 		string lab = newLabel();
 		inst.field_1 = t1;
@@ -1733,6 +1735,13 @@ void Parasite::genAC()
 		inst.label = lab;
 		threeAC.push_back(inst);
 
+		inst.field_1 = t6;
+		inst.field_2 = "=";
+		inst.field_3 = t1;
+		inst.field_4 = "-";
+		inst.field_5 = "1";
+		inst.label = newLabel();
+		threeAC.push_back(inst);
 
 		inst.field_1 = t2;
 		inst.field_2 = "=";
@@ -1770,9 +1779,9 @@ void Parasite::genAC()
 		tempType[tmp] = "bool";
 		inst.field_1 = tmp;
 		inst.field_2 = "=";
-		inst.field_3 = t1;
+		inst.field_3 = t6;
 		inst.field_4 = "<";
-		inst.field_5 = t4;
+		inst.field_5 = t3;
 		inst.label = newLabel();
 		threeAC.push_back(inst);
 
@@ -2358,6 +2367,19 @@ void Parasite::genAC()
 			inst.field_2 = "=";
 			inst.field_3 = children[0] -> name;
 			inst.field_4 = children[1] -> tmp;
+
+			if (children[0] -> name == "-")
+			{
+				inst.field_3 = "-1";
+				inst.field_4 = "*";
+				inst.field_5 = children[1] -> tmp;
+			}
+
+			if (children[0] -> name == "+")
+			{
+				inst.field_3 = children[1] -> tmp;
+			}
+
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 		}
