@@ -6,9 +6,7 @@ def fib(n:int) -> int:
     return fib(n-1) + fib(n-2)
 
 def main():
-    i:int
-    for i in range(5):
-        print(i)
+    print(range(4, 6))
     
 if __name__ == "__main__":
     main()

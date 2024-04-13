@@ -2242,7 +2242,7 @@ void init_tac()
 	inst.field_3 = t9;
 	inst.field_4 = "+";
 	inst.field_5 = "1";
-	inst.label = l2;
+	inst.label = newLabel();
 	threeAC.push_back(inst);
 
 	inst.field_1 = t8;
