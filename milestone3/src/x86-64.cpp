@@ -1727,7 +1727,7 @@ void modifier(code tac)
 
 void update_var_struct(string name, int time)
 {
-
+	cout << name << endl;
 	// a temporary
 	if (name[0] == '$')
 	{

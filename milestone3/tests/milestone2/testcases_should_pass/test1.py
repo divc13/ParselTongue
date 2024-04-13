@@ -1,7 +1,3 @@
-var3:int = 5
-var1: int = 3
-var2: int = 1
-
 def func1(var1:int, var2:int) -> None:  #recursion
   # global removed
   var1 -= 1;
@@ -13,11 +9,6 @@ def func1(var1:int, var2:int) -> None:  #recursion
     print("ieofem" "hello" " hell" "lo")
     func1(var1, var2)
   
-if(var1 == 3):
-  print(var1)
-
-print(var3)
-
 class class1:
 
   def __init__(self, float_var: float):

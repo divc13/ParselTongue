@@ -2046,13 +2046,56 @@ void Parasite::genAC()
 			tmp = newTmp();
 			tempType[tmp] = "bool";
 			code inst;
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = children[0] -> tmp;
-			inst.field_4 = children[1] -> name;
-			inst.field_5 = children[2] -> tmp;
-			inst.label = newLabel();
-			threeAC.push_back(inst);
+
+
+			if (tempType[children[0] -> tmp] == "str" && children[1] -> type == "OP_RELATIONAL")
+			{
+				assert (tempType[children[2] -> tmp] == "str");
+
+				inst.field_1 = "param";
+				inst.field_2 = children[2] -> tmp;
+				inst.field_3 = "";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				inst.field_1 = "param";
+				inst.field_2 = children[0] -> tmp;
+				inst.field_3 = "";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				inst.field_1 = "call";
+				inst.field_2 = "strcmp";
+				inst.field_3 = "";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+				inst.field_1 = tmp;
+				inst.field_2 = "=";
+				inst.field_3 = "popparam";
+				inst.field_4 = "";
+				inst.field_5 = "";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+
+			}
+
+			else 
+			{
+				inst.field_1 = tmp;
+				inst.field_2 = "=";
+				inst.field_3 = children[0] -> tmp;
+				inst.field_4 = children[1] -> name;
+				inst.field_5 = children[2] -> tmp;
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+			}
 		}
 
 	}
@@ -2077,6 +2120,7 @@ void Parasite::genAC()
 		
 
 		name = children[0] -> name;
+		type = children[0] -> type;
 
 	}
 
@@ -2434,6 +2478,7 @@ void Parasite::genAC()
 			int width = entry -> size;
 			allocate_mem(to_string(width));
 			tmp = MemRg;
+			tempType[tmp] = entry -> type;
 		}
 
 		for(int i = nparams -1; i >= 0; i--)
@@ -2736,7 +2781,7 @@ void Parasite::genAC()
 		{
 			allocate_mem(to_string((children[0] -> tmp).length() - 1 + 8));
 			tmp = MemRg;
-			tempType[tmp] = "list_int_";
+			tempType[tmp] = "str";
 			tempType["*(" + tmp + ")"] = "int";
 			code inst;
 
@@ -2810,13 +2855,21 @@ void Parasite::genAC()
 			if (entry -> name  == entry -> type)
 			{
 				tmp = children[0] -> name;
+				tempType[tmp] = entry -> type;
 			}
-			else tmp = mangle(children[0] -> name);
+			else 
+			{
+				tmp = mangle(children[0] -> name);
+				tempType[tmp] = entry -> type;
+			}
 		}
 
 		else if (children[0]->type != "NON_TERMINAL")
 		{
 			tmp = children[0] -> name;
+			if (children[0] -> type == "FLOAT_LITERAL") tempType[tmp] = "float";
+			if (children[0] -> type == "INT_LITERAL") tempType[tmp] = "int";
+			if (children[0] -> type == "KEYWORD") tempType[tmp] = "None";
 		}
 
 		else
@@ -2850,6 +2903,7 @@ void Parasite::genAC()
 
 
 		tmp = children[0] -> name;
+		tempType[tmp] = "str";
 
 
 
@@ -2872,11 +2926,13 @@ void Parasite::genAC()
 			formatString(children[0]->tmp);
 			formatString(children[1]->tmp);
 			tmp = "\"" + children[0]->tmp + children[1]->tmp + "\\0\"";
+			tempType[tmp] = "str";
 		}
 		else
 		{
 			formatString(children[0]->tmp);
 			tmp = "\"" + children[0]->tmp + "\"";
+			tempType[tmp] = "str";
 		}
 
 	}
