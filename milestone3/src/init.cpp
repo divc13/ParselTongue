@@ -652,6 +652,7 @@ void init_tac()
 
 	/* print_float */
 
+
 	inst.field_1 = "begin_function";
 	inst.field_2 = tableHash(globTable) + "print_Zzfloat_Nn1";
 	inst.field_3 = "";
@@ -1002,6 +1003,26 @@ void init_tac()
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
+	
+	string MyprintLab = newLabel();
+	string print6 = newTmp();
+	tempType[print6] = "bool";
+
+	inst.field_1 = print6;
+	inst.field_2 = "=";
+	inst.field_3 = print2;
+	inst.field_4 = ">";
+	inst.field_5 = print1;
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if";
+	inst.field_2 = print6;
+	inst.field_3 = "goto";
+	inst.field_4 = MyprintLab;
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
 
 	string printLab = newLabel();
 	string print5 = newTmp();
@@ -1113,7 +1134,7 @@ void init_tac()
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
-	string print6 = newTmp();
+	print6 = newTmp();
 	tempType[print6] = "bool";
 	inst.field_1 = print6;
 	inst.field_2 = "=";
@@ -1138,7 +1159,7 @@ void init_tac()
 	inst.field_3 = "findAddress";
 	inst.field_4 = "list_end_format";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = MyprintLab;
 	threeAC.push_back(inst);
 	
 	inst.field_1 = "param";
@@ -1262,6 +1283,23 @@ void init_tac()
 	inst.field_2 = "printf";
 	inst.field_3 = "1";
 	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	MyprintLab = newLabel();
+	inst.field_1 = print6;
+	inst.field_2 = "=";
+	inst.field_3 = print2;
+	inst.field_4 = ">";
+	inst.field_5 = print1;
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if";
+	inst.field_2 = print6;
+	inst.field_3 = "goto";
+	inst.field_4 = MyprintLab;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -1401,7 +1439,7 @@ void init_tac()
 	inst.field_3 = "findAddress";
 	inst.field_4 = "list_end_format";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = MyprintLab;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "param";
@@ -1526,6 +1564,23 @@ void init_tac()
 	inst.field_2 = "printf";
 	inst.field_3 = "1";
 	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	MyprintLab = newLabel();
+	inst.field_1 = print6;
+	inst.field_2 = "=";
+	inst.field_3 = print2;
+	inst.field_4 = ">";
+	inst.field_5 = print1;
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if";
+	inst.field_2 = print6;
+	inst.field_3 = "goto";
+	inst.field_4 = MyprintLab;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -1665,7 +1720,7 @@ void init_tac()
 	inst.field_3 = "findAddress";
 	inst.field_4 = "list_end_format";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = MyprintLab;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "param";
@@ -1789,6 +1844,23 @@ void init_tac()
 	inst.field_2 = "printf";
 	inst.field_3 = "1";
 	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	MyprintLab = newLabel();
+	inst.field_1 = print6;
+	inst.field_2 = "=";
+	inst.field_3 = print2;
+	inst.field_4 = ">";
+	inst.field_5 = print1;
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if";
+	inst.field_2 = print6;
+	inst.field_3 = "goto";
+	inst.field_4 = MyprintLab;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -1928,7 +2000,7 @@ void init_tac()
 	inst.field_3 = "findAddress";
 	inst.field_4 = "list_end_format";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = MyprintLab;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "param";
@@ -1991,7 +2063,7 @@ void init_tac()
 
 
 	/* range_int */
-
+	string myLab = newLabel();
 	inst.field_1 = "begin_function";
 	inst.field_2 = tableHash(globTable) + "range_Zzint_Nn1";
 	inst.field_3 = "";
@@ -2009,6 +2081,33 @@ void init_tac()
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
+	string myTmp = newTmp();
+	string myLab2 = newLabel();
+	tempType[myTmp] = "bool";
+	inst.field_1 = myTmp;
+	inst.field_2 = "=";
+	inst.field_3 = val;
+	inst.field_4 = "<";
+	inst.field_5 = "0";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if_false";
+	inst.field_2 = myTmp;
+	inst.field_3 = "goto";
+	inst.field_4 = myLab2;
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = val;
+	inst.field_2 = "=";
+	inst.field_3 = "0";
+	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
 	string tmpry = newTmp();
 	tempType[tmpry] = "int";
 	inst.field_1 = tmpry;
@@ -2016,7 +2115,7 @@ void init_tac()
 	inst.field_3 = val;
 	inst.field_4 = "+";
 	inst.field_5 = "1";
-	inst.label = newLabel();
+	inst.label = myLab2;
 	threeAC.push_back(inst);
 
 	string tmpry_2 = newTmp();
@@ -2055,6 +2154,22 @@ void init_tac()
 	inst.field_2 = "=";
 	inst.field_3 = "1";
 	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = t3;
+	inst.field_2 = "=";
+	inst.field_3 = t2;
+	inst.field_4 = "<";
+	inst.field_5 = tmpry;
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if_false";
+	inst.field_2 = t3;
+	inst.field_3 = "goto";
+	inst.field_4 = myLab;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -2115,7 +2230,7 @@ void init_tac()
 	inst.field_3 = "";
 	inst.field_4 = "";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = myLab;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "return";
@@ -2137,7 +2252,7 @@ void init_tac()
 
 
 	/* range (int x, int y) */
-	
+	myLab = newLabel();
 	inst.field_1 = "begin_function";
 	inst.field_2 = tableHash(globTable) + "range_Zzint_Zzint_Nn2";
 	inst.label = newLabel();
@@ -2178,12 +2293,39 @@ void init_tac()
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
+	myTmp = newTmp();
+	myLab2 = newLabel();
+	tempType[myTmp] = "bool";
+	inst.field_1 = myTmp;
+	inst.field_2 = "=";
+	inst.field_3 = val3;
+	inst.field_4 = "<";
+	inst.field_5 = "0";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if_false";
+	inst.field_2 = myTmp;
+	inst.field_3 = "goto";
+	inst.field_4 = myLab2;
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = val3;
+	inst.field_2 = "=";
+	inst.field_3 = "0";
+	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
 	inst.field_1 = tmpry_2;
 	inst.field_2 = "=";
 	inst.field_3 = val3;
 	inst.field_4 = "+";
 	inst.field_5 = "1";
-	inst.label = newLabel();
+	inst.label = myLab2;
 	threeAC.push_back(inst);
 
 	inst.field_1 = tmpry_3;
@@ -2225,6 +2367,22 @@ void init_tac()
 	inst.field_2 = "=";
 	inst.field_3 = val3;
 	inst.field_4 = "";
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = t7;
+	inst.field_2 = "=";
+	inst.field_3 = t6;
+	inst.field_4 = "<";
+	inst.field_5 = val2;
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if_false";
+	inst.field_2 = t7;
+	inst.field_3 = "goto";
+	inst.field_4 = myLab;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
@@ -2298,7 +2456,7 @@ void init_tac()
 	inst.field_3 = "";
 	inst.field_4 = "";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = myLab;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "return";
