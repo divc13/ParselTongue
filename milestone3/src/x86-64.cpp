@@ -10,7 +10,6 @@ set<int> BB_leaders;
 int now = 0;
 int numParams = 0;
 int code_itr = 0;
-int sp_shift = 0;
 
 // top indicates the difference between rsp and rbp at curr time
 int gap = 0;
@@ -18,6 +17,7 @@ int gap_bx = 0;
 
 map <string, var_struct> varMap;
 extern map <string, string> stringMap;
+extern map<string, tableRecord*> Temp_to_record;
 vector<reg_struct> regMap(REG_MAX);
 
 void reg_struct::freeReg()
@@ -363,13 +363,14 @@ void x86::Spill(int reg, string label, string comment)
 	// a temporary which is not on the stack
 	if (offset == -1)
 	{
+		assert(false);
 		x86::Push(regMap[reg].name, label, "SPILL 1  " + var);
 		varMap[var].offset = gap;
 		return;
 	}
 	string first = to_string(-1 * offset) + "(%rbp)";
 		
-	x86::Move(regMap[reg].name, first, label, "SPILL 2  " + var);
+	x86::Move(regMap[reg].name, first, label, "SPILL " + var);
 	regMap[reg].freeReg();
 }
 
@@ -401,6 +402,7 @@ int allocate(var_struct &var, string label)
 				string first = to_string(-1 * var.offset) + "(%rbp)";
 				x86::Move(first, regMap[i].name, label, "ALLOCATE " + var.name);
 			}
+			else assert(false);
 			return i;
 		}
 	}
@@ -437,6 +439,7 @@ int allocate(var_struct &var, string label)
 		string first = to_string(-1 * var.offset) + "(%rbp)";
 		x86::Move(first, regMap[farthest].name, label);
 	}
+	else assert(false);
 	return farthest;
 }
 
@@ -463,6 +466,37 @@ int ensure(var_struct var, string label)
 	// variable not in register
 	int reg = allocate(var, label);
 	return reg;
+}
+
+void formString(string &temp)
+{
+	size_t pos = 0;
+	while((pos = temp.find("\\\r\n", pos)) != string::npos)
+	{
+		temp.replace(pos, 3, "\\\\n");
+		pos+=3;
+	}
+
+	pos = 0;
+	while((pos = temp.find("\\\r", pos)) != string::npos)
+	{
+		temp.replace(pos, 2, "\\\\n");
+		pos+=3;
+	}
+
+	pos = 0;
+	while((pos = temp.find("\\\n", pos)) != string::npos)
+	{
+		temp.replace(pos, 2, "\\\\n");
+		pos+=3;
+	}
+
+	pos = 0;
+	while((pos = temp.find("\n", pos)) != string::npos)
+	{
+		temp.replace(pos, 1, "\\n");
+		pos+=2;
+	}
 }
 
 void pre_process_assembly()
@@ -539,8 +573,10 @@ void pre_process_assembly()
 			x86.second = "";
 			x86.third = "";
 			assembly.push_back(x86);
-			x86.label = ".string";
-			x86.first = "\"" + entry->name + "\"";
+			x86.label = ".string";			
+			string strtmp = "\"" + entry->name + "\"";
+			formString(strtmp);
+			x86.first = strtmp;
 			x86.second = "";
 			x86.third = "";
 			assembly.push_back(x86);
@@ -1081,7 +1117,7 @@ void modifier(code tac)
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
-			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
 		}
 
@@ -1128,7 +1164,7 @@ void modifier(code tac)
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
-			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovne(regMap[RAX].name, reg_name3, tac.label);
 		}
 
@@ -1175,7 +1211,7 @@ void modifier(code tac)
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
-			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovg(regMap[RAX].name, reg_name3, tac.label);
 		}
 
@@ -1222,7 +1258,7 @@ void modifier(code tac)
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
-			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovl(regMap[RAX].name, reg_name3, tac.label);
 		}
 
@@ -1269,7 +1305,7 @@ void modifier(code tac)
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
-			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovge(regMap[RAX].name, reg_name3, tac.label);
 		}
 
@@ -1316,7 +1352,7 @@ void modifier(code tac)
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
-			x86::Cmp(reg_name1, reg_name2, tac.label);
+			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
 		}
 
@@ -1445,9 +1481,67 @@ void modifier(code tac)
 		x86::Push(regMap[RBP].name, tac.label);
 		x86::Move(regMap[RSP].name, regMap[RBP].name, tac.label);
 		gap = 0;
+
+		string funcName = tac.field_2;
+		int last = -1;
+		vector<int> param_indices;
+		vector <tableRecord*> params;
+		string class_name = "";
+		string function = funcName;
+		symTable* table = globTable;
+		tableRecord* entry;
+
+		for(int i=0; i<funcName.length() - 2; i++)
+		{
+			if(funcName.substr(i, 3) == "_Cc")
+			{
+				class_name = funcName.substr(0, i);
+			}
+			if(funcName.substr(i, 3) == "_Zz")
+			{
+				param_indices.push_back(i);
+			}
+			if(funcName.substr(i, 3) == "_Nn")
+			{
+				last = i;
+			}
+		}
+
+		for(int i=0; i<param_indices.size(); i++)
+		{
+			int next = last;
+			if (i != param_indices.size() - 1) next = param_indices[i+1];
+			string type = funcName.substr(param_indices[i] + 3, next - param_indices[i] - 3);
+			tableRecord* entry = new tableRecord();
+			entry -> type = type;
+			params.push_back(entry);
+		}
+
+		if(param_indices.size())
+		{
+			function = function.substr(0, param_indices[0]); 
+		}
+		
+		if(class_name.length())
+		{
+			int size = class_name.length() + 3;
+			table = globTable;
+			entry = table -> lookup_table(class_name);
+			assert(entry);
+			table = entry -> symTab;
+			function = function.substr(size, function.length() - size);
+		}
+
+		entry = table -> lookup_table(function, recordType::TYPE_FUNCTION, &params);
+		assert(entry);
+
+		table = entry -> symTab;
+
+		int sp_shift = table -> size;
+
 		if (sp_shift > 0)
 		{
-			x86::Sub(regMap[RSP].name, to_string(sp_shift), tac.label);
+			x86::Sub("$" + to_string(sp_shift), regMap[RSP].name, tac.label);
 			gap += sp_shift;
 			sp_shift = 0;
 		}
@@ -1527,20 +1621,23 @@ void modifier(code tac)
 		gap = 0;
 	}
 
-	if (tac.field_1 == "shift_sp")
-	{
-		int shift = atoi((tac.field_2).c_str());
-		if (shift < 0)
-		{
-			sp_shift = -1 * shift;
-		}
-	}
-
 	if (tac.field_1 == "call")
 	{
+
 		x86::Spill(R10, tac.label);
 		x86::Spill(R11, tac.label);
+
+		if (gap % 16)
+		{
+			x86::Push("$0", tac.label);
+		}
+
 		x86::Call(tac.field_2, tac.label);
+
+		if (gap % 16)
+		{
+			x86::Pop("$0", tac.label);
+		}
 
 		// post call (free the used regs)
 		for (int i = 0; i < 6; i++)
@@ -1577,6 +1674,11 @@ void modifier(code tac)
 	if (tac.field_1 == "if_false")
 	{
 		int reg = ensure(varMap[tac.field_2], tac.label);
+		for (int i=REG_START; i<REG_MAX; i++)
+		{
+			x86::Spill(i, tac.label);
+		}
+		// value wont be updated for a register during spill
 		x86::Cmp("$0", regMap[reg].name, tac.label);
 		x86::Je(tac.field_4, tac.label);
 	}
@@ -1584,6 +1686,11 @@ void modifier(code tac)
 	if (tac.field_1 == "goto")
 	{
 		int reg = ensure(varMap[tac.field_2], tac.label);
+		for (int i=REG_START; i<REG_MAX; i++)
+		{
+			x86::Spill(i, tac.label);
+		}
+		// value wont be updated for a register during spill
 		x86::Cmp("$0", regMap[reg].name, tac.label);
 		x86::Jmp(tac.field_2, tac.label);
 	}
@@ -1591,6 +1698,11 @@ void modifier(code tac)
 	if (tac.field_1 == "if")
 	{
 		int reg = ensure(varMap[tac.field_2], tac.label);
+		for (int i=REG_START; i<REG_MAX; i++)
+		{
+			x86::Spill(i, tac.label);
+		}
+		// value wont be updated for a register during spill
 		x86::Cmp("$0", regMap[reg].name, tac.label);
 		x86::Jne(tac.field_4, tac.label);
 	}
@@ -1616,6 +1728,10 @@ void update_var_struct(string name, int time)
 		if (varMap.find(name) == varMap.end())
 		{
 			var_struct first;
+			cout << name << "NAME:" << endl;
+			tableRecord* record = Temp_to_record[name];
+			assert (record);
+			first.offset = record -> offset + 8;
 			first.name = name;
 			varMap[name] = first;
 		}
@@ -1664,7 +1780,7 @@ void update_var_struct(string name, int time)
 			assert (entry);
 			var_struct first;
 			first.name = name;
-			first.offset = entry -> offset;
+			first.offset = entry -> offset + 8;
 			varMap[name] = first;
 		}
 
@@ -1920,15 +2036,17 @@ void identify_BB()
 		code inst = threeAC[i];
 		if (inst.field_1 == "goto")
 		{
-			int lab = atoi((inst.field_2).c_str());
-			BB_leaders.insert(i+2);
+			int lab = atoi(((inst.field_2).substr(0, (inst.field_2).length() - 1)).c_str());
+			cout << lab << ": LAB" << endl;
+			BB_leaders.insert(i+1);
 			BB_leaders.insert(lab);
 		}
 
 		if (inst.field_3 == "goto")
 		{
-			int lab = atoi((inst.field_4).c_str());
-			BB_leaders.insert(i+2);
+			int lab = atoi(((inst.field_2).substr(0, (inst.field_2).length() - 1)).c_str());
+			cout << lab << ": LAB" << endl;
+			BB_leaders.insert(i+1);
 			BB_leaders.insert(lab);
 		}
 	}

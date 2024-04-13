@@ -91,6 +91,7 @@ void initTypes()
 	recordTypeMap[recordType::OBJECT_ATTRIBUTE]		=		 "OBJECT_ATTRIBUTE";
 	recordTypeMap[recordType::VARIABLE]		 		=		 "VARIABLE";
 	recordTypeMap[recordType::KEYWORD]		 		=		 "KEYWORD";
+	recordTypeMap[recordType::TEMPORARY]		 	=		 "TEMPORARY";
 
 
 	tableRecord* tempRecord = new tableRecord("False", "", 0, 0, 0, recordType::KEYWORD);

@@ -15,7 +15,6 @@ int fun_call = 0;
 string self_type = "";
 int funcInClass = 0;
 bool initPresence = false;
-extern map<symbolTable*, int> visited;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -917,7 +916,7 @@ int handle_type_declarations(TreeNode* root)
 	
 	free(record);
 	record = NULL;
-
+	
 	if (err < 0)
 		return err;
 
@@ -1610,37 +1609,8 @@ int generate_symtable(TreeNode *root)
 	return 0;
 }
 
-void post_process_symtables(symbolTable *Table)
-{
-	visited[Table] = 1;
-	for(auto child : Table->childIndices) 
-	{
-		assert((Table->entries)[child] -> symTab);
-		if (visited.find((Table->entries)[child] -> symTab) == visited.end())
-			post_process_symtables(((Table->entries)[child]) -> symTab);
-	}
-
-	if (Table->tableType == tableType::FUNCTION)
-	{
-		for (int index = 0; index < Table->numParams; index++)
-		{
-			if (index < 6)
-				(Table->entries)[index]->offset = (Table->size + index * 8);
-			else
-				(Table->entries)[index]->offset = - ((index - 6) * 8 + 24);
-		}
-	}
-	
-}
-
-
 int symTable_Maker(TreeNode *root)
 {
 	globTable -> tableType = tableType::GLOBAL;
-	int ret = generate_symtable(root);
-	if (ret < 0)
-		return ret;
-	visited.clear();
-	post_process_symtables(globTable);
-	return ret;
+	return generate_symtable(root);
 }

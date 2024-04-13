@@ -59,6 +59,7 @@ enum recordType{
 	OBJECT_ATTRIBUTE,
 	VARIABLE,
 	KEYWORD,
+	TEMPORARY,
 };
 
 struct symTable;

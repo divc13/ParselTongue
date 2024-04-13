@@ -106,7 +106,6 @@ int main(int argc, char **argv)
 		root->make_dot(noExtentionOutputFile + "_ptree.dot");
 
 	parasiticRoot = root -> make_tree();
-	clear_tree(parasiticRoot);
 
 	AST_Maker(root);
 
@@ -137,6 +136,13 @@ int main(int argc, char **argv)
 		CSV.close();
 	}
 
+
+	parasiticRoot -> genCode();
+	if (tac_flag)
+	{
+		dumpAC(noExtentionOutputFile + ".txt");
+	}
+
 	if (md_flag)
 	{
 		ofstream MD(noExtentionOutputFile + ".md");
@@ -150,13 +156,7 @@ int main(int argc, char **argv)
 		globTable->dumpMD(MD);
 		MD.close();
 	}
-
-	parasiticRoot -> genCode();
-	if (tac_flag)
-	{
-		dumpAC(noExtentionOutputFile + ".txt");
-	}
-
+	
 	generate_assembly();
 
 	dump_x86_64(noExtentionOutputFile + ".s");

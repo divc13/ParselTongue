@@ -384,20 +384,3 @@ void should_clear(Parasite* root)
 	for (auto child : root->children)
 		should_clear(child);
 }
-
-void clear_tree(Parasite* root)
-{
-	if (root->name == "file")
-	{
-		if ((root->children)[0]->name == "statements" && (((root->children)[0])->children).size() == 2)
-		{
-			should_clear(((root->children)[0]->children)[1]);
-			if (StringToRemove[0] == "if" && StringToRemove[1] == "__name__" && StringToRemove[2] == "==" && StringToRemove[3] == "\"__main__\"")
-			{
-				((root->children)[0]->children).pop_back();
-				(root->children).insert((root->children).begin(), ((root->children)[0]->children)[0]);
-				(root->children).erase((root->children).begin() + 1);
-			}
-		}
-	}
-}

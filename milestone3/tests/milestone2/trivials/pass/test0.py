@@ -1,2 +1,2 @@
 def main():
-    print("DCDCDCDCDC")
+    print("DCCC\n")
