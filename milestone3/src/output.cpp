@@ -1,4 +1,4 @@
-#include "include/symtable.hpp"
+#include "include/code.hpp"
 #include "include/error.hpp"
 
 extern map<int, string> recordTypeMap;

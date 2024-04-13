@@ -1,5 +1,5 @@
 #include "parser.tab.h"
-#include "include/symtable.hpp"
+#include "include/code.hpp"
 #include "include/error.hpp"
 
 

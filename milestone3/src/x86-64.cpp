@@ -1,4 +1,4 @@
-#include "include/symtable.hpp"
+#include "include/code.hpp"
 extern vector<code> threeAC;
 extern symbolTable* globTable;
 
@@ -215,6 +215,7 @@ void x86::Pop(string arg1, string label, string comment)
 
 void x86::Label(string label, string comment)
 {
+	if(label == "#main") label = "main";
 	instruction inst;
 	inst.label = label + ":";
 	inst.comment = comment;
@@ -1483,7 +1484,7 @@ void modifier(code tac)
 		gap = 0;
 
 		string funcName = tac.field_2;
-		int last = -1;
+		int last = funcName.length();
 		vector<int> param_indices;
 		vector <tableRecord*> params;
 		string class_name = "";
@@ -1521,6 +1522,11 @@ void modifier(code tac)
 		{
 			function = function.substr(0, param_indices[0]); 
 		}
+
+		else
+		{
+			function = function.substr(0, last); 
+		}
 		
 		if(class_name.length())
 		{
@@ -1533,6 +1539,7 @@ void modifier(code tac)
 		}
 
 		entry = table -> lookup_table(function, recordType::TYPE_FUNCTION, &params);
+		if(funcName == "#main") entry = globTable -> lookup_table(funcName);
 		assert(entry);
 
 		table = entry -> symTab;
@@ -1728,7 +1735,6 @@ void update_var_struct(string name, int time)
 		if (varMap.find(name) == varMap.end())
 		{
 			var_struct first;
-			cout << name << "NAME:" << endl;
 			tableRecord* record = Temp_to_record[name];
 			assert (record);
 			first.offset = record -> offset + 8;
@@ -2037,7 +2043,6 @@ void identify_BB()
 		if (inst.field_1 == "goto")
 		{
 			int lab = atoi(((inst.field_2).substr(0, (inst.field_2).length() - 1)).c_str());
-			cout << lab << ": LAB" << endl;
 			BB_leaders.insert(i+1);
 			BB_leaders.insert(lab);
 		}
@@ -2045,7 +2050,6 @@ void identify_BB()
 		if (inst.field_3 == "goto")
 		{
 			int lab = atoi(((inst.field_2).substr(0, (inst.field_2).length() - 1)).c_str());
-			cout << lab << ": LAB" << endl;
 			BB_leaders.insert(i+1);
 			BB_leaders.insert(lab);
 		}
