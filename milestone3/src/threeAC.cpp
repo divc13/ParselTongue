@@ -21,21 +21,7 @@ vector<pair<string, string>> filler;
 map<string, string> tempType;
 map<string, tableRecord*> Temp_to_record;
 extern map<symbolTable*, int> visited;
-
-void fill_stringMap()
-{
-	int string_index = 0;
-	for (int i = 0; i < globTable->currentIndex; i++)
-	{
-		tableRecord* entry = (globTable->entries)[i];
-		assert(entry);
-		if (entry->recordType == recordType::CONST_STRING)
-		{
-			stringMap["\"" + entry->name + "\""] = ".LC" + to_string(string_index);
-			string_index++;
-		}
-	}
-}
+int stringMapSize = 0;
 
 string newLabel()
 {
@@ -2085,7 +2071,9 @@ void Parasite::genAC()
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 
-				inst.field_1 = tmp;
+				string trm = newTmp();
+				tempType[trm] = "int";
+				inst.field_1 = trm;
 				inst.field_2 = "=";
 				inst.field_3 = "popparam";
 				inst.field_4 = "";
@@ -2093,6 +2081,13 @@ void Parasite::genAC()
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 
+				inst.field_1 = tmp;
+				inst.field_2 = "=";
+				inst.field_3 = trm;
+				inst.field_4 = children[1] -> name;
+				inst.field_5 = "0";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
 			}
 
 			else 
@@ -2801,6 +2796,8 @@ void Parasite::genAC()
 
 		if (children[0]->name == "strings")
 		{
+			if (stringMap.find(children[0] -> tmp) == stringMap.end())
+				stringMap[children[0] -> tmp] = ".LC" + to_string(stringMapSize++);
 			allocate_mem(to_string((children[0] -> tmp).length() - 1 + 8));
 			tmp = MemRg;
 			tempType[tmp] = "str";
@@ -2947,7 +2944,7 @@ void Parasite::genAC()
 		{
 			formatString(children[0]->tmp);
 			formatString(children[1]->tmp);
-			tmp = "\"" + children[0]->tmp + children[1]->tmp + "\\0\"";
+			tmp = "\"" + children[0]->tmp + children[1]->tmp + "\"";
 			tempType[tmp] = "str";
 		}
 		else
@@ -3080,7 +3077,7 @@ void fillCode()
 void main_changer()
 {
 	string label = "";
-	for(int i=0; i< threeAC.size() - 1; i++)
+	for(int i = 0; i < threeAC.size() - 1; i++)
 	{
 		if (threeAC[i].field_1 == "end_function" && threeAC[i+1].field_1 == "param" && threeAC[i+1].field_2 == "17")
 		{
@@ -3090,11 +3087,11 @@ void main_changer()
 			threeAC[i+1].field_4 = "";
 			threeAC[i+1].field_5 = "";
 
-			assert(i + 11 < threeAC.size());
-			label = threeAC[i+11].field_4;
+			assert(i + 15 < threeAC.size());
+			label = threeAC[i+15].field_4;
 
-			// remove the 10 instructions
-			threeAC.erase(threeAC.begin() + i + 2, threeAC.begin() + i + 12);
+			// remove the 14 instructions
+			threeAC.erase(threeAC.begin() + i + 2, threeAC.begin() + i + 16);
 		}
 	}
 
@@ -3328,7 +3325,6 @@ void Parasite::genCode()
 {
 	map<string, string> labelMap;
 
-	fill_stringMap();
 	genAC();
 	formFirstLast();
 	fillCode();

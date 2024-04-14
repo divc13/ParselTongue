@@ -557,32 +557,25 @@ void pre_process_assembly()
 	x86.third = "";
 	assembly.push_back(x86);
 
-	int string_index = 0;
-	for (int i = 0; i < globTable->currentIndex; i++)
+	for (auto i : stringMap)
 	{
-		tableRecord* entry = (globTable->entries)[i];
-		assert(entry);
-		if (entry->recordType == recordType::CONST_STRING)
-		{
-			x86.label = ".section";
-			x86.first = ".rodata";
-			x86.second = "";
-			x86.third = "";
-			assembly.push_back(x86);
-			x86.label = ".LC" + to_string(string_index) + ":";
-			x86.first = "";
-			x86.second = "";
-			x86.third = "";
-			assembly.push_back(x86);
-			x86.label = ".string";			
-			string strtmp = "\"" + entry->name + "\"";
-			formString(strtmp);
-			x86.first = strtmp;
-			x86.second = "";
-			x86.third = "";
-			assembly.push_back(x86);
-			string_index++;
-		}
+		x86.label = ".section";
+		x86.first = ".rodata";
+		x86.second = "";
+		x86.third = "";
+		assembly.push_back(x86);
+		x86.label = i.second + ":";
+		x86.first = "";
+		x86.second = "";
+		x86.third = "";
+		assembly.push_back(x86);
+		x86.label = ".string";			
+		string strtmp = i.first;
+		formString(strtmp);
+		x86.first = strtmp;
+		x86.second = "";
+		x86.third = "";
+		assembly.push_back(x86);
 	}
 	
 	x86.label = ".text";
@@ -2096,6 +2089,13 @@ void post_process_assembly()
 				inst.label = ".L" + inst.label;
 		}
 	}
+
+	instruction inst;
+	inst.label = ".LEND:";
+	inst.first = "";
+	inst.second = "";
+	inst.third = "";
+	assembly.push_back(inst);
 
 }
 
