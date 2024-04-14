@@ -1,5 +1,5 @@
 def func2(a:int) -> int:
-    return 10.0 + a
+    return 10 + a
 
 def func1() -> None:
     a:int = 10;
@@ -13,7 +13,7 @@ def func1() -> None:
     if(a == False):
         print(a)
 
-var1: int = 4
+# var1: int = 4
 
 class cl1:
   
@@ -21,7 +21,7 @@ class cl1:
     self.name:int = 5
   
   def func1(self) -> None:
-    var2: int = var1 + self.name
+    var2: int = self.name
     print(var2)
 
 def main():

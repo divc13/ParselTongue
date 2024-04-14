@@ -8,6 +8,6 @@ def fib(n:int) -> int:
 def main():
     i:int
     for i in range(10):
-        print(i)
+        print(fib(i))
 if __name__ == "__main__":
     main()

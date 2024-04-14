@@ -21,13 +21,9 @@ def create_objs() -> list[cl1]:
 def func1() -> None:
     i: int
     for i in range(10):
-        j:float = i
+        j:int = i
     
     print(j)
-
-i: int
-for i in range(10):
-    print(i)
 
 def main():
     obj1:cl1 = create_obj()

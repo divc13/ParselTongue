@@ -70,3 +70,4 @@ string newLabel();
 string newTmp();
 string tableHash(symbolTable* curr);
 void allocate_mem(string size);
+bool test(string name);

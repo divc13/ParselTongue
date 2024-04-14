@@ -11,8 +11,8 @@ def func1(var1:int, var2:int) -> None:  #recursion
   
 class class1:
 
-  def __init__(self, float_var: float):
-    self.var2: float = float_var
+  def __init__(self, float_var: int):
+    self.var2: int = float_var
   
   def add(self) -> None:
     self.var2 += self.var2
@@ -36,7 +36,7 @@ def main():
       print("fjiefmk")
 
   func1(3, 5)
-  obj1:class1 = class1(3.00)
+  obj1:class1 = class1(3)
   obj1.add()
 
 

@@ -1,7 +1,15 @@
-def fun(a: int, b: float, c: bool) -> None:
+def fun(a: int, b: int, c: bool) -> None:
     print(c)
+    print(b)
 
-a:int = 1
-b:int = 1
-c:int = 1
-fun(a, b, c)
+def main():
+    a:int = 1
+    b:bool = -1
+    print(b)
+    c:int = 5
+    b += c
+    print(b + c)
+    fun(a, b, c)
+
+if __name__ == "__main__":
+    main()
