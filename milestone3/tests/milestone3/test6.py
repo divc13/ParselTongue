@@ -7,6 +7,7 @@ class c1:
         # selection sort
         n:int = len(self.a)
 
+        x:list[int] = self.a
         i:int
         for i in range(n):
             min:int
@@ -14,15 +15,15 @@ class c1:
             j:int = 1000
 
             for j in range(i+1, n):
-                if self.a[j] < self.a[min]:
+                if x[j] < x[min]:
                     min = j
             
             temp:int
-            temp = self.a[i]
-            self.a[i] = self.a[min]
-            self.a[min] = temp
+            temp = x[i]
+            x[i] = x[min]
+            x[min] = temp
 
-        return self.a
+        return x
 
 
 def sort_func(a:list[int]) -> list[int]:

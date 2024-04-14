@@ -1,3 +1,14 @@
+def find_gcd(a: int, b: int) -> int:
+    temp:int
+
+    while b != 0:
+        temp = b
+        b = a % b
+        a = temp
+    
+    return a
+
+
 def f1(n:int) -> int:
     ans:int = -1
     
@@ -9,15 +20,6 @@ def f1(n:int) -> int:
     
     return ans
 
-def find_gcd(a: int, b: int) -> int:
-    temp:int
-
-    while b != 0:
-        temp = b
-        b = a % b
-        a = temp
-    
-    return a
 
 
 def main():
