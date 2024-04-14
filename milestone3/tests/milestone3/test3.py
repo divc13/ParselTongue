@@ -1,6 +1,6 @@
 class rect:
-    var:str = "static var from rect"
-    c:int = 0
+    # var:str = "static var from rect"
+    # c:int = 0
 
     def __init__(self, length: int, width: int):
         self.length:int = length
@@ -24,8 +24,8 @@ class rect:
         print("class:rect - f2")
     
 class c1(rect):
-    a:int = 10  # static
-    d:bool = True
+    # a:int = 10  # static
+    # d:bool = True
 
     def __init__(self, val:int):
         self.b:str = "c1"
@@ -44,14 +44,9 @@ def main():
 
     obj2:c1 = c1(5)
     obj2.f1()
-    print(c1.a)
     obj2.f2()
-    print(obj2.var)
 
-    rect.c = obj2.a + c1.d
-    rect.c += obj1.z
-
-    print(obj2.c)
+    print(obj2.b)
 
 
 

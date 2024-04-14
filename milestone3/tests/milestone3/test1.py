@@ -1,19 +1,22 @@
 def power(base: int, exp: int) -> int:
     temp: int
+    ans:int
 
     if exp == 0:
-        return 1
+        ans = 1
     
     elif exp == 1:
-        return base
+        ans = base
     
     elif exp % 2 == 0:
         temp = power(base, exp // 2)
-        return temp * temp
+        ans = temp * temp
     
     else:
         temp = power(base, exp // 2)
-        return base * temp * temp
+        ans = base * temp * temp
+    
+    return ans
     
 
 def sum_of_powers(n: int, exp: int) -> int:
