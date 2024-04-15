@@ -55,9 +55,16 @@ def main():
 
     sort_func(a)
 
+    # for i in range(len(a)):
+    #     print(a[i])
+
+    # for i in range(len(b)):
+    #     print(b[i])
+
     for i in range(len(a)):
         if(b[i] != a[i]):
             print("not working")
+
 
 if __name__ == "__main__":
     main()

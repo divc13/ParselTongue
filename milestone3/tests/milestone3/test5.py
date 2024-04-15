@@ -1,16 +1,24 @@
 def basic_test() -> None:
-    a:int = 10;b:int = 20
+    a:int = 10;
+    b:int = 20
     c:int = 0;
 
     c = a + b
+    print(c)    # 30
     b = c - a
+    print(b)    #20
     a = 4 // 3
+    print(a)    # 1
     c = 4 / 2
+    print(c)    # 2
     c = 2
     b = 100 % c
+    print(b)    # 0
 
-    c = a * b
-    c = a ** 2
+    c = a * b   
+    print(c)    # 0
+    c = a ** 2 
+    print(c)    # 1
 
     if 5  > 4:
         print("working")
@@ -41,14 +49,30 @@ def basic_test() -> None:
 
     a = 3
     b = 2
-    a >>= 1
+
+    a >>= 1 
+    print(a)    # 1
     b <<= 1
-    c = a & b; c = a | b; c = a ^ b;c = ~a
+    print(b)    # 4
+
+    c = a & b;  print(c)    # 0
+    c = a | b;  print(c)    # 5
+    c = a ^ b;  print(c)    # 5
+    c = ~a;      print(c)   # -2
     
-    c += a + b; c -= a - b; c *= a * b; c = 100; c /= 10 / 2; c= 20;  c //= 10 // 3 ; c %= 34 % 7; c **= a ** 3; 
-    c = 10
-    c &= a & b; c |= a | b; 
-    c ^= a ^ b; 
+    c += a + b;                 print(c)    # 3        
+    c -= a - b;                 print(c)    # 6
+    c *= a * b;                 print(c)    # 24
+    c = 100;                    print(c)    # 100
+    c /= 10 / 2;                print(c)    # 20
+    c= 20;                      print(c)    #20
+    c //= 10 // 3 ;             print(c)    # 6
+    c %= 34 % 7;                print(c)    #0
+    c **= a ** 3;               print(c)    #0
+    c = 10  ;                   print(c)    #10
+    c &= a & b;                 print(c)    #0
+    c |= a | b;                 print(c)    #5
+    c ^= a ^ b;                 print(c)    #0
 
     i: int 
     for i in range(1, 4):
