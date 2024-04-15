@@ -90,11 +90,11 @@ tableRecord* symbolTable::lookup_table(string name, int recordType, vector<table
 				{
 					if (self_ind != -1)
 					{
-						if(num == self_ind && (*params)[num]->name == "self" && (*params)[num]->recordType == recordType::CLASS_SELF)
+						if(num == self_ind && (*params)[num]->name == "self" && (*params)[num]->recordType == recordType::CLASS_OBJECT)
 						{
 							continue;
 						}
-						else if(! ((*params)[num]->name == "self" && (*params)[num]->recordType == recordType::CLASS_SELF))
+						else if(! ((*params)[num]->name == "self" && (*params)[num]->recordType == recordType::CLASS_OBJECT))
 						{
 							match = false;
 							break;
@@ -625,7 +625,7 @@ int fillTables(symbolTable* Table, symbolTable* parentTable, string type)
 
 	for (int entry = 0, child = 0; entry < parentTable->currentIndex; entry++)
 	{
-		if(!((parentTable->entries)[entry] -> name == "self" && (parentTable->entries)[entry] -> recordType == recordType::CLASS_SELF))
+		if(!((parentTable->entries)[entry] -> name == "self" && (parentTable->entries)[entry] -> recordType == recordType::CLASS_OBJECT))
 		{
 
 
@@ -1258,7 +1258,7 @@ string handle_function_call(TreeNode* root)
 	{
 		TreeNode* node = ((root -> children)[2]->children)[i];
 		tableRecord* record = new tableRecord(node -> dataType, node -> dataType);
-		if(record->name == "self" && record -> recordType == recordType::CLASS_SELF)
+		if(record->name == "self" && record -> recordType == recordType::CLASS_OBJECT)
 		{
 			self_ind = i;
 			continue;

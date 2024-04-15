@@ -31,7 +31,7 @@ class c1(rect):
         self.b:str = "c1"
         self.val:int = val
     
-    def f1(self) -> None:
+    def f1(self, a:int) -> None:
         print("class:c1")
         print(self.b)
         print(self.val)

@@ -1897,7 +1897,7 @@ void update_var_struct(string name, int time)
 		if (name[i] == '%')
 			loc_percent = i;
 
-		if (i < name.length() - 2 && name[i] == '_' && name[i + 1] == 'C' && name[i + 2] == 'c')
+		if (i < name.length() - 2 && name.substr(i, 3) == "_Cc")
 			loc_dot = i;
 	}
 
@@ -1932,12 +1932,12 @@ void update_var_struct(string name, int time)
 			string funcName = "";
 			bool check = true;
 			for(int i=loc_percent + 1;i < name.length() - 2; i++){
-				if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+				if (name.substr(i, 3) == "_Zz")
 				{
 					check = false;
 					break;
 				}
-				if (name[i] == '_' && name[i + 1] == 'N' && name[i + 2] == 'n')
+				if (name.substr(i, 3) == "_Nn")
 				{
 					check = false;
 					break;
@@ -1973,7 +1973,7 @@ void update_var_struct(string name, int time)
 				vector<int> a_indices;
 				for (int i=0; i<name.length() - 2; i++)
 				{
-					if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+					if (name.substr(i, 3) == "_Zz")
 						a_indices.push_back(i + 2);
 				}
 
@@ -2026,12 +2026,12 @@ void update_var_struct(string name, int time)
 		bool check = true;
 		string funcName = "";
 		for(int i=loc_dot + 3;i < name.length() - 2; i++){
-			if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+			if (name.substr(i, 3) == "_Zz")
 			{
 				check = false;
 				break;
 			}
-			if (name[i] == '_' && name[i + 1] == 'N' && name[i + 2] == 'n')
+			if (name.substr(i, 3) == "_Nn")
 			{
 				check = false;
 				break;
@@ -2048,9 +2048,9 @@ void update_var_struct(string name, int time)
 		// handle method overloading
 		vector<tableRecord*> params;				// do not free params, may lead to segfault
 		vector<int> a_indices;
-		for (int i=0; i<name.length(); i++)
+		for (int i = 0; i < name.length() - 2; i++)
 		{
-			if (name[i] == '_' && name[i + 1] == 'Z' && name[i + 2] == 'z')
+			if (name.substr(i, 3) == "_Zz")
 				a_indices.push_back(i + 2);
 		}
 

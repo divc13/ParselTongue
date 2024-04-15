@@ -48,11 +48,13 @@ string tableHash(symbolTable* curr)
 			name += "_Nn" + to_string(curr->numParams);
 		}
 	}
-	while(curr -> parentSymtable && curr -> parentSymtable -> name != "__GLOBAL__")
-	{
-		curr = curr -> parentSymtable;
-		name = curr -> name + "_Cc" + name;
-	}
+	if (curr -> parentSymtable && curr -> parentSymtable -> tableType == tableType::CLASS)
+		name = curr -> parentSymtable -> name + "_Cc" + name;
+	// while(curr -> parentSymtable && curr -> parentSymtable -> name != "__GLOBAL__")
+	// {
+	// 	curr = curr -> parentSymtable;
+	// 	name = curr -> name + "_Cc" + name;
+	// }
 	return name;
 }
 
@@ -364,8 +366,16 @@ void Parasite::genAC()
 		if (funcName.length()) funcName += "_Cc";
 		funcName += children[1] -> name;
 
-		tableRecord* entry = table -> lookup(children[1] -> name);
-		
+		vector<tableRecord*> params;
+
+		for (int i = ((children[3]->host) -> children).size() - 1; i >= 0; i--)
+		{
+			TreeNode* node = ((children[3]->host) -> children)[i];
+			tableRecord* record = new tableRecord(node -> name, node -> dataType);
+			params.insert(params.begin(), record);
+		}
+
+		tableRecord* entry = table -> lookup(children[1] -> name, recordType::TYPE_FUNCTION, &params);
 		assert (entry);
 		assert (entry -> recordType == recordType::TYPE_FUNCTION);
 		assert (entry -> symTab);
@@ -3029,15 +3039,7 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
-			tmp = newTmp();
-			tempType[tmp] = type;
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = "*(" + t1 + ")";
-			inst.field_4 = "";
-			inst.field_5 = "";
-			inst.label = newLabel();
-			threeAC.push_back(inst);
+			tmp = "*(" + t1 + ")";
 		}
 
 
@@ -3483,10 +3485,12 @@ void symTableModifier()
 		if (inst.field_1 == "begin_function")
 		{
 			string funcName = inst.field_2;
+			// cout << funcName << endl;
 			int last = funcName.size();
 			vector<int> param_indices;
 			vector <tableRecord*> params;
 			string class_name = "";
+			string class_parent = "";
 			string function = funcName;
 			symTable* table = globTable;
 			tableRecord* entry;
