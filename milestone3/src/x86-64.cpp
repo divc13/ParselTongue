@@ -2263,7 +2263,7 @@ void generate_assembly()
 
 	for (code_itr=0; code_itr< threeAC.size(); code_itr++)
 	{
-		// cout << "LINE: "  << code_itr + 1 << endl;
+		cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;
 		modifier(threeAC[code_itr]);
 	}

@@ -1,4 +1,8 @@
-a: int = 5
-def fun() -> int:
-    return a
-b:int = fun()
+def fun() -> str:
+    return "hello"
+
+
+if __name__ == "__main__":
+    print(fun())
+
+

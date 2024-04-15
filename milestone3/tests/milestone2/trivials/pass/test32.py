@@ -18,4 +18,11 @@ def main():
     a: B = B()
     a.hell()
     a.hell()
+    print(a.a)
     return
+
+
+if __name__ == "__main__":
+    main()
+
+

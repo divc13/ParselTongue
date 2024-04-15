@@ -2,5 +2,13 @@ class A:
     def __init__(self):
         self.a: int = 1
 
-a: A = A()
-b: list[int] = range(a.a)
+def main():
+    a: A = A()
+    b: list[int] = range(a.a)
+    print(b)
+
+
+if __name__ == "__main__":
+    print(main())
+
+

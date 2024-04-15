@@ -1,26 +1,26 @@
-# def factorial(n:int) -> int:
-#     i:int; ans:int = 1
+def factorial(n:int) -> int:
+    i:int; ans:int = 1
 
-#     for i in range (1, n+1):
-#         ans *= i
+    for i in range (1, n+1):
+        ans *= i
 
-#     return ans
+    return ans
 
 
-# def fibonacci(n: int) -> int:
-#     if n <= 1:
-#         return n
+def fibonacci(n: int) -> int:
+    if n <= 1:
+        return n
 
-#     prev: int = 0
-#     curr: int = 1
+    prev: int = 0
+    curr: int = 1
 
-#     i:int
-#     for i in range(2, n + 1):
-#         temp: int = prev
-#         prev = curr
-#         curr = prev + temp
+    i:int
+    for i in range(2, n + 1):
+        temp: int = prev
+        prev = curr
+        curr = prev + temp
 
-#     return curr
+    return curr
 
 def f1() -> None:
     b:int = 382
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     main()
 
 
-    # print(factorial(10) - fibonacci(10))
+    print(factorial(10) - fibonacci(10))
 
     f1()
 

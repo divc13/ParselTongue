@@ -14,4 +14,8 @@ def iun() -> bool:
 def jun() -> int:
     return ~iun()
 
-a: float = jun()
+
+if __name__ == "__main__":
+    print(jun())
+
+
