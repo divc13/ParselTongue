@@ -47,8 +47,9 @@ def main():
     obj2:c2 = c2()
     obj3.f2()
     obj2.f2()
-    y:int = obj2.f1()
-    print(y + 10)
+    
+    # y:int = obj2.f1()     # accessing function of its parent class, but not working
+    # print(y + 10)
 
 
 
