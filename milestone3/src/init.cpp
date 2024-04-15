@@ -2131,7 +2131,7 @@ void init_tac()
 	allocate_mem(tmpry_2);
 
 	string l1 = newLabel();
-	string t1 = newTmp();
+	string t1 = MemRg;
 	tempType[t1] = "list_int_";
 	tempType["*(" + t1 + ")"] = "int";
 	string t2 = newTmp();
@@ -2140,7 +2140,6 @@ void init_tac()
 	tempType[t3] = "bool";
 	string t4 = newTmp();
 	tempType[t4] = "int";
-	t1 = MemRg;
 
 	inst.field_1 = "*(" + t1 + ")";
 	inst.field_2 = "=";
@@ -2336,8 +2335,10 @@ void init_tac()
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
+	allocate_mem(tmpry_3);
+
 	string l2 = newLabel();
-	string t5 = newTmp();
+	string t5 = MemRg;
 	tempType[t5] = "list_int_";
 	tempType["*(" + t5 +  ")"] = "list_int_";
 	string t6 = newTmp();
@@ -2351,9 +2352,6 @@ void init_tac()
 	string t10 = newTmp();
 	tempType[t10] = "list_int_";
 	tempType["*(" + t10 +  ")"] = "list_int_";
-
-	allocate_mem(tmpry_3);
-	t5 = MemRg;
 
 	inst.field_1 = t6;
 	inst.field_2 = "=";

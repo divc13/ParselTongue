@@ -1130,6 +1130,12 @@ void modifier(code tac)
 				reg_name3 = regMap[reg3].name;
 			}
 
+			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
+			{
+				x86::Move(reg_name1, regMap[reg1].name, tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
@@ -1175,6 +1181,12 @@ void modifier(code tac)
 			{
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
+			}
+
+			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
+			{
+				x86::Move(reg_name1, regMap[reg1].name, tac.label);
+				reg_name1 = regMap[reg1].name;
 			}
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -1224,6 +1236,12 @@ void modifier(code tac)
 				reg_name3 = regMap[reg3].name;
 			}
 
+			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
+			{
+				x86::Move(reg_name1, regMap[reg1].name, tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
@@ -1269,6 +1287,12 @@ void modifier(code tac)
 			{
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
+			}
+
+			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
+			{
+				x86::Move(reg_name1, regMap[reg1].name, tac.label);
+				reg_name1 = regMap[reg1].name;
 			}
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -1318,6 +1342,12 @@ void modifier(code tac)
 				reg_name3 = regMap[reg3].name;
 			}
 
+			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
+			{
+				x86::Move(reg_name1, regMap[reg1].name, tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
@@ -1365,6 +1395,12 @@ void modifier(code tac)
 				reg_name3 = regMap[reg3].name;
 			}
 
+			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
+			{
+				x86::Move(reg_name1, regMap[reg1].name, tac.label);
+				reg_name1 = regMap[reg1].name;
+			}
+
 			x86::Move("$1", regMap[RAX].name, tac.label);
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
@@ -1398,6 +1434,12 @@ void modifier(code tac)
 			{
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
+			}
+
+			if ((tac.field_4)[0] == '*')
+			{
+				x86::Move(reg_name2, regMap[reg2].name, tac.label);
+				reg_name2 = regMap[reg2].name;
 			}
 
 			x86::Move("$1", regMap[RAX].name, tac.label);
@@ -1861,7 +1903,6 @@ void update_var_struct(string name, int time)
 		{
 			var_struct first;
 			tableRecord* record = Temp_to_record[name];
-			// cout << name << endl;
 			assert (record);
 			first.offset = record -> offset + 8;
 			first.name = name;

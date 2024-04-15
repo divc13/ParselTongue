@@ -35,7 +35,7 @@ class c1(rect):
         print("class:c1")
         print(self.b)
         print(self.val)
-        
+
 
 def main():
     obj1: rect = rect(3, 4)
@@ -43,7 +43,7 @@ def main():
     print(obj1.find_perimeter())
 
     obj2:c1 = c1(5)
-    obj2.f1()
+    obj2.f1(3)
     obj2.f2()
 
     print(obj2.b)

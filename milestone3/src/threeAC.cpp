@@ -12,6 +12,7 @@ tableRecord* dotRecord = NULL;
 tableRecord* dotRecord_1 = NULL;
 stack<pair<string, string>> labelStack;
 vector<code> threeAC;
+vector<code> class_copy;
 map <string, string> Temporaries;
 string MemRg = "";
 bool allocate = false;
@@ -22,6 +23,7 @@ map<string, string> tempType;
 map<string, tableRecord*> Temp_to_record;
 extern map<symbolTable*, int> visited;
 int stringMapSize = 0;
+extern map<string, string> copyMap;
 
 string newLabel()
 {
@@ -48,7 +50,7 @@ string tableHash(symbolTable* curr)
 			name += "_Nn" + to_string(curr->numParams);
 		}
 	}
-	if (curr -> parentSymtable && curr -> parentSymtable -> tableType == tableType::CLASS)
+	if (curr -> parentSymtable && curr -> parentSymtable -> tableType == tableType::CLASS && curr -> tableType != tableType::CLASS)
 		name = curr -> parentSymtable -> name + "_Cc" + name;
 	// while(curr -> parentSymtable && curr -> parentSymtable -> name != "__GLOBAL__")
 	// {
@@ -3490,7 +3492,6 @@ void symTableModifier()
 			vector<int> param_indices;
 			vector <tableRecord*> params;
 			string class_name = "";
-			string class_parent = "";
 			string function = funcName;
 			symTable* table = globTable;
 			tableRecord* entry;
@@ -3677,6 +3678,120 @@ void offset_modifier(symbolTable *Table)
 	
 }
 
+string class_convert(string funcName)
+{
+	string new_var = "";
+	string class_name = "";
+	vector<int> param_indices;
+	int last = funcName.size();
+	int percent_loc = 0;
+	for(int i = 0; i < funcName.length() - 2; i++)
+	{
+		if (funcName[i] == '%')
+		{
+			percent_loc = i;
+			new_var += funcName.substr(0, i);
+		}
+		if(funcName.substr(i, 3) == "_Cc")
+		{
+			class_name = funcName.substr(percent_loc, i - percent_loc);
+			new_var += copyMap[class_name] + "_Cc";
+		}
+		if(funcName.substr(i, 3) == "_Zz")
+		{
+			param_indices.push_back(i);
+		}
+		if(funcName.substr(i, 3) == "_Nn")
+		{
+			last = i;
+		}
+	}
+
+	if (class_name.length() != 0)
+	{
+		new_var += "_Zz" + copyMap[class_name];
+		if (param_indices.size() == 1)
+		{
+			new_var += funcName.substr(last, funcName.length() - last);
+		}
+		else
+		{
+			new_var += funcName.substr(param_indices[1], funcName.length() - param_indices[1]);
+		}
+		return new_var;
+	}
+	return funcName;
+}
+
+void fillInheritance()
+{
+	for (int i = 0; i < threeAC.size(); i++)
+	{
+		code tac = threeAC[i];
+		if (tac.field_1 == "begin_function" && tac.field_2.find("_Cc") != string::npos && tac.field_2.find("__init__") == string::npos)
+		{
+			string funcName = tac.field_2;
+			string class_name = "";
+			int percent_loc = 0;
+
+			for (int i=0; i<funcName.length() - 2; i++)
+			{
+				if (funcName[i] == '%')
+				{
+					percent_loc = i;
+				}
+				if(funcName.substr(i, 3) == "_Cc")
+				{
+					class_name = funcName.substr(percent_loc, i - percent_loc);
+				}
+			}
+
+			if (copyMap.find(class_name) != copyMap.end())
+			{
+				int label_offset = atoi(tac.label.substr(0, tac.label.size() - 1).c_str()) - label;
+				while (tac.field_1 != "end_function")
+				{
+					code inst;
+					cout << tac.field_1 << endl;
+					if (tac.field_1.length())
+						inst.field_1 = class_convert(tac.field_1);
+
+					cout << tac.field_2 << endl;
+					if (tac.field_2.length())
+						inst.field_2 = class_convert(tac.field_2);
+
+					cout << tac.field_3 << endl;
+					if (tac.field_3.length())
+						inst.field_3 = class_convert(tac.field_3);
+
+					cout << tac.field_4 << endl;
+					if (tac.field_4.length())
+						inst.field_4 = class_convert(tac.field_4);
+
+					cout << tac.field_5 << endl;
+					if (tac.field_5.length())
+						inst.field_5 = class_convert(tac.field_5);
+
+					if (tac.field_1 == "goto")
+					{
+						inst.field_2 = to_string(atoi(tac.field_2.c_str()) + label_offset);
+					}
+					if (tac.field_3 == "goto")
+					{
+						inst.field_4 = to_string(atoi(tac.field_4.c_str()) + label_offset);
+					}
+					inst.label = newLabel();
+					class_copy.push_back(inst);
+					tac = threeAC[++i];
+				}
+				i--;
+			}
+		}
+	}
+
+	threeAC.insert(threeAC.end(), class_copy.begin(), class_copy.end());
+}
+
 void Parasite::genCode()
 {
 	map<string, string> labelMap;
@@ -3685,9 +3800,7 @@ void Parasite::genCode()
 	formFirstLast();
 	fillCode();
 	main_changer();
-	symTableModifier();
-	visited.clear();
-	offset_modifier(globTable);
+	fillInheritance();
 
 	for (int i=0; i<threeAC.size(); i++)
 	{
@@ -3724,6 +3837,10 @@ void Parasite::genCode()
 			threeAC[i].field_5 = labelMap[threeAC[i].field_5];
 		}
 	}
+
+	symTableModifier();
+	visited.clear();
+	offset_modifier(globTable);
 
 	code inst;
 	inst.label = "END";

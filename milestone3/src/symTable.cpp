@@ -15,6 +15,7 @@ int fun_call = 0;
 string self_type = "";
 int funcInClass = 0;
 bool initPresence = false;
+map<string, string> copyMap;
 
 
 tableRecord::symRecord(string __name, string __type, int __size, int __lineno, int __column, int __recordType)
@@ -726,6 +727,7 @@ int handle_class_declaration(TreeNode* root)
 	if (parent != globTable)
 	{
 		err = fillTables(currTable, parent, currTable -> name);
+		copyMap[parent -> name] = currTable -> name;
 		if (err < 0)
 			return err;
 	}
