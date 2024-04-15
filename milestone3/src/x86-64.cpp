@@ -3,7 +3,7 @@ extern vector<code> threeAC;
 extern symbolTable* globTable;
 
 vector<instruction> assembly;
-set<int> BB_leaders;
+set<int, less<int>> BB_leaders;
 
 #define REG_START RDI
 
@@ -384,9 +384,7 @@ void x86::Spill(int reg, string label, string comment)
 	// a temporary which is not on the stack
 	if (offset == -1)
 	{
-		assert(false);
-		x86::Push(regMap[reg].name, label, "SPILL 1  " + var);
-		varMap[var].offset = gap;
+		regMap[reg].freeReg();
 		return;
 	}
 	string first = to_string(-1 * offset) + "(%rbp)";
@@ -400,9 +398,9 @@ int allocate(var_struct &var, string label)
 	// free the registers for died variables
 	for (int i = REG_START; i < REG_MAX; i++)
 	{
-		if (!regMap[i].free && varMap[regMap[i].var].death < now - 1 && (regMap[i]).allocatable)
+		if (!regMap[i].free && varMap[regMap[i].var].death < now && (regMap[i]).allocatable && varMap[regMap[i].var].offset < 0)
 		{
-			regMap[i].freeReg();
+				regMap[i].freeReg();
 		}
 	}
 
@@ -411,7 +409,6 @@ int allocate(var_struct &var, string label)
 	{
 		if (regMap[i].free)
 		{
-			cout << regMap[i].name << endl;
 			assert((regMap[i]).allocatable);
 			var.reg = i;
 			regMap[i].free = false;
@@ -424,7 +421,11 @@ int allocate(var_struct &var, string label)
 				string first = to_string(-1 * var.offset) + "(%rbp)";
 				x86::Move(first, regMap[i].name, label, "ALLOCATE " + var.name);
 			}
-			else assert(false);
+			else
+			{
+				x86::Move("$" + var.name, regMap[i].name, label, "ALLOCATE " + var.name);
+				varMap[regMap[i].var].death = code_itr + 1;
+			}
 			return i;
 		}
 	}
@@ -446,7 +447,7 @@ int allocate(var_struct &var, string label)
 		}
 	}
 
-	// spill the farthest register
+		// spill the farthest register
 	x86::Spill(farthest, label);
 
 	// load instruction here
@@ -461,7 +462,11 @@ int allocate(var_struct &var, string label)
 		string first = to_string(-1 * var.offset) + "(%rbp)";
 		x86::Move(first, regMap[farthest].name, label);
 	}
-	else assert(false);
+	else
+	{
+		x86::Move("$" + var.name, regMap[farthest].name, label, "ALLOCATE " + var.name);
+		varMap[regMap[farthest].var].death = code_itr + 1;
+	}
 	return farthest;
 }
 
@@ -469,12 +474,7 @@ int ensure(var_struct var, string label)
 {
 	if(is_num(var.name))
 	{
-		reg_struct regis;
-		regis.free = false;
-		regis.name = "$" + var.name;
-		regis.var = "$" + var.name;
-		regMap.push_back(regis);
-		return regMap.size() - 1;
+		var.name = var.name;
 	}
 
 	for (int i = REG_START; i < REG_MAX; i++)
@@ -1575,7 +1575,6 @@ void modifier(code tac)
 		{
 			x86::Sub("$" + to_string(sp_shift), regMap[RSP].name, tac.label);
 			gap += sp_shift;
-			sp_shift = 0;
 		}
 
 		code_itr ++;
@@ -1862,7 +1861,7 @@ void update_var_struct(string name, int time)
 		{
 			var_struct first;
 			tableRecord* record = Temp_to_record[name];
-			cout << name << endl;
+			// cout << name << endl;
 			assert (record);
 			first.offset = record -> offset + 8;
 			first.name = name;
@@ -1870,7 +1869,7 @@ void update_var_struct(string name, int time)
 		}
 		(varMap[name].locations).push_back(time);
 		varMap[name].death = time;
-
+		
 		return;
 	}
 
@@ -1905,6 +1904,7 @@ void update_var_struct(string name, int time)
 	// global variable
 	if (loc_percent == -1)
 	{
+		cout << name << " " << time << endl;
 		assert(loc_dot == -1);
 		// first encounter
 		if (varMap.find(name) == varMap.end())
@@ -2095,6 +2095,18 @@ void update_var_struct(string name, int time)
 
 }
 
+void update_death()
+{
+	for (auto var : varMap)
+	{
+		if (BB_leaders.lower_bound(var.second.death) != BB_leaders.end() && *(BB_leaders.lower_bound(var.second.death)) != var.second.death && BB_leaders.upper_bound(var.second.death) != BB_leaders.end())
+		{
+			var.second.death = *(BB_leaders.upper_bound(var.second.death));
+			var.second.locations.push_back(var.second.death);
+		}
+	}
+}
+
 bool test(string name)
 {
 	if (name == "teste")
@@ -2217,18 +2229,6 @@ bool is_num(string val)
 
 void post_process_assembly()
 {
-	// for (auto inst : assembly)
-	// {
-	// 	if (is_num(inst.first))
-	// 		inst.first = "$" + inst.first;
-	// 	if (is_num(inst.label))
-	// 		inst.label = "$" + inst.label;
-	// 	if (is_num(inst.second))
-	// 		inst.second = "$" + inst.second;
-	// 	if (is_num(inst.third))
-	// 		inst.third = "$" + inst.third;
-	// }
-
 	string prev = "";
 	for (auto &inst : assembly)
 	{
@@ -2263,7 +2263,7 @@ void generate_assembly()
 
 	for (code_itr=0; code_itr< threeAC.size(); code_itr++)
 	{
-		cout << "LINE: "  << code_itr + 1 << endl;
+		// cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;
 		modifier(threeAC[code_itr]);
 	}

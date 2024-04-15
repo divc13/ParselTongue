@@ -39,7 +39,7 @@ def display_power_table(n:int, exp:int) -> None:
 
 
 def main():
-    print("abcd'")
+    print("abcd")
 
     n:int = 3
     ans1:int = sum_of_powers(n, 2);

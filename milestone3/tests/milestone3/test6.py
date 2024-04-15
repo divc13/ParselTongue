@@ -26,7 +26,7 @@ class c1:
         return x
 
 
-def sort_func(a:list[int]) -> list[int]:
+def sort_func(a:list[int]) -> None:
     # insertion sort
 
     n:int = len(a)
@@ -42,7 +42,7 @@ def sort_func(a:list[int]) -> list[int]:
 
         a[j + 1] = key
 
-    return a
+    return
 
 
 
@@ -53,10 +53,10 @@ def main():
     b:list[int] = obj1.sort_class()
     i:int
 
-    c:list[int] = sort_func(a)
+    sort_func(a)
 
     for i in range(len(a)):
-        if(b[i] != c[i]):
+        if(b[i] != a[i]):
             print("not working")
 
 if __name__ == "__main__":
