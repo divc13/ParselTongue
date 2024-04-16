@@ -3,6 +3,7 @@
 def factorial(n:int) -> int:
     ans:int
     if n < 0:
+        print("Factorial is defined only for non-negative numbers")
         ans = -1
     
     elif n == 0:
@@ -15,7 +16,10 @@ def factorial(n:int) -> int:
 
 def main():
     n:int = 5
-    print(factorial(n))
+    ans:int = factorial(n)
+
+    if ans > 0:
+        print(ans)
 
 if __name__ == "__main__":
     main()

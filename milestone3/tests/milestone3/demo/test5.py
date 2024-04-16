@@ -37,7 +37,7 @@ def main():
         print("test done for **")
 
     # relational operators
-    print("\nTesting arithmetic operators")
+    print("\nTesting relational operators")
     if (a + 2 == b):
         print("test done for ==")
 
@@ -71,27 +71,27 @@ def main():
     print("\nTesting bitwise operators")
     result = a & b
     if (result == 4):
-        print("testing done for &")
+        print("test done for &")
 
     result = a | b
     if (result == 6):
-        print("testing done for |")
+        print("test done for |")
 
     result = a ^ b
     if (result == 2):
-        print("testing done for ^")
+        print("test done for ^")
 
     result = ~a
     if (result == -5):
-        print("testing done for ~")
+        print("test done for ~")
 
     result = a << 1
     if (result == 8):
-        print("testing done for <<")
+        print("test done for <<")
 
     result = b >> 1
     if (result == 3):
-        print("testing done for >>")
+        print("test done for >>")
 
 
     # assignment operators
@@ -151,6 +151,21 @@ def main():
     b <<= a
     if (b == 512):
         print("test done for >>=")
+
+    # primitive data types
+    print("")
+    name:str = "Compilers done"
+    print(name)
+
+    d:bool = True
+    if d:
+        x:list[str] = ["Compilers", "done"]
+        print(x)        # printing a list
+
+    e:list[bool] = [True, False]
+    print(e)
+    
+    
 
 if __name__ == "__main__":
     main()

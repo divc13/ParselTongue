@@ -1,9 +1,9 @@
 # if-elif-else, for, while, range(start, stop), range(stop), len(), list[int], continue, break
 
-def fibonacci(n: int) -> int:
+def fibonacci(n: int) -> int:       # uses if-elif-else, while loop
     ans:int
     if n < 0:
-        print("Fibonacci is only for non-negative numbers")
+        print("Fibonacci is defined only for non-negative numbers")
 
     elif n <= 1:
         ans = n
@@ -28,7 +28,7 @@ def main():
 
     numbers:list[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     
-    # find sum of odd and even numbers
+    # find sum of odd and even numbers          # uses for loop, range(stop), if-else, len(), list[int]
     even_sum:int = 0; odd_sum:int = 0
     for i in range(len(numbers)):
         if i % 2:
@@ -44,7 +44,7 @@ def main():
     fib_n:int = fibonacci(n)
     print(fib_n)
 
-    # find the count of unique numbers
+    # find the count of unique numbers          # uses range(start, stop), continue
     count:int = 1
     duplicate_numbers:list[int] = [1, 1, 1, 2, 2, 3, 4, 5, 5]
 
@@ -59,7 +59,7 @@ def main():
     
     print(count)
 
-    # find if a number is present in a list of numbers
+    # find if a number is present in a list of numbers      # uses if, break
     present:bool = False
     find_number:int = 5
     numbers_list:list[int] = [2, 4, 1, 0, -1, 4, 5, 1]
@@ -75,9 +75,8 @@ def main():
     else:
         print("The number is not present")
 
-    
-    
-
 
 if __name__ == "__main__":
     main()
+
+
