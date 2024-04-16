@@ -8,7 +8,7 @@ class c1:
         print("c1")
         return 10 + 10;
 
-    def f2(self) -> None:
+    def f2(self, a: int) -> None:
         print("abc")
     
 class c2(c1):
@@ -45,7 +45,7 @@ def main():
 
     
     obj2:c2 = c2()
-    obj3.f2()
+    obj3.f2(1)
     obj2.f2()
     
     # y:int = obj2.f1()     # accessing function of its parent class, but not working

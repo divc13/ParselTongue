@@ -61,6 +61,8 @@ typedef struct var_struct
 
 } var_struct;
 
+void formString(string &temp);
+void pre_process_assembly();
 bool is_num(string val);
 void dumpAC(string file);
 void generate_assembly();

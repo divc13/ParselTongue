@@ -3,7 +3,8 @@ def fun() -> int:
     c: bool = 1
     d: str = "hell"
     e: list[int] = [1, 2, 3]
-    f: bool = e[5] / c
+    g:int = 5
+    f: bool = e[g] / c
     print(f)
     c += c + a
     return c + a

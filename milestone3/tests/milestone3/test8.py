@@ -17,6 +17,7 @@ def main():
 
     a:list[int] = [3, 2, 1]
     b:list[bool] = [False, True, False]
+    print(b)
     
     i:int
     for i in range(len(a)):

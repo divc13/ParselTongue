@@ -6,7 +6,7 @@ def main():
         print("af")
         
     else :
-        print("")
+        print("REWWWW")
 
 if __name__ == "__main__":
     main()

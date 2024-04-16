@@ -4,13 +4,15 @@ def fun() -> None:
     c: int = 3
     d: int = 4
 
-    e: int = a + b
+    e: int = a + b      #3
     print(e)
-    e = a ** b
+    e = a ** b #1
     print(e)
-    e = e + a
+    e = e + a #2
     print(e)
-    e = b - c + d * a / b // d % c
+    e = b - c + d * a #3
+    print(e)
+    e = b - c + d * a // b // d % c
     print(e)
     e = a == b != c > d < a >= b <= c
     print(e)
@@ -26,7 +28,7 @@ def fun() -> None:
     print(e)
     e *= a
     print(e)
-    e /= a
+    e /= b
     print(e)
     e //= a
     print(e)
@@ -48,5 +50,4 @@ def fun() -> None:
 
 if __name__ == "__main__":
     fun()
-
 

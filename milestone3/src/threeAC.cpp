@@ -24,6 +24,7 @@ map<string, tableRecord*> Temp_to_record;
 extern map<symbolTable*, int> visited;
 int stringMapSize = 0;
 extern map<string, string> copyMap;
+map<string, string> tmpMap;
 
 string newLabel()
 {
@@ -904,7 +905,6 @@ void Parasite::genAC()
 		allocate = true;
 
 	}
-
 
 
 	/////////////////////////////////////////// DFS BEGIN ///////////////////////////////////////////////////
@@ -2190,41 +2190,30 @@ void Parasite::genAC()
 		{
 			tmp = newTmp();
 			tempType[tmp] = "bool";
-			string tmp1 = children[1] -> tmp;
-			if (tempType[children[1]->tmp] == "int")
+			if (tempType[children[1]->tmp] == "str")
 			{
-				tmp1 = newTmp();
-				tempType[tmp1] = "bool";
-				code inst;
-				inst.field_1 = tmp1;
-				inst.field_2 = "=";
-				inst.field_3 = children[1] -> tmp;
-				inst.field_4 = "!=";
-				inst.field_5 = "0";
-				inst.label = newLabel();
-				threeAC.push_back(inst);
-			}
-			if (tempType[children[0]->tmp] == "str")
-			{
-				tmp1 = newTmp();
+				string tmp1 = newTmp();
 				tempType[tmp1] = "bool";
 				code inst;
 				inst.field_1 = tmp1;
 				inst.field_2 = "=";
 				inst.field_3 = "*(" + children[1] -> tmp + ")";
-				inst.field_4 = "!=";
+				inst.field_4 = "==";
 				inst.field_5 = "0";
 				inst.label = newLabel();
 				threeAC.push_back(inst);
 			}
-			code inst;
-			inst.field_1 = tmp;
-			inst.field_2 = "=";
-			inst.field_3 = children[0] -> name;
-			inst.field_4 = tmp1;
-			inst.field_5 = "";
-			inst.label = newLabel();
-			threeAC.push_back(inst);
+			else
+			{
+				code inst;
+				inst.field_1 = tmp;
+				inst.field_2 = "=";
+				inst.field_3 = children[1] -> tmp;
+				inst.field_4 = "==";
+				inst.field_5 = "0";
+				inst.label = newLabel();
+				threeAC.push_back(inst);
+			}
 		}
 
 	}
@@ -2538,8 +2527,6 @@ void Parasite::genAC()
 				| shift_expr
 
 		*/
-
-		
 
 		if (children.size() == 1)
 		{
@@ -3010,16 +2997,102 @@ void Parasite::genAC()
 			tableRecord* entry = globTable -> lookup_table(type, recordType::TYPE_CLASS);
 			assert(entry);
 			int size = entry -> size;
+			code inst;
+
+			string t2 = newTmp();
+			tempType[t2] = "list_" + type + "_";
+			tempType["*(" + t2 + ")"] = type;
+			
+			inst.field_1 = t2;
+			inst.field_2 = "=";
+			inst.field_3 = mangle(children[0] -> name);
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t3 = newTmp();
+			tempType[t3] = "int";
+			
+			inst.field_1 = t3;
+			inst.field_2 = "=";
+			inst.field_3 = "*("+ t2 +")";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string t4 = newTmp();
+			tempType[t4] = "bool";
+			
+			inst.field_1 = t4;
+			inst.field_2 = "=";
+			inst.field_3 = t3;
+			inst.field_4 = "<=";
+			inst.field_5 = children[2] -> tmp;
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string label = newLabel(); 	
+			inst.field_1 = "if_false";
+			inst.field_2 = t4;
+			inst.field_3 = "goto";
+			inst.field_4 = label;
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			string a1 = newTmp();
+			tempType[a1] = "str";
+			inst.field_1 = a1;
+			inst.field_2 = "=";
+			inst.field_3 = "findAddress";
+			inst.field_4 = "segfault_format";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "param";
+			inst.field_2 = a1;
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "call";
+			inst.field_2 = "print_Zzstr_Nn1";
+			inst.field_3 = "1";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			// exit
+			inst.field_1 = "param";
+			inst.field_2 = to_string(-1);
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "call";
+			inst.field_2 = "exit";
+			inst.field_3 = "1";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
 			
 			string tmpry = newTmp();
 			tempType[tmpry] = "int";
-			code inst;
 			inst.field_1 = tmpry;
 			inst.field_2 = "=";
 			inst.field_3 = to_string(size);
 			inst.field_4 = "*";
 			inst.field_5 = children[2] -> tmp;
-			inst.label = newLabel();
+			inst.label = label;
 			threeAC.push_back(inst);
 
 			inst.field_1 = tmpry;
@@ -3162,7 +3235,7 @@ void Parasite::genAC()
 
 			inst.field_1 = "*(" + tmp + ")";
 			inst.field_2 = "=";
-			inst.field_3 = to_string((children[0] -> tmp).length() - 1);
+			inst.field_3 = to_string((children[0] -> tmp).length() - 2);
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
@@ -3487,7 +3560,6 @@ void symTableModifier()
 		if (inst.field_1 == "begin_function")
 		{
 			string funcName = inst.field_2;
-			// cout << funcName << endl;
 			int last = funcName.size();
 			vector<int> param_indices;
 			vector <tableRecord*> params;
@@ -3495,7 +3567,7 @@ void symTableModifier()
 			string function = funcName;
 			symTable* table = globTable;
 			tableRecord* entry;
-			for(int i=0; i<funcName.length() - 2; i++)
+			for(int i = 0; i < ((int) funcName.length()) - 2; i++)
 			{
 				if(funcName.substr(i, 3) == "_Cc")
 				{
@@ -3685,17 +3757,20 @@ string class_convert(string funcName)
 	vector<int> param_indices;
 	int last = funcName.size();
 	int percent_loc = 0;
-	for(int i = 0; i < funcName.length() - 2; i++)
-	{
+	int func_loc = 0;
+
+	for(int i = 0; i < ((int)(funcName.length()) - 2); i++)
+	{	
 		if (funcName[i] == '%')
 		{
-			percent_loc = i;
-			new_var += funcName.substr(0, i);
+			percent_loc = i + 1;
+			new_var += funcName.substr(0, i + 1);
 		}
 		if(funcName.substr(i, 3) == "_Cc")
 		{
 			class_name = funcName.substr(percent_loc, i - percent_loc);
 			new_var += copyMap[class_name] + "_Cc";
+			func_loc = i + 3;
 		}
 		if(funcName.substr(i, 3) == "_Zz")
 		{
@@ -3709,6 +3784,7 @@ string class_convert(string funcName)
 
 	if (class_name.length() != 0)
 	{
+		new_var += funcName.substr(func_loc, param_indices[0] - func_loc);
 		new_var += "_Zz" + copyMap[class_name];
 		if (param_indices.size() == 1)
 		{
@@ -3720,6 +3796,17 @@ string class_convert(string funcName)
 		}
 		return new_var;
 	}
+
+	if (funcName.substr(0, 2) == "$t")
+	{
+		if (tmpMap.find(funcName) == tmpMap.end())
+		{
+			string newtmp = newTmp();
+			tmpMap[funcName] = newtmp;
+		}
+		return tmpMap[funcName];
+	}
+
 	return funcName;
 }
 
@@ -3734,41 +3821,36 @@ void fillInheritance()
 			string class_name = "";
 			int percent_loc = 0;
 
-			for (int i=0; i<funcName.length() - 2; i++)
+			for (int j = 0; j < ((int) funcName.length()) - 2; j++)
 			{
-				if (funcName[i] == '%')
+				if (funcName[j] == '%')
 				{
-					percent_loc = i;
+					percent_loc = j;
 				}
-				if(funcName.substr(i, 3) == "_Cc")
+				if(funcName.substr(j, 3) == "_Cc")
 				{
-					class_name = funcName.substr(percent_loc, i - percent_loc);
+					class_name = funcName.substr(percent_loc, j - percent_loc);
 				}
 			}
 
 			if (copyMap.find(class_name) != copyMap.end())
 			{
-				int label_offset = atoi(tac.label.substr(0, tac.label.size() - 1).c_str()) - label;
-				while (tac.field_1 != "end_function")
+				int label_offset = label - atoi(tac.label.substr(0, tac.label.length() - 1).c_str());
+				while (1)
 				{
 					code inst;
-					cout << tac.field_1 << endl;
 					if (tac.field_1.length())
 						inst.field_1 = class_convert(tac.field_1);
 
-					cout << tac.field_2 << endl;
 					if (tac.field_2.length())
 						inst.field_2 = class_convert(tac.field_2);
 
-					cout << tac.field_3 << endl;
 					if (tac.field_3.length())
 						inst.field_3 = class_convert(tac.field_3);
 
-					cout << tac.field_4 << endl;
 					if (tac.field_4.length())
 						inst.field_4 = class_convert(tac.field_4);
 
-					cout << tac.field_5 << endl;
 					if (tac.field_5.length())
 						inst.field_5 = class_convert(tac.field_5);
 
@@ -3780,9 +3862,13 @@ void fillInheritance()
 					{
 						inst.field_4 = to_string(atoi(tac.field_4.c_str()) + label_offset);
 					}
-					inst.label = newLabel();
+					inst.label = to_string(atoi(tac.label.substr(0, tac.label.length() - 1).c_str()) + label_offset) + ":";
+					label++;
 					class_copy.push_back(inst);
-					tac = threeAC[++i];
+					if (tac.field_1 == "end_function")
+						break;
+					tac = threeAC[i + 1];
+					i++;
 				}
 				i--;
 			}
@@ -3792,16 +3878,9 @@ void fillInheritance()
 	threeAC.insert(threeAC.end(), class_copy.begin(), class_copy.end());
 }
 
-void Parasite::genCode()
+void correctLabels()
 {
 	map<string, string> labelMap;
-
-	genAC();
-	formFirstLast();
-	fillCode();
-	main_changer();
-	fillInheritance();
-
 	for (int i=0; i<threeAC.size(); i++)
 	{
 		labelMap[threeAC[i].label] = to_string(i + 1);
@@ -3837,7 +3916,17 @@ void Parasite::genCode()
 			threeAC[i].field_5 = labelMap[threeAC[i].field_5];
 		}
 	}
+}
 
+void Parasite::genCode()
+{
+
+	genAC();
+	formFirstLast();
+	fillCode();
+	main_changer();
+	correctLabels();
+	fillInheritance();
 	symTableModifier();
 	visited.clear();
 	offset_modifier(globTable);

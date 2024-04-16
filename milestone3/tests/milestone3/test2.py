@@ -31,6 +31,8 @@ def f1() -> None:
 
     while(b > 0 and iter < max_iter):
         iter += 1
+        print("ITER")
+        print(iter)
         x //= 32 - 4 % 2 + 3 * False - 2 - True
         print(x)
         b -= x

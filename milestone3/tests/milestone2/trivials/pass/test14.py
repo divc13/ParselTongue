@@ -1,6 +1,7 @@
 def main():
     while(True):
-        a:int = 1       # infinite loop
+        a:int = 1 
+        break # infinite loop
 
 
 if __name__ == "__main__":

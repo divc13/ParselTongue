@@ -19,6 +19,9 @@ extern string MemRg;
 extern map<string, string> tempType;
 extern vector<reg_struct> regMap;
 
+extern vector<instruction> assembly;
+extern map <string, string> stringMap;
+
 void init_error()
 {
 	// root- -> name printed
@@ -864,20 +867,48 @@ void init_tac()
 
 	a1 = newTmp();
 	tempType[a1] = "str";
-	inst.field_1 = a1;
+	string hlab1 = newLabel();
+	string hlab2 = newLabel();
+
+	string htmp = newTmp();
+	inst.field_1 = htmp;
 	inst.field_2 = "=";
-	inst.field_3 = "findAddress";
-	inst.field_4 = "integer_format";
+	inst.field_3 = print_val;
+	inst.field_4 = "!=";
+	inst.field_5 = "0";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if_false";
+	inst.field_2 = htmp;
+	inst.field_3 = "goto";
+	inst.field_4 = hlab1;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
-	inst.field_1 = "param";
-	inst.field_2 = print_val;
-	inst.field_3 = "";
-	inst.field_4 = "";
+	inst.field_1 = a1;
+	inst.field_2 = "=";
+	inst.field_3 = "findAddress";
+	inst.field_4 = "true_format";
 	inst.field_5 = "";
 	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if";
+	inst.field_2 = htmp;
+	inst.field_3 = "goto";
+	inst.field_4 = hlab2;
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = a1;
+	inst.field_2 = "=";
+	inst.field_3 = "findAddress";
+	inst.field_4 = "false_format";
+	inst.field_5 = "";
+	inst.label = hlab1;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "param";
@@ -885,12 +916,12 @@ void init_tac()
 	inst.field_3 = "";
 	inst.field_4 = "";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = hlab2;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "call";
 	inst.field_2 = "printf";
-	inst.field_3 = "2";
+	inst.field_3 = "1";
 	inst.field_4 = "";
 	inst.field_5 = "";
 	inst.label = newLabel();
@@ -1899,20 +1930,49 @@ void init_tac()
 
 	a1 = newTmp();
 	tempType[a1] = "str";
-	inst.field_1 = a1;
+
+	hlab1 = newLabel();
+	hlab2 = newLabel();
+
+	htmp = newTmp();
+	inst.field_1 = htmp;
 	inst.field_2 = "=";
-	inst.field_3 = "findAddress";
-	inst.field_4 = "integer_format";
+	inst.field_3 = print4;
+	inst.field_4 = "!=";
+	inst.field_5 = "0";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if_false";
+	inst.field_2 = htmp;
+	inst.field_3 = "goto";
+	inst.field_4 = hlab1;
 	inst.field_5 = "";
 	inst.label = newLabel();
 	threeAC.push_back(inst);
 
-	inst.field_1 = "param";
-	inst.field_2 = print4;
-	inst.field_3 = "";
-	inst.field_4 = "";
+	inst.field_1 = a1;
+	inst.field_2 = "=";
+	inst.field_3 = "findAddress";
+	inst.field_4 = "true_format";
 	inst.field_5 = "";
 	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = "if";
+	inst.field_2 = htmp;
+	inst.field_3 = "goto";
+	inst.field_4 = hlab2;
+	inst.field_5 = "";
+	inst.label = newLabel();
+	threeAC.push_back(inst);
+
+	inst.field_1 = a1;
+	inst.field_2 = "=";
+	inst.field_3 = "findAddress";
+	inst.field_4 = "false_format";
+	inst.field_5 = "";
+	inst.label = hlab1;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "param";
@@ -1920,12 +1980,12 @@ void init_tac()
 	inst.field_3 = "";
 	inst.field_4 = "";
 	inst.field_5 = "";
-	inst.label = newLabel();
+	inst.label = hlab2;
 	threeAC.push_back(inst);
 
 	inst.field_1 = "call";
 	inst.field_2 = "printf";
-	inst.field_3 = "2";
+	inst.field_3 = "1";
 	inst.field_4 = "";
 	inst.field_5 = "";
 	inst.label = newLabel();
@@ -2590,4 +2650,109 @@ void init_tac()
 
 		}
 	}
+}
+
+void pre_process_assembly()
+{
+	instruction x86;
+	x86.label = ".data";
+	x86.first = "";
+	x86.second = "";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "integer_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"%lld\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "string_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"%s\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "true_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"True\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "false_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"False\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "float_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"%lf\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "list_start_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"[\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "list_end_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"]\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "comma_format:";
+	x86.first = ".asciz";
+	x86.second = ", \", \"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = "end_line_format:";
+	x86.first = ".asciz";
+	x86.second = ", \"\\n\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	
+	x86.label = "segfault_format:";
+	x86.first = ".asciz";
+	x86.second = "\"\e[31mERROR: LIST INDEX OUT OF RANGE\e[0m\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	x86.label = ".global";
+	x86.first = "main";
+	x86.second = "";
+	x86.third = "";
+	assembly.push_back(x86);
+
+	for (auto i : stringMap)
+	{
+		x86.label = ".section";
+		x86.first = ".rodata";
+		x86.second = "";
+		x86.third = "";
+		assembly.push_back(x86);
+		x86.label = i.second + ":";
+		x86.first = "";
+		x86.second = "";
+		x86.third = "";
+		assembly.push_back(x86);
+		x86.label = ".string";			
+		string strtmp = i.first;
+		formString(strtmp);
+		x86.first = strtmp;
+		x86.second = "";
+		x86.third = "";
+		assembly.push_back(x86);
+	}
+	
+	x86.label = ".text";
+	x86.first = "";
+	x86.second = "";
+	x86.third = "";
+	assembly.push_back(x86);
+
 }

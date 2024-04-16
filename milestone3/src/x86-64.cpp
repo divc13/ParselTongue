@@ -31,7 +31,10 @@ string short_reg(string name)
 {
 	if (name[0] == '(')
 		return name;
-	name[1] = 'e';
+	if (name[0] == '%' && is_num(name.substr(2, 1)))
+		return name + "d";
+	if (name[0] == '%')
+		name[1] = 'e';
 	return name;
 }
 
@@ -47,6 +50,7 @@ namespace x86
 	void Or(string arg1, string arg2, string label, string comment = "");
 	void Xor(string arg1, string arg2, string label, string comment = "");
 	void Not(string arg1, string label, string comment = "");
+	void Neg(string arg1, string label, string comment = "");
 	void Shl(string arg1, string arg2, string label, string comment = "");
 	void Shr(string arg1, string arg2, string label, string comment = "");
 	void Push(string arg1, string label, string comment = "");
@@ -106,7 +110,7 @@ void x86::Cmp(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmp";
+	inst.first = "cmpq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -117,7 +121,7 @@ void x86::Mul(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "imul";
+	inst.first = "imulq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -128,7 +132,7 @@ void x86::Div(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "idiv";
+	inst.first = "idivq";
 	inst.second = arg1;
 	inst.third = "";
 	inst.comment = comment;
@@ -139,7 +143,7 @@ void x86::And(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "and";
+	inst.first = "andq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -150,7 +154,7 @@ void x86::Or(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "or";
+	inst.first = "orq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -161,7 +165,7 @@ void x86::Xor(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "xor";
+	inst.first = "xorq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -172,7 +176,17 @@ void x86::Not(string arg1, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "not";
+	inst.first = "notq";
+	inst.second = arg1;
+	inst.comment = comment;
+	assembly.push_back(inst);
+}
+
+void x86::Neg(string arg1, string label, string comment)
+{
+	instruction inst;
+	inst.label = label;
+	inst.first = "negq";
 	inst.second = arg1;
 	inst.comment = comment;
 	assembly.push_back(inst);
@@ -182,7 +196,7 @@ void x86::Shl(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "shl";
+	inst.first = "shlq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -193,7 +207,7 @@ void x86::Shr(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "shr";
+	inst.first = "shrq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -266,7 +280,7 @@ void x86::Cmove(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmove";
+	inst.first = "cmoveq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -276,7 +290,7 @@ void x86::Cmovne(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovne";
+	inst.first = "cmovneq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -286,7 +300,7 @@ void x86::Cmovg(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovg";
+	inst.first = "cmovgq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -296,7 +310,7 @@ void x86::Cmovl(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovl";
+	inst.first = "cmovlq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -306,7 +320,7 @@ void x86::Cmovge(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovge";
+	inst.first = "cmovgeq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -316,7 +330,7 @@ void x86::Cmovle(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovle";
+	inst.first = "cmovleq";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -396,16 +410,16 @@ void x86::Spill(int reg, string label, string comment)
 int allocate(var_struct &var, string label)
 {
 	// free the registers for died variables
-	for (int i = REG_START; i < REG_MAX; i++)
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
 	{
-		if (!regMap[i].free && varMap[regMap[i].var].death < now && (regMap[i]).allocatable && varMap[regMap[i].var].offset < 0)
+		if (!regMap[i].free && varMap[regMap[i].var].death < code_itr && (regMap[i]).allocatable)
 		{
-				regMap[i].freeReg();
+			regMap[i].freeReg();
 		}
 	}
 
 	// find any free registers
-	for (int i = REG_START; i < REG_MAX; i++)
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
 	{
 		if (regMap[i].free)
 		{
@@ -422,19 +436,16 @@ int allocate(var_struct &var, string label)
 				x86::Move(first, regMap[i].name, label, "ALLOCATE " + var.name);
 			}
 			else
-			{
-				x86::Move("$" + var.name, regMap[i].name, label, "ALLOCATE " + var.name);
-				varMap[regMap[i].var].death = code_itr + 1;
-			}
+				assert(false);
 			return i;
 		}
 	}
 
 	// no free register found, spill the register
-	int farthest = REG_START;
+	int farthest = REG_MAX - 1;
 	vector<int> locs = varMap[regMap[farthest].var].locations;
 	int last_next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
-	for (int i = REG_START; i < REG_MAX; i++)
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
 	{
 		if(!regMap[i].allocatable) continue;
 
@@ -463,10 +474,7 @@ int allocate(var_struct &var, string label)
 		x86::Move(first, regMap[farthest].name, label);
 	}
 	else
-	{
-		x86::Move("$" + var.name, regMap[farthest].name, label, "ALLOCATE " + var.name);
-		varMap[regMap[farthest].var].death = code_itr + 1;
-	}
+		assert(false);
 	return farthest;
 }
 
@@ -474,10 +482,16 @@ int ensure(var_struct var, string label)
 {
 	if(is_num(var.name))
 	{
-		var.name = var.name;
+		reg_struct regis;
+		regis.free = false;
+		regis.name = "$" + var.name;
+		regis.var = var.name;
+		regMap.push_back(regis);
+		return regMap.size() - 1;
 	}
 
-	for (int i = REG_START; i < REG_MAX; i++)
+
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
 	{
 		if (regMap[i].var == var.name)
 		{
@@ -488,6 +502,66 @@ int ensure(var_struct var, string label)
 	// variable not in register
 	int reg = allocate(var, label);
 	return reg;
+}
+
+int get_reg_for_num(var_struct var, string label)
+{
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
+	{
+		if (regMap[i].var == var.name)
+		{
+			return i;
+		}
+	}
+
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
+	{
+		if (!regMap[i].free && varMap[regMap[i].var].death < now && (regMap[i]).allocatable)
+		{
+			regMap[i].freeReg();
+		}
+	}
+
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
+	{
+		if (regMap[i].free)
+		{
+			assert((regMap[i]).allocatable);
+			var.reg = i;
+			regMap[i].free = false;
+			regMap[i].var = var.name;
+
+			x86::Move("$" + var.name, regMap[i].name, label, "ALLOCATE " + var.name);
+			return i;
+		}
+	}
+
+	int farthest = REG_MAX - 1;
+	vector<int> locs = varMap[regMap[farthest].var].locations;
+	int last_next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
+	for (int i = REG_MAX - 1; i >= REG_START; i--)
+	{
+		if(!regMap[i].allocatable) continue;
+
+		locs = varMap[regMap[i].var].locations;
+		int next = locs[lower_bound(locs.begin(), locs.end(), now) - locs.begin()];
+		if (next > last_next)
+		{
+			farthest = i;
+			last_next = next;
+		}
+	}
+
+	x86::Spill(farthest, label);
+
+	// load instruction here
+	var.reg = farthest;
+	regMap[farthest].free = false;
+	regMap[farthest].var = var.name;
+
+	x86::Move("$" + var.name, regMap[farthest].name, label);
+
+	return farthest;
 }
 
 void formString(string &temp)
@@ -521,94 +595,6 @@ void formString(string &temp)
 	}
 }
 
-void pre_process_assembly()
-{
-	instruction x86;
-	x86.label = ".data";
-	x86.first = "";
-	x86.second = "";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "integer_format:";
-	x86.first = ".asciz";
-	x86.second = ", \"%lld\"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "string_format:";
-	x86.first = ".asciz";
-	x86.second = ", \"%s\"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "float_format:";
-	x86.first = ".asciz";
-	x86.second = ", \"%lf\"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "list_start_format:";
-	x86.first = ".asciz";
-	x86.second = ", \"[\"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "list_end_format:";
-	x86.first = ".asciz";
-	x86.second = ", \"]\"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "comma_format:";
-	x86.first = ".asciz";
-	x86.second = ", \", \"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = "end_line_format:";
-	x86.first = ".asciz";
-	x86.second = ", \"\\n\"";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	x86.label = ".global";
-	x86.first = "main";
-	x86.second = "";
-	x86.third = "";
-	assembly.push_back(x86);
-
-	for (auto i : stringMap)
-	{
-		x86.label = ".section";
-		x86.first = ".rodata";
-		x86.second = "";
-		x86.third = "";
-		assembly.push_back(x86);
-		x86.label = i.second + ":";
-		x86.first = "";
-		x86.second = "";
-		x86.third = "";
-		assembly.push_back(x86);
-		x86.label = ".string";			
-		string strtmp = i.first;
-		formString(strtmp);
-		x86.first = strtmp;
-		x86.second = "";
-		x86.third = "";
-		assembly.push_back(x86);
-	}
-	
-	x86.label = ".text";
-	x86.first = "";
-	x86.second = "";
-	x86.third = "";
-	assembly.push_back(x86);
-
-}
-
-
-
 void modifier(code tac)
 {
 
@@ -629,6 +615,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -641,6 +628,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::Add(regMap[reg2].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -653,6 +641,8 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
 		}
 
 		if (tac.field_4 == "-")
@@ -670,6 +660,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -682,6 +673,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::Sub(regMap[reg2].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -694,6 +686,8 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
 		}
 
 		if (tac.field_4 == "*")
@@ -711,6 +705,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -721,8 +716,11 @@ void modifier(code tac)
 			else
 			{
 				reg2 = ensure(varMap[tac.field_5], tac.label);
+				if (reg2 >= REG_MAX)
+					reg2 = get_reg_for_num(varMap[tac.field_5], tac.label);
 				x86::Mul(regMap[reg2].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -735,6 +733,8 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
 		}
 
 		if (tac.field_4 == "/" || tac.field_4 == "//")
@@ -742,6 +742,7 @@ void modifier(code tac)
 			if (regMap[RDX].free == false)
 				x86::Spill(RDX, tac.label);
 			regMap[RDX].free = false;
+			regMap[RDX].allocatable = false;
 			x86::Move("$0", regMap[RDX].name, tac.label);
 
 			int reg1, reg2, reg3;
@@ -757,6 +758,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			x86::CLTD(tac.label);
 
@@ -769,8 +771,11 @@ void modifier(code tac)
 			else
 			{
 				reg2 = ensure(varMap[tac.field_5], tac.label);
+				if (reg2 >= REG_MAX)
+					reg2 = get_reg_for_num(varMap[tac.field_5], tac.label);
 				x86::Div(regMap[reg2].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -785,6 +790,9 @@ void modifier(code tac)
 			}
 
 			regMap[RDX].free = true;
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[RDX].allocatable = true;
 		}
 
 		if (tac.field_4 == "%")
@@ -792,6 +800,7 @@ void modifier(code tac)
 			if (regMap[RDX].free == false)
 				x86::Spill(RDX, tac.label);
 			regMap[RDX].free = false;
+			regMap[RDX].allocatable = false;
 			x86::Move("$0", regMap[RDX].name, tac.label);
 			
 			int reg1, reg2, reg3;
@@ -807,6 +816,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			x86::CLTD(tac.label);
 
@@ -819,8 +829,11 @@ void modifier(code tac)
 			else
 			{
 				reg2 = ensure(varMap[tac.field_5], tac.label);
+				if (reg2 >= REG_MAX)
+					reg2 = get_reg_for_num(varMap[tac.field_5], tac.label);
 				x86::Div(regMap[reg2].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -835,6 +848,9 @@ void modifier(code tac)
 			}
 
 			regMap[RDX].free = true;
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[RDX].allocatable = true;
 		}
 
 		if (tac.field_4 == "and" || tac.field_4 == "&")
@@ -852,6 +868,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -864,6 +881,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::And(regMap[reg2].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -876,6 +894,8 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
 		}
 
 		if (tac.field_4 == "or" || tac.field_4 == "|")
@@ -893,6 +913,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -905,6 +926,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::Or(regMap[reg2].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -917,6 +939,8 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
 		}
 
 		if (tac.field_4 == "^")
@@ -934,6 +958,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -946,6 +971,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::Xor(regMap[reg2].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -958,6 +984,8 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
 		}
 
 		if (tac.field_3 == "~" || tac.field_3 == "not" || tac.field_3 == "-")
@@ -975,8 +1003,11 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_4], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
-
-			x86::Not(regMap[RAX].name, tac.label);
+			regMap[reg1].allocatable = false;
+			if (tac.field_3 == "~")
+				x86::Not(regMap[RAX].name, tac.label);
+			else if (tac.field_3 == "-")
+				x86::Neg(regMap[RAX].name, tac.label);
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -989,6 +1020,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				x86::Move(regMap[RAX].name, regMap[reg3].name, tac.label);
 			}
+			regMap[reg1].allocatable = true;
 		}
 
 		if (tac.field_4 == "<<")
@@ -996,6 +1028,7 @@ void modifier(code tac)
 			if (regMap[RCX].free == false)
 				x86::Spill(RCX, tac.label);
 			regMap[RCX].free = false;
+			regMap[RCX].allocatable = false;
 			
 			int reg1, reg2, reg3;
 
@@ -1010,6 +1043,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1022,6 +1056,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			x86::Shl("\%cl", regMap[RAX].name, tac.label);
 
@@ -1038,6 +1073,9 @@ void modifier(code tac)
 			}
 
 			regMap[RCX].free = true;
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[RCX].allocatable = true;
 		}
 
 		if (tac.field_4 == ">>")
@@ -1045,6 +1083,7 @@ void modifier(code tac)
 			if (regMap[RCX].free == false)
 				x86::Spill(RCX, tac.label);
 			regMap[RCX].free = false;
+			regMap[RCX].allocatable = false;
 			
 			int reg1, reg2, reg3;
 
@@ -1059,6 +1098,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_3], tac.label);
 				x86::Move(regMap[reg1].name, regMap[RAX].name, tac.label);
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1071,6 +1111,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				x86::Move(regMap[reg2].name, regMap[RCX].name, tac.label);
 			}
+			regMap[reg2].allocatable = false;
 
 			x86::Shr("\%cl", regMap[RAX].name, tac.label);
 
@@ -1087,6 +1128,9 @@ void modifier(code tac)
 			}
 
 			regMap[RCX].free = true;
+			regMap[reg1].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[RCX].allocatable = true;
 		}
 
 		if (tac.field_4 == "==")
@@ -1103,8 +1147,11 @@ void modifier(code tac)
 			else
 			{
 				reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (reg1 >= REG_MAX)
+					reg1 = get_reg_for_num(varMap[tac.field_3], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1117,6 +1164,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1129,6 +1177,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
 			{
@@ -1140,6 +1189,9 @@ void modifier(code tac)
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg3].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[reg1].allocatable = true;
 		}
 
 		if (tac.field_4 == "!=")
@@ -1156,8 +1208,11 @@ void modifier(code tac)
 			else
 			{
 				reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (reg1 >= REG_MAX)
+					reg1 = get_reg_for_num(varMap[tac.field_3], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1170,6 +1225,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1182,6 +1238,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
 			{
@@ -1193,6 +1250,9 @@ void modifier(code tac)
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovne(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg3].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[reg1].allocatable = true;
 		}
 
 		if (tac.field_4 == ">")
@@ -1209,8 +1269,11 @@ void modifier(code tac)
 			else
 			{
 				reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (reg1 >= REG_MAX)
+					reg1 = get_reg_for_num(varMap[tac.field_3], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1223,6 +1286,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1235,6 +1299,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
 			{
@@ -1246,6 +1311,9 @@ void modifier(code tac)
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovg(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg3].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[reg1].allocatable = true;
 		}
 
 		if (tac.field_4 == "<")
@@ -1262,8 +1330,11 @@ void modifier(code tac)
 			else
 			{
 				reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (reg1 >= REG_MAX)
+					reg1 = get_reg_for_num(varMap[tac.field_3], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1276,6 +1347,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1288,6 +1360,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
 			{
@@ -1299,6 +1372,9 @@ void modifier(code tac)
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovl(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg3].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[reg1].allocatable = true;
 		}
 
 		if (tac.field_4 == ">=")
@@ -1315,8 +1391,11 @@ void modifier(code tac)
 			else
 			{
 				reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (reg1 >= REG_MAX)
+					reg1 = get_reg_for_num(varMap[tac.field_3], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1329,6 +1408,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1341,6 +1421,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
 			{
@@ -1352,6 +1433,9 @@ void modifier(code tac)
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovge(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg3].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[reg1].allocatable = true;
 		}
 
 		if (tac.field_4 == "<=")
@@ -1368,8 +1452,11 @@ void modifier(code tac)
 			else
 			{
 				reg1 = ensure(varMap[tac.field_3], tac.label);
+				if (reg1 >= REG_MAX)
+					reg1 = get_reg_for_num(varMap[tac.field_3], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if((tac.field_5)[0] == '*')
 			{
@@ -1382,6 +1469,7 @@ void modifier(code tac)
 				reg2 = ensure(varMap[tac.field_5], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1394,6 +1482,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_3)[0] == '*' && (tac.field_5)[0] == '*')
 			{
@@ -1405,6 +1494,9 @@ void modifier(code tac)
 			x86::Move("$0", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
 			x86::Cmovle(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg3].allocatable = true;
+			regMap[reg2].allocatable = true;
+			regMap[reg1].allocatable = true;
 		}
 
 		if(test(tac.field_3))
@@ -1421,8 +1513,12 @@ void modifier(code tac)
 			else
 			{
 				reg2 = ensure(varMap[tac.field_4], tac.label);
+				if (reg2 >= REG_MAX)
+					reg2 = get_reg_for_num(varMap[tac.field_4], tac.label);
 				reg_name2 = regMap[reg2].name;
 			}
+
+			regMap[reg2].allocatable = false;
 
 			if((tac.field_1)[0] == '*')
 			{
@@ -1435,6 +1531,7 @@ void modifier(code tac)
 				reg3 = ensure(varMap[tac.field_1], tac.label);
 				reg_name3 = regMap[reg3].name;
 			}
+			regMap[reg3].allocatable = false;
 
 			if ((tac.field_4)[0] == '*')
 			{
@@ -1458,6 +1555,8 @@ void modifier(code tac)
 				x86::Cmovle(regMap[RAX].name, reg_name3, tac.label);
 			if (tac.field_3 == "testge")
 				x86::Cmovge(regMap[RAX].name, reg_name3, tac.label);
+			regMap[reg2].allocatable = true;
+			regMap[reg3].allocatable = true;
 		}
 
 		if (tac.field_4 == "")
@@ -1475,6 +1574,7 @@ void modifier(code tac)
 				reg1 = ensure(varMap[tac.field_1], tac.label);
 				reg_name1 = regMap[reg1].name;
 			}
+			regMap[reg1].allocatable = false;
 
 			if (tac.field_3 == "popparam")
 			{
@@ -1494,9 +1594,16 @@ void modifier(code tac)
 					reg3 = ensure(varMap[tac.field_3], tac.label);
 					reg_name3 = regMap[reg3].name;
 				}
+				
+				if ((tac.field_3)[0] == '*' && (tac.field_1)[0] == '*')
+				{
+					x86::Move(reg_name3, regMap[reg3].name, tac.label);
+					reg_name3 = regMap[reg3].name;
+				}
 
 				x86::Move(reg_name3, reg_name1, tac.label);
 			}
+			regMap[reg1].allocatable = true;
 
 		}
 
@@ -1506,6 +1613,7 @@ void modifier(code tac)
 	{
 		int reg1 = ensure(varMap[tac.field_1], tac.label);
 		x86::Lea(tac.field_4, regMap[reg1].name, tac.label);
+
 	}
 	
 	if (tac.field_1 == "param")
@@ -1559,7 +1667,7 @@ void modifier(code tac)
 		symTable* table = globTable;
 		tableRecord* entry;
 
-		for(int i=0; i<funcName.length() - 2; i++)
+		for(int i = 0; i < ((int) funcName.length()) - 2; i++)
 		{
 			if(funcName.substr(i, 3) == "_Cc")
 			{
@@ -1719,7 +1827,6 @@ void modifier(code tac)
 		for (int i = 0; i < num; i++)
 		{
 			string reg_name = "";
-
 			if((threeAC[index].field_2)[0] == '*')
 			{
 				string var_name = threeAC[index].field_2.substr(2, threeAC[index].field_2.length() - 3);
@@ -1769,6 +1876,10 @@ void modifier(code tac)
 
 		x86::Spill(R10, tac.label);
 		x86::Spill(R11, tac.label);
+		x86::Spill(R12, tac.label);
+		x86::Spill(R13, tac.label);
+		x86::Spill(R14, tac.label);
+		x86::Spill(R15, tac.label);
 
 		bool did_push = false;
 
@@ -1834,6 +1945,8 @@ void modifier(code tac)
 		else
 		{
 			reg = ensure(varMap[tac.field_2], tac.label);
+			if (reg >= REG_MAX)
+				reg = get_reg_for_num(varMap[tac.field_2], tac.label);
 			reg_name = regMap[reg].name;
 		}
 
@@ -1870,6 +1983,8 @@ void modifier(code tac)
 		else
 		{
 			reg = ensure(varMap[tac.field_2], tac.label);
+			if (reg >= REG_MAX)
+				reg = get_reg_for_num(varMap[tac.field_2], tac.label);
 			reg_name = regMap[reg].name;
 		}
 
@@ -1933,19 +2048,18 @@ void update_var_struct(string name, int time)
 	// variables
 	int loc_percent = -1;
 	int loc_dot = -1;
-	for (int i=0; i< name.length(); i++)
+	for (int i=0; i < name.length(); i++)
 	{
 		if (name[i] == '%')
 			loc_percent = i;
 
-		if (i < name.length() - 2 && name.substr(i, 3) == "_Cc")
+		if (i < ((int) name.length()) - 2 && name.substr(i, 3) == "_Cc")
 			loc_dot = i;
 	}
 
 	// global variable
 	if (loc_percent == -1)
 	{
-		cout << name << " " << time << endl;
 		assert(loc_dot == -1);
 		// first encounter
 		if (varMap.find(name) == varMap.end())
@@ -1972,7 +2086,7 @@ void update_var_struct(string name, int time)
 		{
 			string funcName = "";
 			bool check = true;
-			for(int i=loc_percent + 1;i < name.length() - 2; i++){
+			for(int i = loc_percent + 1; i < ((int) name.length()) - 2; i++){
 				if (name.substr(i, 3) == "_Zz")
 				{
 					check = false;
@@ -2012,7 +2126,7 @@ void update_var_struct(string name, int time)
 				// handle function overloading
 				vector<tableRecord*> params;				// donot free params, may lead to segfault
 				vector<int> a_indices;
-				for (int i=0; i<name.length() - 2; i++)
+				for (int i = 0; i < ((int) name.length()) - 2; i++)
 				{
 					if (name.substr(i, 3) == "_Zz")
 						a_indices.push_back(i + 2);
@@ -2024,7 +2138,7 @@ void update_var_struct(string name, int time)
 					int last;
 					if (i == a_indices.size() - 1)
 					{
-						last = name.length() - 5;
+						last = ((int) name.length()) - 5;
 					}
 					else 
 					{
@@ -2066,7 +2180,7 @@ void update_var_struct(string name, int time)
 		}
 		bool check = true;
 		string funcName = "";
-		for(int i=loc_dot + 3;i < name.length() - 2; i++){
+		for(int i = loc_dot + 3; i < ((int) name.length()) - 2; i++){
 			if (name.substr(i, 3) == "_Zz")
 			{
 				check = false;
@@ -2082,14 +2196,14 @@ void update_var_struct(string name, int time)
 
 		if (check)
 		{
-			funcName += name[name.length() - 2]  + name[name.length() - 1];
+			funcName += name[((int) name.length()) - 2]  + name[((int) name.length()) - 1];
 		}
 
 
 		// handle method overloading
 		vector<tableRecord*> params;				// do not free params, may lead to segfault
 		vector<int> a_indices;
-		for (int i = 0; i < name.length() - 2; i++)
+		for (int i = 0; i < ((int) name.length()) - 2; i++)
 		{
 			if (name.substr(i, 3) == "_Zz")
 				a_indices.push_back(i + 2);
@@ -2101,7 +2215,7 @@ void update_var_struct(string name, int time)
 			int last;
 			if (i == a_indices.size() - 1)
 			{
-				last = name.length() - 5;
+				last = ((int) name.length()) - 5;
 			}
 			else 
 			{
@@ -2134,18 +2248,6 @@ void update_var_struct(string name, int time)
 	varMap[name].death = time;
 	return;
 
-}
-
-void update_death()
-{
-	for (auto var : varMap)
-	{
-		if (BB_leaders.lower_bound(var.second.death) != BB_leaders.end() && *(BB_leaders.lower_bound(var.second.death)) != var.second.death && BB_leaders.upper_bound(var.second.death) != BB_leaders.end())
-		{
-			var.second.death = *(BB_leaders.upper_bound(var.second.death));
-			var.second.locations.push_back(var.second.death);
-		}
-	}
 }
 
 bool test(string name)
@@ -2294,23 +2396,23 @@ void post_process_assembly()
 
 void generate_assembly()
 {
-	cout << "START" << endl;
+	// cout << "START" << endl;
 	identify_BB();
-	cout << "1" << endl;
+	// cout << "1" << endl;
 	init_var_struct();
-	cout << "2" << endl;
+	// cout << "2" << endl;
 	pre_process_assembly();
-	cout << "3" << endl;
+	// cout << "3" << endl;
 
 	for (code_itr=0; code_itr< threeAC.size(); code_itr++)
 	{
-		cout << "LINE: "  << code_itr + 1 << endl;
+		// cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;
 		modifier(threeAC[code_itr]);
 	}
-	cout << "4" << endl;
+	// cout << "4" << endl;
 	post_process_assembly();
-	cout << "5" << endl;
+	// cout << "5" << endl;
 }
 
 /* NOTE : TAKE OFFSET ONLY FROM RBP */

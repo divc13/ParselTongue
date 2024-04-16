@@ -1,5 +1,5 @@
-def fun():
-    if ("hello" < "Hello"):
+def fun() -> None:
+    if ("hello" > "Hello"):
         print ("helelelo")
 
 

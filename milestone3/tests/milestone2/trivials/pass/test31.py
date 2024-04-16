@@ -1,4 +1,4 @@
-def fun():
+def fun() -> None:
     if True:
         a:int
 
