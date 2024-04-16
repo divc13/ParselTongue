@@ -3695,7 +3695,7 @@ void main_changer()
 
 			// remove the 14 instructions
 			threeAC.erase(threeAC.begin() + i + 2, threeAC.begin() + i + 16);
-			label -= 13;
+			// label -= 13;
 		}
 	}
 
@@ -4122,6 +4122,7 @@ void Parasite::genCode()
 	genAC();
 	formFirstLast();
 	fillCode();
+	correctLabels();
 	main_changer();
 	correctLabels();
 	fillInheritance();

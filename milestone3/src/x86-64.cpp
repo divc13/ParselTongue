@@ -262,6 +262,7 @@ void x86::Ret(string label, string comment)
 	inst.label = label;
 	inst.first = "leave";
 	inst.comment = comment;
+	gap -= 8;
 	assembly.push_back(inst);
 	inst.first = "ret";
 	inst.comment = comment;
@@ -1909,7 +1910,7 @@ void modifier(code tac)
 
 		if (gap % 16)
 		{
-			x86::Push("$0", tac.label);
+			x86::Push("$0", tac.label, "PUSHED 0");
 			did_push = true;
 		}
 
@@ -1917,9 +1918,9 @@ void modifier(code tac)
 
 		if (did_push)
 		{
-			x86::Sub("$8", "%rsp", tac.label);
+			x86::Add("$8", "%rsp", tac.label);
 			// x86::Pop("$0", tac.label);
-			gap -=8;
+			gap -= 8;
 			did_push = false;
 		}
 
@@ -1950,7 +1951,6 @@ void modifier(code tac)
 		}
 
 		x86::Move(regMap[RBP].name, regMap[RSP].name, tac.label);
-		gap = 0;
 
 		x86::Ret(tac.label);
 	}
