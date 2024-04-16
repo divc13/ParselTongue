@@ -161,6 +161,7 @@ def f1(val:int) -> None:
             print(i)
         elif (i == 30):
             main()
+            # print(i)
 
 def main():
     print("in main")
@@ -168,7 +169,10 @@ def main():
 
 if __name__ == "__main__":
     main()
-    f1(2)
+    n:int = 2    # no of times f1 should repeat
+    f1(n)       
+
+
 
 
 
