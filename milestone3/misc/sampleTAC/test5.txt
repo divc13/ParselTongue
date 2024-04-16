@@ -1,163 +1,341 @@
-1:              __name__ = "__main__"  
-2:              begin_function range@int   
-3:              pop_param $t1   
-4:              $t2 = $t1 + 1
-5:              $t3 = $t2 * 8
-6:              param $t3   
-7:              call alloc_mem 1  
-8:              $t4 = popparam  
-9:              *($t4) = $t1  
-10:             $t6 = 1  
-11:             $t8 = $t6 * 8
-12:             $t9 = $t4 + $t8
-13:             *($t9) = $t6 - 1
-14:             $t6 = $t6 + 1
-15:             $t7 = $t6 < $t2
-16:             if $t7 goto 11 
-17:             push $t4   
-18:             return    
-19:             end_function    
-20:             begin_function range@int@int   
-21:             pop_param $t10   
-22:             pop_param $t11   
-23:             $t12 = $t11 - $t10
-24:             $t13 = $t12 + 1
-25:             $t16 = $t13 * 8
-26:             param $t16   
-27:             call alloc_mem 1  
-28:             $t23 = popparam  
-29:             $t18 = $t10  
-30:             *($t23) = $t12  
-32:             $t21 = $t18 - $t10
-32:             $t15 = $t21 + 1
-33:             $t20 = $t15 * 8
-34:             $t22 = $t23 + $t20
-35:             *($t22) = $t18  
-36:             $t18 = $t18 + 1
-37:             $t19 = $t18 < $t11
-38:             if $t19 goto 32 
-39:             push $t23   
-40:             return    
-41:             end_function    
-42:             begin_function len@str   
-43:             pop_param $t24   
-44:             $t25 = *($t24)  
-45:             push $t25   
+1:              begin_function print_Zzint_Nn1   
+2:              pop_param #var1%print_Zzint_Nn1   
+3:              $t1 = findAddress integer_format 
+4:              param #var1%print_Zzint_Nn1   
+5:              param $t1   
+6:              call printf 2  
+7:              $t2 = findAddress end_line_format 
+8:              param $t2   
+9:              call printf 1  
+10:             return    
+11:             end_function    
+12:             begin_function print_Zzfloat_Nn1   
+13:             pop_param #var1%print_Zzfloat_Nn1   
+14:             $t3 = findAddress float_format 
+15:             param #var1%print_Zzfloat_Nn1   
+16:             param $t3   
+17:             call printf 2  
+18:             $t4 = findAddress end_line_format 
+19:             param $t4   
+20:             call printf 1  
+21:             return    
+22:             end_function    
+23:             begin_function print_Zzstr_Nn1   
+24:             pop_param #var1%print_Zzstr_Nn1   
+25:             $t5 = findAddress string_format 
+26:             param #var1%print_Zzstr_Nn1   
+27:             param $t5   
+28:             call printf 2  
+29:             $t6 = findAddress end_line_format 
+30:             param $t6   
+31:             call printf 1  
+32:             return    
+33:             end_function    
+34:             begin_function print_Zzbool_Nn1   
+35:             pop_param #var1%print_Zzbool_Nn1   
+36:             $t8 = #var1%print_Zzbool_Nn1 != 0
+37:             if_false $t8 goto 40 
+38:             $t7 = findAddress true_format 
+39:             if $t8 goto 41 
+40:             $t7 = findAddress false_format 
+41:             param $t7   
+42:             call printf 1  
+43:             $t9 = findAddress end_line_format 
+44:             param $t9   
+45:             call printf 1  
 46:             return    
 47:             end_function    
-48:             begin_function len@list[bool]   
-49:             pop_param $t26   
-50:             $t27 = *($t26)  
-51:             push $t27   
-52:             return    
-53:             end_function    
-54:             begin_function len@list[float]   
-55:             pop_param $t28   
-56:             $t29 = *($t28)  
-57:             push $t29   
-58:             return    
-59:             end_function    
-60:             begin_function len@list[int]   
-61:             pop_param $t30   
-62:             $t31 = *($t30)  
-63:             push $t31   
-64:             return    
-65:             end_function    
-66:             begin_function len@list[rect]   
-67:             pop_param $t32   
-68:             $t33 = *($t32)  
-69:             push $t33   
-70:             return    
-71:             end_function    
-72:             begin_function len@list[str]   
-73:             pop_param $t34   
-74:             $t35 = *($t34)  
-75:             push $t35   
-76:             return    
-77:             end_function    
-78:             begin_function rect.__init__@rect@int@int   
-79:             pop_param self%rect.__init__   
-80:             pop_param length%rect.__init__   
-81:             pop_param width%rect.__init__   
-82:             $t36 = self%rect.__init__  
-83:             $t37 = $t36 + 0
-84:             *($t37) = length%rect.__init__  
-85:             $t38 = self%rect.__init__  
-86:             $t39 = $t38 + 8
-87:             *($t39) = width%rect.__init__  
-88:             $t40 = self%rect.__init__  
-89:             $t41 = $t40 + 16
-90:             $t42 = - 1 
-91:             *($t41) = $t42  
-92:             $t43 = self%rect.__init__  
-93:             $t44 = $t43 + 24
-94:             $t45 = - 1 
-95:             *($t44) = $t45  
-96:             end_function    
-97:             begin_function rect.find_area@rect   
-98:             pop_param self%rect.find_area   
-99:             $t46 = self%rect.find_area  
-100:            $t47 = $t46 + 16
-101:            $t48 = self%rect.find_area  
-102:            $t49 = $t48 + 0
-103:            $t50 = self%rect.find_area  
-104:            $t51 = $t50 + 8
-105:            $t52 = *($t49) * *($t51)
-106:            *($t47) = $t52  
-107:            $t53 = self%rect.find_area  
-108:            $t54 = $t53 + 16
-109:            push *($t54)   
-110:            return    
-111:            end_function    
-112:            begin_function rect.find_perimeter@rect   
-113:            pop_param self%rect.find_perimeter   
-114:            $t55 = self%rect.find_perimeter  
-115:            $t56 = $t55 + 24
-116:            $t57 = self%rect.find_perimeter  
-117:            $t58 = $t57 + 0
-118:            $t59 = self%rect.find_perimeter  
-119:            $t60 = $t59 + 8
-120:            $t61 = *($t58) + *($t60)
-121:            $t62 = 2 * $t61
-122:            *($t56) = $t62  
-123:            $t63 = self%rect.find_perimeter  
-124:            $t64 = $t63 + 24
-125:            push *($t64)   
-126:            return    
-127:            end_function    
-128:            begin_function main   
-129:            param 4   
-130:            param 3   
-131:            param 32   
-132:            call alloc_mem 1  
-133:            $t65 = popparam  
-134:            param $t65   
-135:            call rect.__init__@rect@int@int 3  
-136:            obj1%main = $t65  
-137:            param obj1   
-138:            call rect.find_area@rect 1  
-139:            $t66 = popparam  
-140:            param $t66   
-141:            call print@int 1  
-142:            param obj1   
-143:            call rect.find_perimeter@rect 1  
-144:            $t67 = popparam  
-145:            param $t67   
-146:            call print@int 1  
-147:            param obj1   
-148:            call rect.find_perimeter@rect 1  
-149:            $t68 = popparam  
-150:            perimeter%main = $t68  
-151:            end_function    
-152:            param 17   
-153:            call alloc_mem 1  
-154:            $t69 = popparam  
-155:            *($t69) = 9  
-156:            $t70 = $t69 + 8
-157:            *($t70) = "__main__"  
-158:            $t71 = __name__ == $t69
-159:            if_false $t71 goto END 
-160:            shift_sp -40   
-161:            call main 0  
-162:            shift_sp 40   
+48:             begin_function print_Zzlist_int__Nn1   
+49:             pop_param #var1%print_Zzlist_int__Nn1   
+50:             $t10 = *(#var1%print_Zzlist_int__Nn1)  
+51:             $t11 = 1  
+52:             $t12 = findAddress list_start_format 
+53:             param $t12   
+54:             call printf 1  
+55:             $t13 = $t11 > $t10
+56:             if $t13 goto 71 
+57:             $t14 = $t11 * 8
+58:             $t15 = #var1%print_Zzlist_int__Nn1 + $t14
+59:             $t16 = *($t15)  
+60:             $t17 = findAddress integer_format 
+61:             param $t16   
+62:             param $t17   
+63:             call printf 2  
+64:             $t18 = findAddress comma_format 
+65:             param $t18   
+66:             call printf 1  
+67:             $t11 = $t11 + 1
+68:             $t19 = $t10 + 1
+69:             $t20 = $t11 < $t19
+70:             if $t20 goto 57 
+71:             $t21 = findAddress list_end_format 
+72:             param $t21   
+73:             call printf 1  
+74:             $t22 = findAddress end_line_format 
+75:             param $t22   
+76:             call printf 1  
+77:             return    
+78:             end_function    
+79:             begin_function print_Zzlist_str__Nn1   
+80:             pop_param #var1%print_Zzlist_str__Nn1   
+81:             $t23 = *(#var1%print_Zzlist_str__Nn1)  
+82:             $t24 = 1  
+83:             $t25 = findAddress list_start_format 
+84:             param $t25   
+85:             call printf 1  
+86:             $t20 = $t24 > $t23
+87:             if $t20 goto 102 
+88:             $t26 = $t24 * 8
+89:             $t27 = #var1%print_Zzlist_str__Nn1 + $t26
+90:             $t28 = *($t27)  
+91:             $t29 = findAddress string_format 
+92:             param $t28   
+93:             param $t29   
+94:             call printf 2  
+95:             $t30 = findAddress comma_format 
+96:             param $t30   
+97:             call printf 1  
+98:             $t24 = $t24 + 1
+99:             $t31 = $t23 + 1
+100:            $t32 = $t24 < $t31
+101:            if $t32 goto 88 
+102:            $t33 = findAddress list_end_format 
+103:            param $t33   
+104:            call printf 1  
+105:            $t34 = findAddress end_line_format 
+106:            param $t34   
+107:            call printf 1  
+108:            return    
+109:            end_function    
+110:            begin_function print_Zzlist_float__Nn1   
+111:            pop_param #var1%print_Zzlist_float__Nn1   
+112:            $t35 = *(#var1%print_Zzlist_float__Nn1)  
+113:            $t36 = 1  
+114:            $t37 = findAddress list_start_format 
+115:            param $t37   
+116:            call printf 1  
+117:            $t32 = $t36 > $t35
+118:            if $t32 goto 133 
+119:            $t38 = $t36 * 8
+120:            $t39 = #var1%print_Zzlist_float__Nn1 + $t38
+121:            $t40 = *($t39)  
+122:            $t41 = findAddress float_format 
+123:            param $t40   
+124:            param $t41   
+125:            call printf 2  
+126:            $t42 = findAddress comma_format 
+127:            param $t42   
+128:            call printf 1  
+129:            $t36 = $t36 + 1
+130:            $t43 = $t35 + 1
+131:            $t44 = $t36 < $t43
+132:            if $t44 goto 119 
+133:            $t45 = findAddress list_end_format 
+134:            param $t45   
+135:            call printf 1  
+136:            $t46 = findAddress end_line_format 
+137:            param $t46   
+138:            call printf 1  
+139:            return    
+140:            end_function    
+141:            begin_function print_Zzlist_bool__Nn1   
+142:            pop_param #var1%print_Zzlist_bool__Nn1   
+143:            $t47 = *(#var1%print_Zzlist_bool__Nn1)  
+144:            $t48 = 1  
+145:            $t49 = findAddress list_start_format 
+146:            param $t49   
+147:            call printf 1  
+148:            $t44 = $t48 > $t47
+149:            if $t44 goto 167 
+150:            $t50 = $t48 * 8
+151:            $t51 = #var1%print_Zzlist_bool__Nn1 + $t50
+152:            $t52 = *($t51)  
+153:            $t54 = $t52 != 0
+154:            if_false $t54 goto 157 
+155:            $t53 = findAddress true_format 
+156:            if $t54 goto 158 
+157:            $t53 = findAddress false_format 
+158:            param $t53   
+159:            call printf 1  
+160:            $t55 = findAddress comma_format 
+161:            param $t55   
+162:            call printf 1  
+163:            $t48 = $t48 + 1
+164:            $t56 = $t47 + 1
+165:            $t57 = $t48 < $t56
+166:            if $t57 goto 150 
+167:            $t58 = findAddress list_end_format 
+168:            param $t58   
+169:            call printf 1  
+170:            $t59 = findAddress end_line_format 
+171:            param $t59   
+172:            call printf 1  
+173:            return    
+174:            end_function    
+175:            begin_function range_Zzint_Nn1   
+176:            pop_param #var2%range_Zzint_Nn1   
+177:            $t60 = #var2%range_Zzint_Nn1 < 0
+178:            if_false $t60 goto 180 
+179:            #var2%range_Zzint_Nn1 = 0  
+180:            $t61 = #var2%range_Zzint_Nn1 + 1
+181:            $t62 = $t61 * 8
+182:            param $t62   
+183:            call malloc 1  
+184:            $t63 = popparam  
+185:            *($t63) = #var2%range_Zzint_Nn1  
+186:            $t64 = 1  
+187:            $t65 = $t64 < $t61
+188:            if_false $t65 goto 195 
+189:            $t66 = $t64 * 8
+190:            $t67 = $t63 + $t66
+191:            *($t67) = $t64 - 1
+192:            $t64 = $t64 + 1
+193:            $t65 = $t64 < $t61
+194:            if $t65 goto 189 
+195:            push $t63   
+196:            return    
+197:            end_function    
+198:            begin_function range_Zzint_Zzint_Nn2   
+199:            pop_param #var1%range_Zzint_Zzint_Nn2   
+200:            pop_param #var2%range_Zzint_Zzint_Nn2   
+201:            $t68 = #var2%range_Zzint_Zzint_Nn2 - #var1%range_Zzint_Zzint_Nn2
+202:            $t72 = $t68 < 0
+203:            if_false $t72 goto 205 
+204:            $t68 = 0  
+205:            $t69 = $t68 + 1
+206:            $t70 = $t69 * 8
+207:            param $t70   
+208:            call malloc 1  
+209:            $t73 = popparam  
+210:            $t74 = #var1%range_Zzint_Zzint_Nn2  
+211:            *($t73) = $t68  
+212:            $t75 = $t74 < #var2%range_Zzint_Zzint_Nn2
+213:            if_false $t75 goto 222 
+214:            $t77 = $t74 - #var1%range_Zzint_Zzint_Nn2
+215:            $t71 = $t77 + 1
+216:            $t76 = $t71 * 8
+217:            $t78 = $t73 + $t76
+218:            *($t78) = $t74  
+219:            $t74 = $t74 + 1
+220:            $t75 = $t74 < #var2%range_Zzint_Zzint_Nn2
+221:            if $t75 goto 214 
+222:            push $t73   
+223:            return    
+224:            end_function    
+225:            begin_function len_Zzstr_Nn1   
+226:            pop_param #var1%len_Zzstr_Nn1   
+227:            #var1%len_Zzstr_Nn1 = #var1%len_Zzstr_Nn1 - 8
+228:            $t79 = *(#var1%len_Zzstr_Nn1)  
+229:            push $t79   
+230:            return    
+231:            end_function    
+232:            begin_function len_Zzlist_bool__Nn1   
+233:            pop_param #len%len_Zzlist_bool__Nn1   
+234:            $t80 = *(#len%len_Zzlist_bool__Nn1)  
+235:            push $t80   
+236:            return    
+237:            end_function    
+238:            begin_function len_Zzlist_float__Nn1   
+239:            pop_param #len%len_Zzlist_float__Nn1   
+240:            $t81 = *(#len%len_Zzlist_float__Nn1)  
+241:            push $t81   
+242:            return    
+243:            end_function    
+244:            begin_function len_Zzlist_int__Nn1   
+245:            pop_param #len%len_Zzlist_int__Nn1   
+246:            $t82 = *(#len%len_Zzlist_int__Nn1)  
+247:            push $t82   
+248:            return    
+249:            end_function    
+250:            begin_function len_Zzlist_rect__Nn1   
+251:            pop_param #len%len_Zzlist_rect__Nn1   
+252:            $t83 = *(#len%len_Zzlist_rect__Nn1)  
+253:            push $t83   
+254:            return    
+255:            end_function    
+256:            begin_function len_Zzlist_str__Nn1   
+257:            pop_param #len%len_Zzlist_str__Nn1   
+258:            $t84 = *(#len%len_Zzlist_str__Nn1)  
+259:            push $t84   
+260:            return    
+261:            end_function    
+262:            begin_function rect_Cc__init___Zzrect_Zzint_Zzint_Nn3   
+263:            pop_param self%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3   
+264:            pop_param length%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3   
+265:            pop_param width%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3   
+266:            $t85 = self%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3  
+267:            $t86 = $t85 + 0
+268:            *($t86) = length%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3  
+269:            $t87 = self%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3  
+270:            $t88 = $t87 + 8
+271:            *($t88) = width%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3  
+272:            $t89 = self%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3  
+273:            $t90 = $t89 + 16
+274:            $t91 = -1 * 1
+275:            *($t90) = $t91  
+276:            $t92 = self%rect_Cc__init___Zzrect_Zzint_Zzint_Nn3  
+277:            $t93 = $t92 + 24
+278:            $t94 = -1 * 1
+279:            *($t93) = $t94  
+280:            end_function    
+281:            begin_function rect_Ccfind_area_Zzrect_Nn1   
+282:            pop_param self%rect_Ccfind_area_Zzrect_Nn1   
+283:            $t95 = self%rect_Ccfind_area_Zzrect_Nn1  
+284:            $t96 = $t95 + 16
+285:            $t97 = self%rect_Ccfind_area_Zzrect_Nn1  
+286:            $t98 = $t97 + 0
+287:            $t99 = self%rect_Ccfind_area_Zzrect_Nn1  
+288:            $t100 = $t99 + 8
+289:            $t101 = *($t98) * *($t100)
+290:            *($t96) = $t101  
+291:            $t102 = self%rect_Ccfind_area_Zzrect_Nn1  
+292:            $t103 = $t102 + 16
+293:            push *($t103)   
+294:            return    
+295:            end_function    
+296:            begin_function rect_Ccfind_perimeter_Zzrect_Nn1   
+297:            pop_param self%rect_Ccfind_perimeter_Zzrect_Nn1   
+298:            $t104 = self%rect_Ccfind_perimeter_Zzrect_Nn1  
+299:            $t105 = $t104 + 24
+300:            $t106 = self%rect_Ccfind_perimeter_Zzrect_Nn1  
+301:            $t107 = $t106 + 0
+302:            $t108 = self%rect_Ccfind_perimeter_Zzrect_Nn1  
+303:            $t109 = $t108 + 8
+304:            $t110 = *($t107) + *($t109)
+305:            $t111 = 2 * $t110
+306:            *($t105) = $t111  
+307:            $t112 = self%rect_Ccfind_perimeter_Zzrect_Nn1  
+308:            $t113 = $t112 + 24
+309:            push *($t113)   
+310:            return    
+311:            end_function    
+312:            begin_function main_Nn0   
+313:            param 32   
+314:            call malloc 1  
+315:            $t114 = popparam  
+316:            param 4   
+317:            param 3   
+318:            param $t114   
+319:            call rect_Cc__init___Zzrect_Zzint_Zzint_Nn3 3  
+320:            obj1%main_Nn0 = $t114  
+321:            param obj1%main_Nn0   
+322:            call rect_Ccfind_area_Zzrect_Nn1 1  
+323:            $t115 = popparam  
+324:            param $t115   
+325:            call print_Zzint_Nn1 1  
+326:            param obj1%main_Nn0   
+327:            call rect_Ccfind_perimeter_Zzrect_Nn1 1  
+328:            $t116 = popparam  
+329:            param $t116   
+330:            call print_Zzint_Nn1 1  
+331:            param obj1%main_Nn0   
+332:            call rect_Ccfind_perimeter_Zzrect_Nn1 1  
+333:            $t117 = popparam  
+334:            perimeter%main_Nn0 = $t117  
+335:            end_function    
+336:            begin_function #main   
+337:            shift_sp -40   
+338:            call main_Nn0 0  
+339:            shift_sp 40   
+340:            end_function    
 END                 

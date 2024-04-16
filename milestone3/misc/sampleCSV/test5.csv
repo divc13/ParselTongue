@@ -1,5 +1,5 @@
-# File Name: ../tests/milestone2/testcases_should_pass/test5.py
-# Table Name: __GLOBAL__, size = 73
+# File Name: ../misc/sampleTest/test5.py
+# Table Name: __GLOBAL__, size = 72
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -34,15 +34,15 @@ index, name, type, recordType, offset, size, line no.
 28, if, , KEYWORD, 0, 0, 0
 29, yield, , KEYWORD, 0, 0, 0
 30, __name__, str, KEYWORD, 0, 0, 0
-31, int, int, TYPE_CLASS, 0, 8, 0
-32, len, int, TYPE_FUNCTION, -1, 0, 0
-33, float, float, TYPE_CLASS, 8, 8, 0
-34, len, int, TYPE_FUNCTION, -1, 0, 0
-35, bool, bool, TYPE_CLASS, 16, 8, 0
-36, len, int, TYPE_FUNCTION, -1, 0, 0
-37, str, str, TYPE_CLASS, 24, 8, 0
-38, len, int, TYPE_FUNCTION, -1, 0, 0
-39, print, None, TYPE_FUNCTION, -1, 0, 0
+31, %lld, str, CONST_STRING, 0, 0, 0
+32, int, int, TYPE_CLASS, 0, 8, 0
+33, len, int, TYPE_FUNCTION, -1, 0, 0
+34, float, float, TYPE_CLASS, 8, 8, 0
+35, len, int, TYPE_FUNCTION, -1, 0, 0
+36, bool, bool, TYPE_CLASS, 16, 8, 0
+37, len, int, TYPE_FUNCTION, -1, 0, 0
+38, str, str, TYPE_CLASS, 24, 8, 0
+39, len, int, TYPE_FUNCTION, -1, 0, 0
 40, print, None, TYPE_FUNCTION, -1, 0, 0
 41, print, None, TYPE_FUNCTION, -1, 0, 0
 42, print, None, TYPE_FUNCTION, -1, 0, 0
@@ -50,17 +50,19 @@ index, name, type, recordType, offset, size, line no.
 44, print, None, TYPE_FUNCTION, -1, 0, 0
 45, print, None, TYPE_FUNCTION, -1, 0, 0
 46, print, None, TYPE_FUNCTION, -1, 0, 0
-47, range, list[int], TYPE_FUNCTION, -1, 0, 0
-48, range, list[int], TYPE_FUNCTION, -1, 0, 0
-49, len, int, TYPE_FUNCTION, -1, 0, 0
-50, rect, rect, TYPE_CLASS, 32, 32, 1
-51, len, int, TYPE_FUNCTION, -1, 0, 0
-52, 1, int, CONST_INT, 32, 8, 6
-53, 2, int, CONST_INT, 40, 8, 14
-54, main, None, TYPE_FUNCTION, -1, 40, 17
-55, 3, int, CONST_INT, 48, 8, 18
-56, 4, int, CONST_INT, 56, 8, 18
-57, __main__, str, CONST_STRING, 64, 9, 23
+47, print, None, TYPE_FUNCTION, -1, 0, 0
+48, range, list_int_, TYPE_FUNCTION, -1, 0, 0
+49, range, list_int_, TYPE_FUNCTION, -1, 0, 0
+50, len, int, TYPE_FUNCTION, -1, 0, 0
+51, #main, None, TYPE_FUNCTION, -1, 0, 0
+52, rect, rect, TYPE_CLASS, 32, 32, 1
+53, len, int, TYPE_FUNCTION, -1, 0, 0
+54, 1, int, CONST_INT, 32, 8, 6
+55, 2, int, CONST_INT, 40, 8, 14
+56, main, None, TYPE_FUNCTION, -1, 40, 17
+57, 3, int, CONST_INT, 48, 8, 18
+58, 4, int, CONST_INT, 56, 8, 18
+59, __main__, str, CONST_STRING, 64, 8, 23
 ,
 ,
 ,
@@ -71,7 +73,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #len, list[int], VARIABLE, 0, 8, 0
+0, #len, list_int_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -85,7 +87,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #len, list[float], VARIABLE, 0, 8, 0
+0, #len, list_float_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -99,7 +101,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #len, list[bool], VARIABLE, 0, 8, 0
+0, #len, list_bool_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -113,7 +115,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #len, list[str], VARIABLE, 0, 8, 0
+0, #len, list_str_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -168,7 +170,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #var1, list[int], VARIABLE, 0, 8, 0
+0, #var1, list_int_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -179,7 +181,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #var1, list[float], VARIABLE, 0, 8, 0
+0, #var1, list_float_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -190,7 +192,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #var1, list[bool], VARIABLE, 0, 8, 0
+0, #var1, list_bool_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -201,7 +203,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #var1, list[str], VARIABLE, 0, 8, 0
+0, #var1, list_str_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
@@ -242,17 +244,27 @@ index, name, type, recordType, offset, size, line no.
 ,
 ,
 ,
+# Table Name: Function #main, size = 0, Parent Table: __GLOBAL__
+
+# Incoming Parameters: 
+index, name, type, recordType, offset, size, line no. 
+
+# Local Variables: 
+index, name, type, recordType, offset, size, line no. 
+,
+,
+,
 # Table Name: Class rect, size = 32, Parent Table: __GLOBAL__
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
-0, __init__, None, TYPE_FUNCTION, -1, -24, 3
+0, __init__, None, TYPE_FUNCTION, -1, 0, 3
 1, length, int, OBJECT_ATTRIBUTE, 0, 8, 4
 2, width, int, OBJECT_ATTRIBUTE, 8, 8, 5
 3, area, int, OBJECT_ATTRIBUTE, 16, 8, 6
 4, perimeter, int, OBJECT_ATTRIBUTE, 24, 8, 7
-5, find_area, int, TYPE_FUNCTION, -1, -8, 9
-6, find_perimeter, int, TYPE_FUNCTION, -1, -8, 13
+5, find_area, int, TYPE_FUNCTION, -1, 0, 9
+6, find_perimeter, int, TYPE_FUNCTION, -1, 0, 13
 ,
 ,
 ,
@@ -295,7 +307,7 @@ index, name, type, recordType, offset, size, line no.
 
 # Incoming Parameters: 
 index, name, type, recordType, offset, size, line no. 
-0, #len, list[rect], VARIABLE, 0, 8, 0
+0, #len, list_rect_, VARIABLE, 0, 8, 0
 
 # Local Variables: 
 index, name, type, recordType, offset, size, line no. 
