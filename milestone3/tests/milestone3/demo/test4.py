@@ -1,4 +1,4 @@
-# if-elif-else, for, while, range(start, stop), range(stop), len(), list[int]
+# if-elif-else, for, while, range(start, stop), range(stop), len(), list[int], continue, break
 
 def fibonacci(n: int) -> int:
     ans:int
@@ -44,7 +44,7 @@ def main():
     fib_n:int = fibonacci(n)
     print(fib_n)
 
-    # find the count of unique numbers and 
+    # find the count of unique numbers
     count:int = 1
     duplicate_numbers:list[int] = [1, 1, 1, 2, 2, 3, 4, 5, 5]
 
@@ -59,17 +59,23 @@ def main():
     
     print(count)
 
+    # find if a number is present in a list of numbers
+    present:bool = False
+    find_number:int = 5
+    numbers_list:list[int] = [2, 4, 1, 0, -1, 4, 5, 1]
 
+    for i in range(len(numbers_list)):
+        if numbers_list[i] == find_number:
+            present = True
+            break
+    
+    if present:
+        print("The number is present")
 
-            
+    else:
+        print("The number is not present")
 
-
-
-
-
-
-
-
+    
     
 
 
