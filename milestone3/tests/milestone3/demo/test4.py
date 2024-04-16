@@ -75,6 +75,8 @@ def main() -> int:
 
     else:
         print("The number is not present")
+    
+    return 0
 
 
 if __name__ == "__main__":

@@ -2722,6 +2722,12 @@ void pre_process_assembly()
 	x86.third = "";
 	assembly.push_back(x86);
 
+	x86.label = "expfault_format:";
+	x86.first = ".asciz";
+	x86.second = "\"\e[31mERROR: NEGATIVE EXPONENTS ARE NOT SUPPORTED\e[0m\"";
+	x86.third = "";
+	assembly.push_back(x86);
+
 	x86.label = ".global";
 	x86.first = "main";
 	x86.second = "";

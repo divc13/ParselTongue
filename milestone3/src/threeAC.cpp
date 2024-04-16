@@ -1234,9 +1234,10 @@ void Parasite::genAC()
 					string tmp = newTmp();
 					tempType[tmp] = "int";
 					code inst;
+
 					inst.field_1 = tmp;
 					inst.field_2 = "=";
-					inst.field_3 = children[0] -> tmp;
+					inst.field_3 = "1";
 					inst.field_4 = "";
 					inst.field_5 = "";
 					inst.label = newLabel();
@@ -1252,24 +1253,101 @@ void Parasite::genAC()
 					inst.label = newLabel();
 					threeAC.push_back(inst);
 
+					string tmp3 = newTmp();
+					tempType[tmp3] = "bool";
+					inst.field_1 = tmp3;
+					inst.field_2 = "=";
+					inst.field_3 = tmp1;
+					inst.field_4 = "<";
+					inst.field_5 = "0";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+
+					inst.field_1 = tmp1;
+					inst.field_2 = "=";
+					inst.field_3 = tmp1;
+					inst.field_4 = "-";
+					inst.field_5 = "1";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+
 					string label = newLabel();
 					string tmp2 = newTmp();
 					tempType[tmp2] = "bool";
 					inst.field_1 = tmp2;
 					inst.field_2 = "=";
 					inst.field_3 = tmp1;
-					inst.field_4 = ">";
+					inst.field_4 = "<";
 					inst.field_5 = "0";
 					inst.label = label;
 					threeAC.push_back(inst);
 
+					string label2 = newLabel();
+					
+
+					
+					string label6 = newLabel();
+
 					string label1 = newLabel();
+					string label4 = newLabel();
 					inst.field_1 = "if_false";
-					inst.field_2 = tmp2;
+					inst.field_2 = tmp3;
 					inst.field_3 = "goto";
-					inst.field_4 = "@FILL_LATER@";			// fill
+					inst.field_4 = label6;			// fill
 					inst.field_5 = "";
 					inst.label = label1;
+					threeAC.push_back(inst);
+
+					string a1 = newTmp();
+					tempType[a1] = "str";
+					inst.field_1 = a1;
+					inst.field_2 = "=";
+					inst.field_3 = "findAddress";
+					inst.field_4 = "expfault_format";
+					inst.field_5 = "";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+
+					inst.field_1 = "param";
+					inst.field_2 = a1;
+					inst.field_3 = "";
+					inst.field_4 = "";
+					inst.field_5 = "";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+
+					inst.field_1 = "call";
+					inst.field_2 = "print_Zzstr_Nn1";
+					inst.field_3 = "1";
+					inst.field_4 = "";
+					inst.field_5 = "";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+
+					// exit
+					inst.field_1 = "param";
+					inst.field_2 = to_string(-1);
+					inst.field_3 = "";
+					inst.field_4 = "";
+					inst.field_5 = "";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+
+					inst.field_1 = "call";
+					inst.field_2 = "exit";
+					inst.field_3 = "1";
+					inst.field_4 = "";
+					inst.field_5 = "";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
+					
+					string label5 = newLabel();
+					inst.field_1 = "if";
+					inst.field_2 = tmp2;
+					inst.field_3 = "goto";
+					inst.field_4 = label5;			// fill
+					inst.field_5 = "";
+					inst.label = label6;
 					threeAC.push_back(inst);
 
 					inst.field_1 = tmp;
@@ -1283,32 +1361,35 @@ void Parasite::genAC()
 					inst.field_1 = tmp1;
 					inst.field_2 = "=";
 					inst.field_3 = tmp1;
-					inst.field_4 = "-";				
+					inst.field_4 = "-";
 					inst.field_5 = "1";
 					inst.label = newLabel();
 					threeAC.push_back(inst);
 
-
-					string label3 = newLabel();
-					inst.field_1 = "goto";
-					inst.field_2 = label;
-					inst.field_3 = "";
-					inst.field_4 = "";				
-					inst.field_5 = "";
-					inst.label = label3;
+					inst.field_1 = tmp2;
+					inst.field_2 = "=";
+					inst.field_3 = tmp1;
+					inst.field_4 = "<";
+					inst.field_5 = "0";
+					inst.label = newLabel();
 					threeAC.push_back(inst);
 
+					inst.field_1 = "goto";
+					inst.field_2 = label6;
+					inst.field_3 = "";
+					inst.field_4 = "";
+					inst.field_5 = "";
+					inst.label = newLabel();
+					threeAC.push_back(inst);
 					
-					string label4 = newLabel();
 					inst.field_1 = children[0] -> tmp;
 					inst.field_2 = "=";
 					inst.field_3 = tmp;
-					inst.field_4 = "";				
+					inst.field_4 = "";
 					inst.field_5 = "";
-					inst.label = label4;
+					inst.label = label5;
 					threeAC.push_back(inst);
 
-					filler.push_back({label1, label3});
 				}
 				else
 				{
@@ -2722,12 +2803,14 @@ void Parasite::genAC()
 
 		if (children.size() == 3)
 		{
+			
 			tmp = newTmp();
 			tempType[tmp] = "int";
 			code inst;
+
 			inst.field_1 = tmp;
 			inst.field_2 = "=";
-			inst.field_3 = children[0] -> tmp;
+			inst.field_3 = "1";
 			inst.field_4 = "";
 			inst.field_5 = "";
 			inst.label = newLabel();
@@ -2743,24 +2826,99 @@ void Parasite::genAC()
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
+			string label6 = newLabel();
 			string label = newLabel();
+
+			string tmp3 = newTmp();
+			tempType[tmp3] = "bool";
+			inst.field_1 = tmp3;
+			inst.field_2 = "=";
+			inst.field_3 = tmp1;
+			inst.field_4 = "<";
+			inst.field_5 = "0";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = tmp1;
+			inst.field_2 = "=";
+			inst.field_3 = tmp1;
+			inst.field_4 = "-";
+			inst.field_5 = "1";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			label = newLabel();
 			string tmp2 = newTmp();
 			tempType[tmp2] = "bool";
 			inst.field_1 = tmp2;
 			inst.field_2 = "=";
 			inst.field_3 = tmp1;
-			inst.field_4 = ">";
+			inst.field_4 = "<";
 			inst.field_5 = "0";
 			inst.label = label;
 			threeAC.push_back(inst);
 
 			string label1 = newLabel();
+			string label4 = newLabel();
 			inst.field_1 = "if_false";
+			inst.field_2 = tmp3;
+			inst.field_3 = "goto";
+			inst.field_4 = label6;			// fill
+			inst.field_5 = "";
+			inst.label = label1;
+			threeAC.push_back(inst);
+
+			string a1 = newTmp();
+			tempType[a1] = "str";
+			inst.field_1 = a1;
+			inst.field_2 = "=";
+			inst.field_3 = "findAddress";
+			inst.field_4 = "expfault_format";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "param";
+			inst.field_2 = a1;
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "call";
+			inst.field_2 = "print_Zzstr_Nn1";
+			inst.field_3 = "1";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			// exit
+			inst.field_1 = "param";
+			inst.field_2 = to_string(-1);
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			inst.field_1 = "call";
+			inst.field_2 = "exit";
+			inst.field_3 = "1";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = newLabel();
+			threeAC.push_back(inst);
+
+			
+			string label5 = newLabel();
+			inst.field_1 = "if";
 			inst.field_2 = tmp2;
 			inst.field_3 = "goto";
 			inst.field_4 = "@FILL_LATER@";			// fill
 			inst.field_5 = "";
-			inst.label = label1;
+			inst.label = label6;
 			threeAC.push_back(inst);
 
 			inst.field_1 = tmp;
@@ -2774,22 +2932,30 @@ void Parasite::genAC()
 			inst.field_1 = tmp1;
 			inst.field_2 = "=";
 			inst.field_3 = tmp1;
-			inst.field_4 = "-";				
+			inst.field_4 = "-";
 			inst.field_5 = "1";
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
-
-			string label3 = newLabel();
-			inst.field_1 = "goto";
-			inst.field_2 = label;
-			inst.field_3 = "";
-			inst.field_4 = "";				
-			inst.field_5 = "";
-			inst.label = label3;
+			inst.field_1 = tmp2;
+			inst.field_2 = "=";
+			inst.field_3 = tmp1;
+			inst.field_4 = "<";
+			inst.field_5 = "0";
+			inst.label = newLabel();
 			threeAC.push_back(inst);
 
-			filler.push_back({label1, label3});
+			string label7 = newLabel();
+			inst.field_1 = "goto";
+			inst.field_2 = label6;
+			inst.field_3 = "";
+			inst.field_4 = "";
+			inst.field_5 = "";
+			inst.label = label7;
+			threeAC.push_back(inst);
+
+			filler.push_back({label6, label7});
+
 		}
 
 	}

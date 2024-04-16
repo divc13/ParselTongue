@@ -126,7 +126,6 @@ def main():
         print("test done for %=")
 
     b **= a
-    print(b)
     if (b == 16):
         print("test done for **=")
 
