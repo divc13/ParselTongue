@@ -1,6 +1,3 @@
-
-# comment
-
 class c1:
 
     def __init__(self):
@@ -36,7 +33,8 @@ def f1() -> None:
     print("'abcd'")
 
 
-def main(val:int, a:list[int], b:bool, c:str):
+def main(val:int, b:bool, c:str):
+    a:list[int] = [1, 2, 3]
     if val <= 0:
         return
 
@@ -44,19 +42,15 @@ def main(val:int, a:list[int], b:bool, c:str):
 
     print(b + True - False)  
 
-    main(val - 1, a, False, "def")
+    main(val - 1, False, "def")
 
 
 if __name__ == "__main__":
-    a:list[int] = [1, 2, 3]
-    main(5, a, False, "abc")
+    main(5, False, "abc")
 
     f1()
     obj3:c3 = c3(10)
     obj3.f1_c1()
     obj3.f1_c2()
     obj3.f1_c3()
-
-
-
 

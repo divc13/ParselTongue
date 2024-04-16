@@ -9,9 +9,8 @@ ast_flag=0
 ptree_flag=0
 csv_flag=0
 md_flag=0
-tac_flag=1
-exe_flag=0
-run_flag=0
+tac_flag=0
+exe_flag=1
 output_flag=0
 
 display_help() {
@@ -124,9 +123,6 @@ for ((i=1; i<=$#; i++)); do
 				;;
 			m)
 				md_flag=1
-				;;
-			r)
-				run_flag=1
 				;;
 			*)
 				echo -e "\e[31mUnknown flag: -${arg:j:1}\e[0m"
@@ -258,7 +254,7 @@ fi
 
 wait
 
-if [ "$run_flag" -eq 1 ]; then
+if [ "$exe_flag" -eq 1 ]; then
 	for ((i = 0; i < ${#input_files[@]}; i++)); do
 		output_file_without_extention="${output_files_without_extention[$i]}"
 
