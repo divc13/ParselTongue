@@ -402,7 +402,7 @@ void x86::Spill(int reg, string label, string comment)
 		return;
 	}
 	string first = to_string(-1 * offset) + "(%rbp)";
-	if (comment.length() == 0) comment = "SPILL " + var;
+	// if (comment.length() == 0) comment = "SPILL " + var;
 	x86::Move(regMap[reg].name, first, label, comment);
 	regMap[reg].freeReg();
 }
@@ -433,7 +433,7 @@ int allocate(var_struct &var, string label)
 			{
 				// load instruction here
 				string first = to_string(-1 * var.offset) + "(%rbp)";
-				x86::Move(first, regMap[i].name, label, "ALLOCATE " + var.name);
+				x86::Move(first, regMap[i].name, label);
 			}
 			else
 				assert(false);
@@ -458,7 +458,7 @@ int allocate(var_struct &var, string label)
 		}
 	}
 
-		// spill the farthest register
+	// spill the farthest register
 	x86::Spill(farthest, label);
 
 	// load instruction here
@@ -531,7 +531,7 @@ int get_reg_for_num(var_struct var, string label)
 			regMap[i].free = false;
 			regMap[i].var = var.name;
 
-			x86::Move("$" + var.name, regMap[i].name, label, "ALLOCATE " + var.name);
+			x86::Move("$" + var.name, regMap[i].name, label);
 			return i;
 		}
 	}
@@ -1898,12 +1898,12 @@ void modifier(code tac)
 
 		numParams = 0;
 
-		x86::Spill(R10, tac.label, "FROM CALL");
-		x86::Spill(R11, tac.label, "FROM CALL");
-		x86::Spill(R12, tac.label, "FROM CALL");
-		x86::Spill(R13, tac.label, "FROM CALL");
-		x86::Spill(R14, tac.label, "FROM CALL");
-		x86::Spill(R15, tac.label, "FROM CALL");
+		x86::Spill(R10, tac.label);
+		x86::Spill(R11, tac.label);
+		x86::Spill(R12, tac.label);
+		x86::Spill(R13, tac.label);
+		x86::Spill(R14, tac.label);
+		x86::Spill(R15, tac.label);
 
 		bool did_push = false;
 
@@ -2026,7 +2026,7 @@ void modifier(code tac)
 	{
 		for (int i=REG_START; i<REG_MAX; i++)
 		{
-			x86::Spill(i, tac.label, "FROM BB");
+			x86::Spill(i, tac.label);
 		}
 	}
 
@@ -2420,23 +2420,16 @@ void post_process_assembly()
 
 void generate_assembly()
 {
-	// cout << "START" << endl;
 	identify_BB();
-	// cout << "1" << endl;
 	init_var_struct();
-	// cout << "2" << endl;
 	pre_process_assembly();
-	// cout << "3" << endl;
 
 	for (code_itr=0; code_itr < threeAC.size(); code_itr++)
 	{
-		// cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;
 		modifier(threeAC[code_itr]);
 	}
-	// cout << "4" << endl;
 	post_process_assembly();
-	// cout << "5" << endl;
 }
 
 /* NOTE : TAKE OFFSET ONLY FROM RBP */
