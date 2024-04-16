@@ -14,6 +14,7 @@ def fibonacci(n: int) -> int:
 
         i:int = 2
         while(i < n + 1):
+            print(i)
             i += 1
             temp: int = prev
             prev = curr
@@ -23,7 +24,7 @@ def fibonacci(n: int) -> int:
 
     return ans
 
-def main():
+def main() -> int:
     i:int
 
     numbers:list[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -58,20 +59,7 @@ def main():
             count += 1
     
     print(count)
-
-
-
-            
-
-
-
-
-
-
-
-
-    
-
+    return 0
 
 if __name__ == "__main__":
     main()

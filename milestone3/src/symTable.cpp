@@ -476,7 +476,10 @@ int handle_function_declaration(TreeNode* root)
 			return -1;
 		}
 
-		assert ((root -> children).size() == 6);
+	}
+
+	if ((root -> children).size() == 6)
+	{
 		if ((root -> children)[4] -> children[0] -> name != "None")
 		{
 			if ((root -> children)[5] -> name != "return_stmt")
@@ -563,7 +566,7 @@ int handle_function_declaration(TreeNode* root)
 	
 	TreeNode* node = ((root -> children)[0]);
 	string type = "None";
-	if (((root -> children)[0] -> name).compare("main") && ((root -> children)[0] -> name).compare("__init__"))
+	if ((root -> children).size() == 6)
 	{
 		int ret = handle_to(((root -> children)[4]));
 		if (ret < 0)

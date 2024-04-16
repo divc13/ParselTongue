@@ -412,7 +412,7 @@ int allocate(var_struct &var, string label)
 	// free the registers for died variables
 	for (int i = REG_MAX - 1; i >= REG_START; i--)
 	{
-		if (!regMap[i].free && varMap[regMap[i].var].death < code_itr && (regMap[i]).allocatable)
+		if (!regMap[i].free && varMap[regMap[i].var].death < code_itr && (regMap[i]).allocatable && varMap[regMap[i].var].offset == -1)
 		{
 			regMap[i].freeReg();
 		}

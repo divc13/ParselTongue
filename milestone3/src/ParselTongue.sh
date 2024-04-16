@@ -19,7 +19,7 @@ display_help() {
 	echo -e "Options:"
 	echo -e "	-v,	--verbose			: Output a .debug file at the output folder"
 	echo -e "	-i,	--input				: Specify the input PYTHON (.py) file(s), any files specified after this option are input files till -o is specified"
-	echo -e "	-o,	--output			: Specify the output TAC (.txt) file(s), any files specified after this option are output files till -i is specified"
+	echo -e "	-o,	--output			: Specify the output x86 (.s) file(s), any files specified after this option are output files till -i is specified"
 	echo -e "	-d,	--dot				: Output a .dot file at the output folder"
 	echo -e "	-a,	--ast				: Output an AST pdf file at the output folder"
 	echo -e "	-p,	--ptree				: Output a Parse Tree pdf file at the output folder"
@@ -33,8 +33,8 @@ display_help() {
 check_extension() {
 	filename="$1"
 	extension="${filename##*.}"
-	if [ "$output_flag" -eq 1 ] && [ "$extension" != "txt" ]; then
-		echo -e "\e[31mError in file: \e[34m${filename} \e[31m: File extension for output files should be .txt\e[0m"
+	if [ "$output_flag" -eq 1 ] && [ "$extension" != "s" ]; then
+		echo -e "\e[31mError in file: \e[34m${filename} \e[31m: File extension for output files should be .s\e[0m"
 		exit 1
 	fi
 	if [ "$output_flag" -eq 0 ] && [ "$extension" != "py" ]; then
@@ -89,6 +89,9 @@ for ((i=1; i<=$#; i++)); do
 	--markdown )
 		md_flag=1
 		;;
+	--tac)
+		tac_flag=1
+		;;
 	--* )
 		echo -e "\e[31mUnknown flag: ${arg}\e[0m"
 		exit 1
@@ -124,6 +127,9 @@ for ((i=1; i<=$#; i++)); do
 			m)
 				md_flag=1
 				;;
+			t)
+				tac_flag=1
+				;;
 			*)
 				echo -e "\e[31mUnknown flag: -${arg:j:1}\e[0m"
 				exit 1
@@ -157,7 +163,7 @@ for ((i = 0; i < ${#input_files[@]}; i++)); do
 	else
 		filename=$(basename "${input_files[$i]}")
 		filename_no_extension="${filename%.*}"
-		output_file="../output/${filename_no_extension}.txt"
+		output_file="../output/${filename_no_extension}.s"
 	fi
 	output_directory=$(dirname "$output_file")
 	create_directory_if_not_exists "$output_directory"
@@ -190,7 +196,7 @@ elif [ "${#input_files[@]}" -lt "${#output_files[@]}" ]; then
 else
 	echo -e "\e[33mWarning: More input files provided than output files. Output will be redirected to default output/ directory \e[0m"
 	for ((i = ${#output_files[@]}; i < ${#input_files[@]}; i++)); do
-		output_file="${output_files_without_extention[$i]}.txt"
+		output_file="${output_files_without_extention[$i]}.s"
 		output_files+="${output_file}"
 		echo -e "\e[34m${input_files[$i]} \u27f9  ${output_file}\e[0m"
 	done

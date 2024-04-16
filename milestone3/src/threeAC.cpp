@@ -3237,7 +3237,7 @@ void Parasite::genAC()
 
 			inst.field_1 = "*(" + tmp + ")";
 			inst.field_2 = "=";
-			inst.field_3 = to_string((children[0] -> tmp).length() - 2);
+			inst.field_3 = to_string((children[0] -> tmp).length() - 1);
 			inst.label = newLabel();
 			threeAC.push_back(inst);
 
@@ -3513,7 +3513,7 @@ void fillCode()
 
 void main_changer()
 {
-	string label = "";
+	string LABEL = "";
 	for(int i = 0; i < threeAC.size() - 1; i++)
 	{
 		if (threeAC[i].field_1 == "end_function" && threeAC[i+1].field_1 == "param" && threeAC[i+1].field_2 == "17")
@@ -3525,14 +3525,15 @@ void main_changer()
 			threeAC[i+1].field_5 = "";
 
 			assert(i + 15 < threeAC.size());
-			label = threeAC[i+15].field_4;
+			LABEL = threeAC[i+15].field_4;
 
 			// remove the 14 instructions
 			threeAC.erase(threeAC.begin() + i + 2, threeAC.begin() + i + 16);
+			label -= 13;
 		}
 	}
 
-	if (label.size())
+	if (LABEL.size())
 	{
 		bool flag = false;
 		code inst;
@@ -3545,7 +3546,7 @@ void main_changer()
 
 		for(int i=0; i< threeAC.size(); i++)
 		{
-			if (threeAC[i].label == label)
+			if (threeAC[i].label == LABEL)
 			{
 				flag = true;
 				threeAC.insert(threeAC.begin() + i, inst);
@@ -3814,6 +3815,18 @@ string class_convert(string funcName, string child_class)
 		}
 		return tmpMap[funcName];
 	}
+
+	if (funcName.substr(0, 4) == "*($t")
+	{
+		string deref_func = funcName.substr(2, funcName.length() - 3);
+		if (tmpMap.find(deref_func) == tmpMap.end())
+		{
+			string newtmp = newTmp();
+			tmpMap[deref_func] = newtmp;
+		}
+		return "*(" + tmpMap[deref_func] + ")";
+	}
+
 
 	return funcName;
 }
