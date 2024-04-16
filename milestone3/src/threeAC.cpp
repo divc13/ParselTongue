@@ -23,8 +23,10 @@ map<string, string> tempType;
 map<string, tableRecord*> Temp_to_record;
 extern map<symbolTable*, int> visited;
 int stringMapSize = 0;
-extern map<string, string> copyMap;
+extern map<string, vector<string>> copyMap;
 map<string, string> tmpMap;
+
+long long int PYTHON_INT_MAX = ((long long) INT_MAX) * ((long long) INT_MAX);
 
 string newLabel()
 {
@@ -3316,7 +3318,13 @@ void Parasite::genAC()
 		{
 			tmp = children[0] -> name;
 			if (children[0] -> type == "FLOAT_LITERAL") tempType[tmp] = "float";
-			if (children[0] -> type == "INT_LITERAL") tempType[tmp] = "int";
+			if (children[0] -> type == "INT_LITERAL")
+			{
+				long long int inttmp = atoi(tmp.c_str());
+				inttmp %= PYTHON_INT_MAX;
+				tmp = to_string(inttmp);
+				tempType[tmp] = "int";
+			}
 			if (children[0] -> type == "KEYWORD") tempType[tmp] = "None";
 		}
 
@@ -3750,7 +3758,7 @@ void offset_modifier(symbolTable *Table)
 	
 }
 
-string class_convert(string funcName)
+string class_convert(string funcName, string child_class)
 {
 	string new_var = "";
 	string class_name = "";
@@ -3769,7 +3777,7 @@ string class_convert(string funcName)
 		if(funcName.substr(i, 3) == "_Cc")
 		{
 			class_name = funcName.substr(percent_loc, i - percent_loc);
-			new_var += copyMap[class_name] + "_Cc";
+			new_var += child_class + "_Cc";
 			func_loc = i + 3;
 		}
 		if(funcName.substr(i, 3) == "_Zz")
@@ -3785,7 +3793,7 @@ string class_convert(string funcName)
 	if (class_name.length() != 0)
 	{
 		new_var += funcName.substr(func_loc, param_indices[0] - func_loc);
-		new_var += "_Zz" + copyMap[class_name];
+		new_var += "_Zz" + child_class;
 		if (param_indices.size() == 1)
 		{
 			new_var += funcName.substr(last, funcName.length() - last);
@@ -3835,47 +3843,58 @@ void fillInheritance()
 
 			if (copyMap.find(class_name) != copyMap.end())
 			{
-				int label_offset = label - atoi(tac.label.substr(0, tac.label.length() - 1).c_str());
-				while (1)
+				int func_start = i;
+				for (int child_ind = 0; child_ind < (copyMap[class_name]).size(); child_ind++)
 				{
-					code inst;
-					if (tac.field_1.length())
-						inst.field_1 = class_convert(tac.field_1);
-
-					if (tac.field_2.length())
-						inst.field_2 = class_convert(tac.field_2);
-
-					if (tac.field_3.length())
-						inst.field_3 = class_convert(tac.field_3);
-
-					if (tac.field_4.length())
-						inst.field_4 = class_convert(tac.field_4);
-
-					if (tac.field_5.length())
-						inst.field_5 = class_convert(tac.field_5);
-
-					if (tac.field_1 == "goto")
+					string child_class = (copyMap[class_name])[child_ind];
+					int label_offset = label - atoi(tac.label.substr(0, tac.label.length() - 1).c_str());
+					while (1)
 					{
-						inst.field_2 = to_string(atoi(tac.field_2.c_str()) + label_offset);
+						code inst;
+						if (tac.field_1.length())
+							inst.field_1 = class_convert(tac.field_1, child_class);
+
+						if (tac.field_2.length())
+							inst.field_2 = class_convert(tac.field_2, child_class);
+
+						if (tac.field_3.length())
+							inst.field_3 = class_convert(tac.field_3, child_class);
+
+						if (tac.field_4.length())
+							inst.field_4 = class_convert(tac.field_4, child_class);
+
+						if (tac.field_5.length())
+							inst.field_5 = class_convert(tac.field_5, child_class);
+
+						if (tac.field_1 == "goto")
+						{
+							inst.field_2 = to_string(atoi(tac.field_2.c_str()) + label_offset);
+						}
+						if (tac.field_3 == "goto")
+						{
+							inst.field_4 = to_string(atoi(tac.field_4.c_str()) + label_offset);
+						}
+						inst.label = to_string(atoi(tac.label.substr(0, tac.label.length() - 1).c_str()) + label_offset) + ":";
+						label++;
+						class_copy.push_back(inst);
+						if (tac.field_1 == "end_function")
+							break;
+						tac = threeAC[i + 1];
+						i++;
 					}
-					if (tac.field_3 == "goto")
+					i--;
+					if (child_ind < (copyMap[class_name]).size() - 1)
 					{
-						inst.field_4 = to_string(atoi(tac.field_4.c_str()) + label_offset);
+						i = func_start;
+						tac = threeAC[i];
 					}
-					inst.label = to_string(atoi(tac.label.substr(0, tac.label.length() - 1).c_str()) + label_offset) + ":";
-					label++;
-					class_copy.push_back(inst);
-					if (tac.field_1 == "end_function")
-						break;
-					tac = threeAC[i + 1];
-					i++;
+					threeAC.insert(threeAC.end(), class_copy.begin(), class_copy.end());
+					class_copy.clear();
 				}
-				i--;
 			}
 		}
 	}
 
-	threeAC.insert(threeAC.end(), class_copy.begin(), class_copy.end());
 }
 
 void correctLabels()

@@ -280,7 +280,7 @@ void x86::Cmove(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmoveq";
+	inst.first = "cmove";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -290,7 +290,7 @@ void x86::Cmovne(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovneq";
+	inst.first = "cmovne";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -300,7 +300,7 @@ void x86::Cmovg(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovgq";
+	inst.first = "cmovg";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -310,7 +310,7 @@ void x86::Cmovl(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovlq";
+	inst.first = "cmovl";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -320,7 +320,7 @@ void x86::Cmovge(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovgeq";
+	inst.first = "cmovge";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -330,7 +330,7 @@ void x86::Cmovle(string arg1, string arg2, string label, string comment)
 {
 	instruction inst;
 	inst.label = label;
-	inst.first = "cmovleq";
+	inst.first = "cmovle";
 	inst.second = arg1;
 	inst.third = arg2;
 	inst.comment = comment;
@@ -402,8 +402,8 @@ void x86::Spill(int reg, string label, string comment)
 		return;
 	}
 	string first = to_string(-1 * offset) + "(%rbp)";
-		
-	x86::Move(regMap[reg].name, first, label, "SPILL " + var);
+	if (comment.length() == 0) comment = "SPILL " + var;
+	x86::Move(regMap[reg].name, first, label, comment);
 	regMap[reg].freeReg();
 }
 
@@ -1185,10 +1185,11 @@ void modifier(code tac)
 				reg_name1 = regMap[reg1].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
-			x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
+			x86::Cmove(reg_name3, regMap[RAX].name, tac.label);
+			x86::Move(regMap[RAX].name, reg_name3, tac.label);
 			regMap[reg3].allocatable = true;
 			regMap[reg2].allocatable = true;
 			regMap[reg1].allocatable = true;
@@ -1246,10 +1247,11 @@ void modifier(code tac)
 				reg_name1 = regMap[reg1].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
-			x86::Cmovne(regMap[RAX].name, reg_name3, tac.label);
+			x86::Cmovne(reg_name3, regMap[RAX].name, tac.label);
+			x86::Move(regMap[RAX].name, reg_name3, tac.label);
 			regMap[reg3].allocatable = true;
 			regMap[reg2].allocatable = true;
 			regMap[reg1].allocatable = true;
@@ -1307,10 +1309,11 @@ void modifier(code tac)
 				reg_name1 = regMap[reg1].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
-			x86::Cmovg(regMap[RAX].name, reg_name3, tac.label);
+			x86::Cmovg(reg_name3, regMap[RAX].name, tac.label);
+			x86::Move(regMap[RAX].name, reg_name3, tac.label);
 			regMap[reg3].allocatable = true;
 			regMap[reg2].allocatable = true;
 			regMap[reg1].allocatable = true;
@@ -1368,10 +1371,11 @@ void modifier(code tac)
 				reg_name1 = regMap[reg1].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
-			x86::Cmovl(regMap[RAX].name, reg_name3, tac.label);
+			x86::Cmovl(reg_name3, regMap[RAX].name, tac.label);
+			x86::Move(regMap[RAX].name, reg_name3, tac.label);
 			regMap[reg3].allocatable = true;
 			regMap[reg2].allocatable = true;
 			regMap[reg1].allocatable = true;
@@ -1429,10 +1433,11 @@ void modifier(code tac)
 				reg_name1 = regMap[reg1].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
-			x86::Cmovge(regMap[RAX].name, reg_name3, tac.label);
+			x86::Cmovge(reg_name3, regMap[RAX].name, tac.label);
+			x86::Move(regMap[RAX].name, reg_name3, tac.label);
 			regMap[reg3].allocatable = true;
 			regMap[reg2].allocatable = true;
 			regMap[reg1].allocatable = true;
@@ -1490,10 +1495,11 @@ void modifier(code tac)
 				reg_name1 = regMap[reg1].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Cmp(reg_name2, reg_name1, tac.label);
-			x86::Cmovle(regMap[RAX].name, reg_name3, tac.label);
+			x86::Cmovle(reg_name3, regMap[RAX].name, tac.label);
+			x86::Move(regMap[RAX].name, reg_name3, tac.label);
 			regMap[reg3].allocatable = true;
 			regMap[reg2].allocatable = true;
 			regMap[reg1].allocatable = true;
@@ -1539,22 +1545,40 @@ void modifier(code tac)
 				reg_name2 = regMap[reg2].name;
 			}
 
-			x86::Move("$1", regMap[RAX].name, tac.label);
-			x86::Move("$0", reg_name3, tac.label);
+			x86::Move("$0", regMap[RAX].name, tac.label);
+			x86::Move("$1", reg_name3, tac.label);
 			x86::Testl(reg_name2, reg_name2, tac.label);
 
 			if (tac.field_3 == "teste")
-				x86::Cmove(regMap[RAX].name, reg_name3, tac.label);
+			{
+				x86::Cmove(reg_name3, regMap[RAX].name, tac.label);
+				x86::Move(regMap[RAX].name, reg_name3, tac.label);
+			}
 			if (tac.field_3 == "testne")
-				x86::Cmovne(regMap[RAX].name, reg_name3, tac.label);
+			{
+				x86::Cmovne(reg_name3, regMap[RAX].name, tac.label);
+				x86::Move(regMap[RAX].name, reg_name3, tac.label);
+			}
 			if (tac.field_3 == "testl")
-				x86::Cmovl(regMap[RAX].name, reg_name3, tac.label);
+			{
+				x86::Cmovl(reg_name3, regMap[RAX].name, tac.label);
+				x86::Move(regMap[RAX].name, reg_name3, tac.label);
+			}
 			if (tac.field_3 == "testg")
-				x86::Cmovg(regMap[RAX].name, reg_name3, tac.label);
+			{
+				x86::Cmovg(reg_name3, regMap[RAX].name, tac.label);
+				x86::Move(regMap[RAX].name, reg_name3, tac.label);
+			}
 			if (tac.field_3 == "testle")
-				x86::Cmovle(regMap[RAX].name, reg_name3, tac.label);
+			{
+				x86::Cmovle(reg_name3, regMap[RAX].name, tac.label);
+				x86::Move(regMap[RAX].name, reg_name3, tac.label);
+			}
 			if (tac.field_3 == "testge")
-				x86::Cmovge(regMap[RAX].name, reg_name3, tac.label);
+			{
+				x86::Cmovge(reg_name3, regMap[RAX].name, tac.label);
+				x86::Move(regMap[RAX].name, reg_name3, tac.label);
+			}
 			regMap[reg2].allocatable = true;
 			regMap[reg3].allocatable = true;
 		}
@@ -1874,12 +1898,12 @@ void modifier(code tac)
 
 		numParams = 0;
 
-		x86::Spill(R10, tac.label);
-		x86::Spill(R11, tac.label);
-		x86::Spill(R12, tac.label);
-		x86::Spill(R13, tac.label);
-		x86::Spill(R14, tac.label);
-		x86::Spill(R15, tac.label);
+		x86::Spill(R10, tac.label, "FROM CALL");
+		x86::Spill(R11, tac.label, "FROM CALL");
+		x86::Spill(R12, tac.label, "FROM CALL");
+		x86::Spill(R13, tac.label, "FROM CALL");
+		x86::Spill(R14, tac.label, "FROM CALL");
+		x86::Spill(R15, tac.label, "FROM CALL");
 
 		bool did_push = false;
 
@@ -2002,7 +2026,7 @@ void modifier(code tac)
 	{
 		for (int i=REG_START; i<REG_MAX; i++)
 		{
-			x86::Spill(i, tac.label);
+			x86::Spill(i, tac.label, "FROM BB");
 		}
 	}
 
@@ -2404,7 +2428,7 @@ void generate_assembly()
 	pre_process_assembly();
 	// cout << "3" << endl;
 
-	for (code_itr=0; code_itr< threeAC.size(); code_itr++)
+	for (code_itr=0; code_itr < threeAC.size(); code_itr++)
 	{
 		// cout << "LINE: "  << code_itr + 1 << endl;
 		now = code_itr + 1;

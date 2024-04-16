@@ -7,7 +7,7 @@ def fib(n:int) -> int:
 
 def main():
     i:int
-    for i in range(10):
+    for i in range(12):
         print(fib(i))
 if __name__ == "__main__":
     main()

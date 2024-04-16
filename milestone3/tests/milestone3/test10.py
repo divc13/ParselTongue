@@ -36,10 +36,10 @@ def main():
     i:int
     ans:int = 0
 
-    for i in range(50000000):       
+    for i in range(50000):       
         ans += f1(i)
-        if ans > 100000000000000 or ans < -100000000000000:
-            ans = 0
+        if ans > 100000 or ans < -100000:
+            ans = 50
 
     print(ans)      # -3373131905643
 
