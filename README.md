@@ -159,7 +159,7 @@ Bools in ParselTongue are set to 1 and 0 for True and False respectively. When t
 When division operation is performed in python, the variables are converted to float. But in our implementation, the left hand side is assigned the quotient. If the left hand side is a bool then the quotient is type-casted to bool and then assigned.
 * Floats: 
 Floats are neglected in x86 implementation, so one won’t receive any error upon usage of floats and the behavior will be undefined.
-* if name == " main " block: 
+* if \_\_name\_\_ == "\_\_main\_\_" block: 
 Don’t define or declare any variable in this block. One can still call multiple functions inside this block but not declare a variable as the behavior is undefined.
 * Modifications To 3AC from milestone 2: 
 Introduced special commands to implement string comparison, string copy
