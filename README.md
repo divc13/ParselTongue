@@ -8,7 +8,7 @@ But only very few of us have this ability to understand a serpent's language. Do
 
 Here we come to help you, and provide you with the magical powers to talk to serpents, atleast Python, if not all. On gaining this magical power, you would feel that you are speaking your everyday language, and on your behalf, we would translate your daily language to the ParselTongue, the language of serpents.
 
-The analogy becomes clearer if you consider your daily language to be Python and ParselTongue, the languages of serpents, to be the x86-64 assembly code. It is much easier for us to program in a high level language like Python, but it would be tremendous amount of work to program directly in assembly. Hence our objective and motivation for this project is to create a compiler to translate specifically Python 3.12 to x86-64 assembly code.  
+The analogy becomes clearer if you consider your daily language to be Python and ParselTongue, the languages of serpents, to be the x86-64 assembly code. It is much easier for us to program in a high level language like Python, but it would be tremendous amount of work to program directly in assembly. Therefore we have built a compiler specifically for a subset of Python 3.12 
 
 ## Milestones: Building the superpower for you
 
@@ -22,8 +22,8 @@ In this milestone, we constructed a scanner and a parser for a statically typed 
 (i) implemented support for the symbol table
 (ii) perform semantic analysis to do limited error checking on types and function signatures. 
 
-- [ ] [Milestone 3: From 3AC IR to x86-64]()
-In this milestone, we plan to generate the correct x86_64 assembly from the 3AC which can be run via GAS on Linux.
+- [x] [Milestone 3: From 3AC IR to x86-64]()
+In this milestone, we generated the correct x86_64 assembly from the 3AC which can be run via GAS on Linux.
 
 ## Roadmap: How we built?
 
@@ -36,6 +36,7 @@ In this milestone, we plan to generate the correct x86_64 assembly from the 3AC 
 7. Generated DOT code from the AST and visualized the AST.
 8. Traversed the AST to generate symbol tables and do type checking simultaneously
 9. Traversed the parse tree to generate the three address code as an intermediate representation
+10. Generated the x86-code from the linear 3AC using strategy similar to bottom up register allocation based on variable usage,i.e., we spill the variable whose use is the farthest in the future
 
 ## Installation and Prerequisites: How do you acquire the superpower
 
@@ -100,11 +101,16 @@ switch)
 
 ## Additional features supported
 
-* Dynamic ```range``` and ```len``` functions:
-The list data structure is modified to internally store the list's length in the first 8 bytes. This design choice ensures that the length is always readily available during list creation and access, streamlining operations that rely on this information.
-
 * Function Overloading:
-In ParselTongue, we've implemented function overloading with appropriate checks, allowing multiple functions with the same name but different parameters to be defined.
+In ParselTongue, we've implemented function overloading with appropriate checks, allowing multiple functions with the same name but different parameters to be defined. We implemented name mangling for this feature.
+
+* Dynamic ```range``` and ```len``` functions:
+Dynamic ```range``` and ```len``` functions are supported, variables that are evaluated at runtime can be passed as their arguments. The list data structure is modified to internally store the list's length in the first 8 bytes. This design choice ensures that the length is always readily available during list creation and access, streamlining operations that rely on this information.
+
+* Iterating over 1D lists is supported.
+* Print is supported for primitive data types as well as their 1D lists.
+* Implemented run time error for list index out of bounds.
+* Implemented run time error for negative exponents which may otherwise result in float values.
 
 ## Detailed Error Messages
 
@@ -137,4 +143,22 @@ Apart from the syntax errors, detailed error messages are provided, including er
 
 A sample error message is shown as below:
 
-<img src="milestone2/misc/sampleError.png" alt="Sample Error" title="Sample Error" width="600" height="160"/>
+<img src="milestone3/misc/sampleError.png" alt="Sample Error" title="Sample Error" width="600" height="160" style="border: 5px solid #555; display: block; margin-left: auto; margin-right: auto; width: 50%;"/>
+
+## Note
+* Register Allocation:
+The implementation does not spill on every other instruction but uses a strategy similar to bottom up allocation based on variable
+usage i.e. we spill the variable whose use is the farthest in the future. The registers RAX, RBP, RSP, and RBX have been used as
+special registers, while the rest are allocated and spilled across basic blocks. In a function call, arguments numbered from 1-6
+are filled in the registers RDI, RSI, RDX, RCX, R8, and R9 and remaining arguments (if any) are pushed onto the stack.
+
+* Bool Handling: 
+Bools in ParselTongue are set to 1 and 0 for True and False respectively. When there is an evaluation over booleans, python converts the variable to integer. But in our implementation bools will be type-casted again after the expression evaluation to a bool.
+* Divisions: 
+When division operation is performed in python, the variables are converted to float. But in our implementation, the left hand side is assigned the quotient. If the left hand side is a bool then the quotient is type-casted to bool and then assigned.
+* Floats: 
+Floats are neglected in x86 implementation, so one won’t receive any error upon usage of floats and the behavior will be undefined.
+* if name == " main " block: 
+Don’t define or declare any variable in this block. One can still call multiple functions inside this block but not declare a variable as the behavior is undefined.
+* Modifications To 3AC from milestone 2: 
+Introduced special commands to implement string comparison, string copy
