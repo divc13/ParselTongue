@@ -53,7 +53,7 @@ To acquire the superpower for speaking to serpents, you must have the following 
 
 
 ## Usage: Using the superpower
-The source files for milestone 2 are all inside the directory milestone2/src. A bash wrapper ```ParselTongue.sh``` is provided for compilation and execution. This wrapper uses the Makefile for compilation and also refactors command line arguments for the main compiler.
+The source files for milestone 3 are all inside the directory milestone3/src. A bash wrapper ```ParselTongue.sh``` is provided for compilation and execution. This wrapper uses the Makefile for compilation and also refactors command line arguments for the main compiler.
 The options provided are as follows:
 
 * ```-h``` or ```--help``` : Shows a manual for usage of compiler
@@ -65,22 +65,23 @@ The options provided are as follows:
 * ```-d``` or ```--dot``` : This option is supposed to be used with $-a$ or $-p$. It helps retain the dot file which was used to create the pdfs.
 * ```-c``` or ```--csv``` : This option need not be passed for this milestone to get the csv dump of symbol tables but will be needed for future milestone. Passing this currently wont change any behavior.
 * ```-m``` or ```--markdown``` : Passing this option will output a markdown file for the symbol table dump which can be used along with an extension for better visualization of the dump. The default csv dump will also be given in this case.
+* ```-t``` or ```--tac``` : Passing this option will output 3AC code file.
 
 ## Execution Examples
 
-Inside ```milestone2/src``` :
+Inside ```milestone3/src``` :
 
 * ```./ParselTongue.sh {input_file_1}.py {input_file_2}.py}```
 * ```./ParselTongue.sh -i {input_file}.py}```
-* ```./ParselTongue.sh -i {input_file}.py -o {output_file}.txt}```
-* ```./ParselTongue.sh -v -i {input_file}.py -o {output_file}.txt}```
-* ```./ParselTongue.sh {input_file_1}.py {input_file_2} -o {output_file}.txt}```
+* ```./ParselTongue.sh -i {input_file}.py -o {output_file}.s}```
+* ```./ParselTongue.sh -v -i {input_file}.py -o {output_file}.s}```
+* ```./ParselTongue.sh {input_file_1}.py {input_file_2} -o {output_file}.s}```
 * ```./ParselTongue.sh -a -m {input_file_1}.py {input_file_2}.py}```
 * ```./ParselTongue.sh -a -p -v {input_file_1}.py {input_file_2}.py}```
-* ```./ParselTongue.sh {input_file_1}.py -vampi {input_file_2}.py -o {output_file}.txt}```
+* ```./ParselTongue.sh {input_file_1}.py -vampit {input_file_2}.py -o {output_file}.s}```
 
 Parsel Tongue will make new output file with the help of input files if there are not enough output files. All the files specified before ```-o``` are by default taken as input files. If an input file is not found in the specified-path, then the script looks for ```../tests/specified-path``` and takes the input file from there if it exists. 
-Options can be passed together if needed as in above, -vampi means verbose, ast, markdown, ptree, input options.ParselTongue will make new output file with the help of input files if there are not enough output files. All the files specified before -o are by default taken as input files.
+Options can be passed together if needed as in above, -vampit means verbose, ast, markdown, ptree, input, 3AC options options. ParselTongue will make new output file with the help of input files if there are not enough output files. All the files specified before -o are by default taken as input files.
 
 ## Language Features Supported:
 
