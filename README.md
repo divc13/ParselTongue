@@ -144,7 +144,7 @@ Apart from the syntax errors, detailed error messages are provided, including er
 
 A sample error message is shown as below:
 
-<img src="milestone3/misc/sampleError.png" alt="Sample Error" title="Sample Error" width="600" height="160" style="border: 5px solid #555; display: block; margin-left: auto; margin-right: auto; width: 50%;"/>
+<img src="misc/sampleError.png" alt="Sample Error" title="Sample Error" width="600" height="160" style="border: 5px solid #555; display: block; margin-left: auto; margin-right: auto; width: 50%;"/>
 
 ## Note
 * Register Allocation:
